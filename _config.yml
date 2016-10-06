@@ -1,10 +1,8 @@
 # Site settings
-title: Share is better
+title: Notepad
 email: huiyiqun@gmail.com
 description: > # this means to ignore newlines until "baseurl:"
-  This is my first blog. I'm glad to share my memory here. Hope that I could
-  help you.
-  This is about network, life of nerd or anything else.
+    Save and become better.
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: "http://huiyiqun.github.io" # the base hostname & protocol for your site
 #twitter_username:
