@@ -134,14 +134,14 @@ Google 了一下，好像是ndk的原因，`busybox`里的`wget`也有另外一�
 
 此后就已经在`Archlinux`里了，不过还要处理几个问题：
 
-1. 环境变量
+* 环境变量
 
 此时的`$PATH`等环境变量还是 Android 里的，导入 Archlinux 的环境变量
 ```
 . /etc/profile
 ```
 
-2. `ld`报错
+* `ld`报错
 
 ```
 ERROR: ld.so: object 'libsigchain.so' from LD_PRELOAD cannot be preloaded: ignored.
@@ -153,7 +153,7 @@ ERROR: ld.so: object 'libsigchain.so' from LD_PRELOAD cannot be preloaded: ignor
 unset LD_PRELOAD
 ```
 
-3. 不能访问网络
+* 不能访问网络
 
 参照[这个页面](http://archlinuxarm.org/forum/viewtopic.php?f=9&t=4611)，在`/etc/group`
 中加入如下内容：
