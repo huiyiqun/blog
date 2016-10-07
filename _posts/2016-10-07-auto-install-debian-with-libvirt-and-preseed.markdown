@@ -294,7 +294,7 @@ preseed太长，也不放在这里了，感兴趣可以去repo看。
 
 Debian是默认不会drop forward的包的，但是libvirt为NAT网络在iptables里配了两条drop规则，
 所以需要在这两条规则之前加一个accept规则，这也是必须要`action: insert`的原因，不幸的是
-这是这是ansible 2.2新加的特性，写文的时候还没有正式发布，所以安装比较麻烦。
+这是ansible 2.2新加的特性，写文的时候还没有正式发布，所以安装比较麻烦。
 repo的README里有一个临时的workaround。
 
 ## Post installation
