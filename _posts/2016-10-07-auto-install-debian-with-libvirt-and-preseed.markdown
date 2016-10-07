@@ -86,7 +86,7 @@ anaconda才能获取kickstart文件进行安装，接着根据kickstart的内容
 （DHCP）运行完了其所有网络配置，preseed中的网络、域名等配置完全不会生效。
 
 虽然文档中也提到了可以用启动参数的方式指定其网络配置，但是我试了一下，没有生效。并且
-这个时候我已经对于preseed已经基本失望了。所以我决定把复杂的配置放到libvirt里，让preseed
+这个时候我对于preseed已经基本失望了。所以我决定把复杂的配置放到libvirt里，让preseed
 里面的配置尽可能少。
 
 所以这里我配了一个给guest分配“静态地址”的dhcp服务器。
