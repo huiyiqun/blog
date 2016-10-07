@@ -38,14 +38,14 @@ qemu本身的接口本身比较简陋，我一般是用libvirt来管理。
 因此通过apt安装上`qemu-kvm`和`libvirt-bin`。
 Debian上安装好包之后默认服务就启动了，因此不需要主动启动`libvirtd`，宿主机基本就配置好了。
 
+# 虚拟机
+
 此前安装系统都是通过`virt-install`或者封装得更严实的`virt-manager`。
 `virt-manager`的安装过程基于GUI，重复安装很不方便；
 `virt-install`相对要方便很多，不过感觉比较玄学，完全不知道它背后做了什么。
 
 github上能找到的自动安装项目基本都是基于`virt-install`的，这次我想尝试直接基于`libvirt`的
 xml文件配置来实现更灵活的安装过程控制。
-
-# 虚拟机
 
 ## Network
 
