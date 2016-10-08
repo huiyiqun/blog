@@ -60,7 +60,8 @@ hostapd的配置其实比较简单，顺着默认的配置文件读一遍就基�
 折腾的地方主要在systemd配置。hostapd自己提供了一个service文件，但是它有两个问题：
 
 1. 不支持同时运行多个hostapd实例
-2. Unit写着After network.target，这样导致了hostapd启动的时候网络配置已经结束了，这里有一个坑。实际上hostapd不同于其他网络服务，它并不需要网络访问，也不需要听socket，只需要网卡初始化即可。
+2. Unit写着After network.target，这样导致了hostapd启动的时候网络配置已经结束了，这里有一个坑，后面再说。
+实际上hostapd不同于其他网络服务，它并不需要网络访问，也不需要听socket，只需要网卡初始化即可。
 
 因此修改之后的service应该是：
 
@@ -147,6 +148,12 @@ Bridge=br0
 ```
 
 Name 是你希望加入到这个网络中的网卡的interface名，也可以通过mac地址等其他方式来配置。
+
+在自动启动的过程中，有可能会出现一个问题，就是systemd-networkd启动并且配置网桥并且将interface加入到
+网桥的时候hostapd还没起来，这个时候的网卡不能加入到bridge里，github上有一个
+[issue](https://github.com/systemd/systemd/issues/936)。Before `systemd-networkd.service`解决了这个问题，
+但是我感觉可能导致系统的启动时间变长，因为调度顺序上，hostapd被提前了，After `network.service`的服务需要
+阻塞等待hostapd，anyway，我并没有实际感受到任何区别。
 
 这样restart systemd-networkd之后就发现网卡已经加入到新建的bridge里了。这个时候直接配置这个bridge就可以了。
 依然通过一个network文件(如br0.network)来配置。
