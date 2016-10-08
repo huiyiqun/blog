@@ -8,7 +8,7 @@ Category: systemd-networkd
 # 环境
 
 这套配置我现在运行在了两个地方，一个是我家里的minipc上，当软路由用，另一个则是我实验室的
-PC，因为实验室的公共Wifi效果实在不能让人满意，决定自己在PC上插两个USB无线网卡当wifi用。
+PC，因为实验室的公共Wifi效果实在不能让人满意，决定自己在PC上插两个USB无线网卡当无线路由器用。
 
 环境上用的都是Archlinux。
 
