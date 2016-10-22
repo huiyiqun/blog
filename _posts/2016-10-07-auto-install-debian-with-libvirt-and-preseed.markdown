@@ -215,7 +215,7 @@ $ sudo tail -f /tmp/shared-guest-serial0.log
 有几个地方需要注意：
 
 1. 网络配置是不会起作用的，不要白费力气了。
-2. 不要设置`apt-setup/security_host`！如果你设置`apt-setup/security_host`为`mirror.example.com`，那么apt会尝试访问`http://mirror.example.com/`而不是`http://mirror.example.com/debian-security`，google了一下发现有一个`apt-setup/security_path`这个参数解决这个问题，但是首先example里没有，其次我加上也没有效果，应该是这个版本的bug。
+2. ~~不要设置`apt-setup/security_host`！如果你设置`apt-setup/security_host`为`mirror.example.com`，那么apt会尝试访问`http://mirror.example.com/`而不是`http://mirror.example.com/debian-security`，google了一下发现有一个`apt-setup/security_path`这个参数解决这个问题，但是首先example里没有，其次我加上也没有效果，应该是这个版本的bug。~~根据@zhsj提供的信息，可以把`security_path`放到`security_host`后面workaround这个问题，也就是`apt-setup/security_host=https://mirrors.tuna.tsinghua.edu.cn/debian-security`。
 3. 同理也不要设置`apt-setup/non-free`和`apt-setup/contrib`，类似的问题。不过mirror settings没问题。
 4. `tasksel/first`这里一定要配置，并且只留下standard，否则会给你把gnome一起装上。
 5. `debian-installer/exit/poweroff`是没什么用的，最后系统还是会halt住，`virsh status`里显示的依然是running。
