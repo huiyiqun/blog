@@ -2,6 +2,7 @@
 layout: post
 title:  "在三星Galaxy S4上chroot方式安装Archlinux Arm"
 date:   2015-04-05 12:20:00
+comments: true
 categories: Android
 ---
 

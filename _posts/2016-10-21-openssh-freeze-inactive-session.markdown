@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "不活跃的openssh连接被“冻结”的问题"
+comments: true
 date: "2016-10-21 11:08:50 +0800"
 ---
 
