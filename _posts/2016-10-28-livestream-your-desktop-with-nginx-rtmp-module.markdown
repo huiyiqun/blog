@@ -44,9 +44,7 @@ rtmp {
             live on;
             drop_idle_publisher 10s;
 
-            {% for src in pull_sources %}
-                pull {{src.url}} name={{src.name}} static;
-            {% endfor %}
+            pull <src.url> name=<src.name> static;
         }
     }
 }
@@ -68,7 +66,7 @@ nginx-rtmp-module提供了一个方案是[notify](https://github.com/arut/nginx-
 
 简单说来就是，每当有一个播放或推流请求时，nginx-rtmp-module都会向你指定的地址发送一个http请求，并带上一些参数，
 如请求类型（connect, play, publish等），请求地址，url（会带上rtmp的参数）。针对服务器返回的值，nginx-rtmp-module
-会采用不同的行为。2xx会正常放行，3xx会从另一个地址拖流，其他请求则使这个请求被中断。接下来就完全由的你想象来决定
+会采用不同的行为。2xx会正常放行，3xx会从另一个地址拖流，其他返回值则使这个请求被中断。接下来就完全由的你想象来决定
 你的rtmp服务器有什么样的访问控制了。
 
 另外在连接断开的时候也有类似的[回调请求](https://github.com/arut/nginx-rtmp-module/wiki/Directives#on_play_done)，
@@ -86,10 +84,6 @@ rtmp {
         application live {
             live on;
             drop_idle_publisher 10s;
-
-            {% for src in pull_sources %}
-                pull {{src.url}} name={{src.name}} static;
-            {% endfor %}
 
             on_play http://127.0.0.1/live_control/play;
             on_play_done http://127.0.0.1/live_control/play_done;
@@ -119,7 +113,7 @@ http {
 
     server {
         location /live_control {
-            proxy_pass {{live_control_url}};
+            proxy_pass <live_control_url>;
             proxy_redirect off;
             proxy_set_header Host $host;
             proxy_ssl_verify on;
@@ -143,7 +137,7 @@ nginx-rtmp-module内置了对hls和dash的支持。其中hls我用了一段时�
 
 其实hls的支持也很简单，就是简单地进行了切片。如果需要转码、多码率等功能，需要自己用push和
 [exec\_push](https://github.com/arut/nginx-rtmp-module/wiki/Directives#exec_push)拼一下，我之前试的时候效果并
-不好，所以不太推荐，当然也可能是我之前机器不太好（因为ffmpeg会吃掉所有CPU，机器好不好影响挺大的）。
+不好，所以不太推荐，当然也可能是我之前机器不太好（因为ffmpeg可能会吃掉所有CPU，机器好不好影响挺大的）。
 
 hls的配置如下
 
@@ -156,10 +150,6 @@ rtmp {
         application live {
             live on;
             drop_idle_publisher 10s;
-
-            {% for src in pull_sources %}
-                pull {{src.url}} name={{src.name}} static;
-            {% endfor %}
 
             hls on;
             hls_path /tmp/hls;
@@ -206,7 +196,7 @@ http {
 }
 ```
 
-简单说，nginx-rtmp-module会帮你把hls切好，你需要自己用http服务器把它服务器出去。
+简单说，nginx-rtmp-module会帮你把hls切好，你需要自己用http服务器把它服务出去。
 
 ## 状态监视
 
@@ -226,9 +216,7 @@ http {
         location / {
             rtmp_stat all;
             rtmp_stat_stylesheet stat.xsl;
-            {% for network in stat_allowed_network %}
-                allow {{network}};
-            {% endfor %}
+            allow <your-network>;
             deny all;
         }
 
@@ -280,3 +268,5 @@ http {
 3. `-codec:v libx264 -preset slow -crt 22 -codec:a aac`编码成h264和aac。这是nginx-rtmp-module官方支持的编码。
 4. `-x264opts keyint=100:min-keyint=20:scenecut=-1`是为了避免 @typcn 提出的问题2，也就是故意在视频中插入较多的关键 帧，减少黑屏的出现，相应的也会增高码率。
 5. 最后是rtmp的url，因为我们用了rtmp的默认端口，可以不用写端口号，live是application的名字，tuna则是channel的名字。
+
+其他操作系统的用户可以参照[这里](https://trac.ffmpeg.org/wiki/Capture/Desktop)。
