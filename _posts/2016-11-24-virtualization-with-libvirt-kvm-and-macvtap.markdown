@@ -33,7 +33,7 @@ sudo ip link set macvlan0 up
 sudo dhcpcd macvlan0
 ```
 
-如果你的网络里有slaac或dhcp6，那么你应该能顺利地拿到IPv6地址。如果你的网络里有dhcp，那么你应该能顺利地拿到ipv4
+如果你的网络里有slaac或dhcp6，那么你应该能顺利地拿到IPv6地址。如果你的网络里有dhcp，那么你应该能顺利地拿到IPv4
 地址。
 
 你应该会注意到，macvlan端口的mac地址与物理端口的mac地址是不同的。
