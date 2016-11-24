@@ -171,5 +171,6 @@ Neighbor Advertisement，如果收到了，认为出现了地址冲突，这个�
 
 这里其实比较奇怪，因为刚刚看
 [代码](https://github.com/torvalds/linux/blob/e76d21c40bd6c67fd4e2c1540d77e113df962b4d/drivers/net/macvlan.c#L295)
-的时候发现，macvlan是不会把macvlan端口发出来的包又送回到原端口的，有可能是因为当时调试的时候开了allmulticast或者
-是promisc，__具体的原因还需要进一步地看代码__。
+的时候发现，macvlan是不会把macvlan端口发出来的包又送回到原端口的，
+有可能是因为当时调试的时候开了allmulticast或者promisc，
+__进一步确认需要再看一下代码__。
