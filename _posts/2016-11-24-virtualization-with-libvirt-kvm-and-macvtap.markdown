@@ -151,7 +151,7 @@ bridge模式则考虑到某些情况下需要更高效的macvlan之间的通信�
 上面的原理部分已经提到了，macvlan的port是在物理端口注册了一个rx\_handler，
 它只会对物理端口收到的包进行处理，而物理端口发出去的包macvlan是不会看到的。
 
-private模式我没有细看，但是大概是drop掉了目的端口为其他macvlan端口的包。
+private模式我没有细看，但应该是drop掉了目的端口为其他macvlan端口的包。
 
 综上，结论如下：
 
