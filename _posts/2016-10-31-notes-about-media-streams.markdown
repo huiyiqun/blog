@@ -24,3 +24,5 @@ Sample Aspect Ratio == Pixel Aspect Ratio
 画面上实际显示的高宽比是Display Aspect Ratio，计算公式如下：
 
 $$ Display Aspect Ratio = Frame Aspect Ratio \times Sample Aspect Ratio $$
+
+__最近一直在忙其他事情，这篇博客暂时搁置了，过段时期再继续补__
