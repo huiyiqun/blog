@@ -62,3 +62,9 @@ $$ Display Aspect Ratio = Frame Aspect Ratio \times Sample Aspect Ratio $$
 所以关键在于`st->avg_frame_rate`、`st->r_frame_rate`、`st->time_base`及`st->codec->time_base`这四个变量的含义，
 它们的描述在[文档](https://ffmpeg.org/doxygen/3.1/structAVStream.html#a946e1e9b89eeeae4cab8a833b482c1ad)里都有。
 由于没有深读代码，我也没有自信翻译这些文档，还是直接看英文原文吧。
+
+# cheatsheet
+
+* 从视频中取出每一帧
+
+    ffmpeg -i <input> frame_%d.bmp
