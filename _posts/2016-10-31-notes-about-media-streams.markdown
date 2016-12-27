@@ -67,4 +67,6 @@ $$ Display Aspect Ratio = Frame Aspect Ratio \times Sample Aspect Ratio $$
 
 * 从视频中取出每一帧
 
-    ffmpeg -i <input> frame_%d.bmp
+```
+ffmpeg -i <input> frame_%d.bmp
+```
