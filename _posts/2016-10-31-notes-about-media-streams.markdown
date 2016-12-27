@@ -3,6 +3,7 @@ layout: post
 title: "多媒体学习小记"
 date: "2016-10-31 16:07:23 +0800"
 comments: true
+math: yes
 ---
 
 ## 起因
