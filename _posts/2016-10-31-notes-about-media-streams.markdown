@@ -5,14 +5,16 @@ date: "2016-10-31 16:07:23 +0800"
 comments: true
 ---
 
-# 起因
+## 起因
 
 实验室最近想要对视频站点的重编码和重采样进行逆向分析，保证水印信息能够在这个过程中存活。本来我觉得这是一个很容易的工作，
 毕竟我们有ffprobe可以直接用，感觉ffprobe再diff一下就可以了。然而问题在于，之前虽然上过流媒体课，也折腾过nginx-rtmp-module，
 但是对于视频流的很多更细节的实现，所以借着这个机会，想更深入地对多媒体的编码存储进行一下更深入
 地学习。
 
-# Aspect Ratio
+## 概念
+
+### Aspect Ratio
 
 在ffprobe的输出里一般会看到display\_aspect\_ratio和sample\_aspect\_ratio，而且数字上比较奇怪。
 
@@ -26,7 +28,7 @@ $$ Sample Aspect Ratio = Pixel Aspect Ratio $$
 
 $$ Display Aspect Ratio = Frame Aspect Ratio \times Sample Aspect Ratio $$
 
-# tbr tbn tbc
+### tbr tbn tbc
 
 关于这三个参数，[邮件列表](http://ffmpeg-users.933282.n4.nabble.com/What-does-the-output-of-ffmpeg-mean-tbr-tbn-tbc-etc-td941538.html)里有讨论，
 但是实际讲的比较模糊，所以我决定还是直接看[代码](https://github.com/FFmpeg/FFmpeg/blob/0c0da45f0fc0626d12796f017918800f735512c8/libavformat/dump.c#L496)。
@@ -61,9 +63,26 @@ $$ Display Aspect Ratio = Frame Aspect Ratio \times Sample Aspect Ratio $$
 
 所以关键在于`st->avg_frame_rate`、`st->r_frame_rate`、`st->time_base`及`st->codec->time_base`这四个变量的含义，
 它们的描述在[文档](https://ffmpeg.org/doxygen/3.1/structAVStream.html#a946e1e9b89eeeae4cab8a833b482c1ad)里都有。
-由于没有深读代码，我也没有自信翻译这些文档，还是直接看英文原文吧。
+由于暂时没有深读代码，我也没有自信翻译这些文档，还是直接看英文原文吧。
 
-# cheatsheet
+### interlaced/progressive
+
+视频的分辨率里常常有p和i的区别，比如1080p和1080i等。这里的p和i就是指progressive和interlaced。这两个概念其实十分简单。
+
+以前的视频信号主要是模拟信号，并且受到接收端的限制，传输过程中是不作压缩的，所以带宽严重限制了传输过程中的码率。
+因此，有人就想出了利用视觉停留等现象，降低传输码率的方法，这就是interlaced。也就是对于相邻两帧，分别只取奇数行和偶数行，
+将两帧合并为一帧，这样传输过程中的码率就降低到了原来的一半。**需要注意的是，这种扫描方式通常是和硬件实现结合在一起的。**
+
+然而，随着现在数字电视及互联网的普及，接收端越来越智能，可以胜任越来越复杂的解码工作，因此编码端可以使用更复杂高效的方式对视频进行编码，
+人们发现相比于interlaced的方式，每一帧都取完整的一帧，编码出来的码率反而更低(为什么？因为引入了一些额外的高频分量)。这种取完整帧的方式就是progressive。
+
+所以一般来说，现在更流行的分辨率通常是以p结尾，以i结尾的分辨率已经很少了。但是由于历史遗留问题和实现的原因（i比p硬件上更容易实现），
+很多视频设备输出的视频依然是interlaced的。
+
+另外，需要注意到的是，interlaced的视频，其奇数行和偶数行的内容分别为两个field，这个概念在编码的过程中也会遇到。
+
+
+## cheatsheet
 
 * 从视频中取出每一帧
 
