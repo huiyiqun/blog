@@ -229,7 +229,7 @@ http {
 
 简单地在nginx的http配置里加上rtmp\_stat就可以了，会返回一个xml文件，如果你想在浏览器里比较舒服地看这个xml文件，
 可以从[这里](https://github.com/arut/nginx-rtmp-module/blob/master/stat.xsl)下载xsl文件放到服务器上，并且加上
-后面的配置。最后如果不想被围观，可以加上acl。（如果你已经写了一个回调http服务器的话，用可以用
+后面的配置。最后如果不想被围观，可以加上acl。（如果你已经写了一个回调http服务器的话，也可以用
 [这个模块](https://nginx.org/en/docs/http/ngx_http_auth_request_module.html)，效果拔群。
 
 ## Alternative
