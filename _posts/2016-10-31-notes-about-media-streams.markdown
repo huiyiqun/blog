@@ -118,3 +118,4 @@ ffmpeg -i <input> frame_%d.bmp
 | VCL   | Video Coding Layer |
 | VLC   | Variable Length Coding |
 | VUI   | Video Usability Information  |
+| ME    | Motion estimation |
