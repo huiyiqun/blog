@@ -93,6 +93,9 @@ ffmpeg -i <input> frame_%d.bmp
 
 ## abbreviations
 
+其实从来零开始学习视频编码有个非常蛋疼的问题是缩写通常看不懂。
+因此摘抄了一些缩写，用于检索。
+
 | CABAC | Context-based Adaptive Binary Arithmetic Coding |
 | CAVLC | Context-based Adaptive Variable Length Coding |
 | CBR   | Constant Bit Rate |
