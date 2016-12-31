@@ -44,6 +44,7 @@ PLUGIN_PATHS = [plugin_path, ]
 PLUGINS = [
     'render_math',
     'cjk-auto-spacing',
+    'filetime_from_git',
 ]
 
 THEME = path.join(theme_path, 'Flex')
