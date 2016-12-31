@@ -13,10 +13,7 @@ from pelicanconf import *
 SITEURL = 'https://blog.huiyiqun.me'
 RELATIVE_URLS = False
 
-FEED_ALL_ATOM = 'feeds/all.atom.xml'
-FEED_ALL_RSS = 'feeds/all.rss.xml'
-CATEGORY_FEED_ATOM = 'feeds/%s.atom.xml'
-CATEGORY_FEED_RSS = 'feeds/%s.rss.xml'
+FEED_ALL_ATOM = 'feed.xml'
 
 DELETE_OUTPUT_DIRECTORY = True
 
