@@ -43,6 +43,7 @@ ARTICLE_SAVE_AS = ARTICLE_URL
 PLUGIN_PATHS = [plugin_path, ]
 PLUGINS = [
     'render_math',
+    'cjk-auto-spacing',
 ]
 
 THEME = path.join(theme_path, 'Flex')
