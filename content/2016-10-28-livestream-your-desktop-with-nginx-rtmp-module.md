@@ -1,6 +1,6 @@
 Title:    用nginx-rtmp-module直播写代码
 Date:     2016-10-28 15:30:40
-Category: multimedia
+Category: Multimedia
 
 # 前言
 

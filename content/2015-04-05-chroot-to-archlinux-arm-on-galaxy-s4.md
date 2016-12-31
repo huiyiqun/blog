@@ -1,6 +1,6 @@
 Title:    在三星Galaxy S4上chroot方式安装Archlinux Arm
 Date:     2015-04-05 12:20:00
-Category: android
+Category: Android
 
 # 前言
 入手 Galaxy S4 已经几个月了，我手里这款是 I9508，也就是移动3G定制版，除了制式以外其他
