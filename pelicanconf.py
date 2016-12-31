@@ -28,10 +28,10 @@ AUTHOR_FEED_RSS = None
 LINKS = (('TUNA', 'https://tuna.moe/'),)
 
 # Social widget
-SOCIAL = (('Github', 'https://github.com/huiyiqun'),
-          ('Stack Overflow', 'https://stackoverflow.com/users/2825773/given92'),
-          ('Google+', 'https://plus.google.com/u/0/107187513671494024284'),
-          ('Telegram', 'https://telegram.me/huiyiqun'),)
+SOCIAL = (('github', 'https://github.com/huiyiqun'),
+          ('stack-overflow', 'https://stackoverflow.com/users/2825773/given92'),
+          ('google-plus', 'https://plus.google.com/u/0/107187513671494024284'),
+          ('telegram', 'https://telegram.me/huiyiqun'),)
 
 DEFAULT_PAGINATION = False
 
