@@ -14,7 +14,7 @@ SITEURL = 'https://blog.huiyiqun.me'
 # RELATIVE_URLS = False
 
 FEED_ALL_ATOM = 'feed.xml'
-SOCIAL.append(('rss', '/'.join((SITEURL, FEED_ALL_ATOM))))
+SOCIAL = SOCIAL + (('rss', '/'.join((SITEURL, FEED_ALL_ATOM))), )
 
 DELETE_OUTPUT_DIRECTORY = True
 
