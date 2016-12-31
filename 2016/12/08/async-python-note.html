@@ -1,46 +1,102 @@
+
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-        <meta charset="utf-8" />
-        <title>异步Python学习笔记</title>
-        <link rel="stylesheet" href="../../../theme/css/main.css" />
-        <link href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate" title="Notepad Atom Feed" />
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
 
-        <!--[if IE]>
-            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
+    <link rel="stylesheet" type="text/css" href="../../../theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="../../../theme/pygments/github.min.css">
+  <link rel="stylesheet" type="text/css" href="../../../theme/font-awesome/css/font-awesome.min.css">
+
+
+    <link href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate" title="Notepad Atom">
+
+
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="" />
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="white">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="white">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<meta name="author" content="Hui Yiqun" />
+<meta name="description" content="About 一般来说说到Python都会说这是一种十分低效的语言，慢等等，然而之前用Gevent做了一个restful，发现其实性能还不错。 其实Python很慢这一点当然是不错的，不适合直接用来作复杂算法的实现。但是当我们需要实现Web服务器等软件时， 性能的瓶颈实际并不在CPU上，多数时间我们都在等待IO，如果IO需要1s，这个时候你用Python实现一段代码运行需要0.01s， 和你用C实现一段代码运行需要0.0001s有什么可感知的区别吗？ 所以最重要的是如何地让用户请求不阻塞，充分地让IO跑满。最早人们通过多进程来解决这个问题，后来发现进程实在是太笨重， 转而使用线程来解决这个问题，但是线程切换对于大量短时io依然过重。所以最后人们转而开始强调并发，不再强调并行， 也就是所谓的异步。 这就是为什么Python这样的有GIL存在的， 串行执行的语言，在web开发上依然能有一席之地的原因。所以要用Python高效的实现服务，良好地异步是必不可少的。 Python 3.4 新加了asyncio，一直很感兴趣，但是也没时间去深入研究。 最近在实验室需要做一个FTP，pyftpdlib是一个十分优秀的FTP服务器实现， 其本身的实现是基于异步的，同时也支持线程和进程模型。当然考虑到性能问题，最后肯定需要采用异步模型。 但是在这里我遇到了一个问题，pyftpdlib本身有自己的异步IO loop，如果强行上gevent的monkey_patch有可能导致各种奇怪的bug？ 基于这个考虑 …" />
+<meta name="keywords" content="">
+<meta property="og:site_name" content="Notepad"/>
+<meta property="og:title" content="异步Python学习笔记"/>
+<meta property="og:description" content="About 一般来说说到Python都会说这是一种十分低效的语言，慢等等，然而之前用Gevent做了一个restful，发现其实性能还不错。 其实Python很慢这一点当然是不错的，不适合直接用来作复杂算法的实现。但是当我们需要实现Web服务器等软件时， 性能的瓶颈实际并不在CPU上，多数时间我们都在等待IO，如果IO需要1s，这个时候你用Python实现一段代码运行需要0.01s， 和你用C实现一段代码运行需要0.0001s有什么可感知的区别吗？ 所以最重要的是如何地让用户请求不阻塞，充分地让IO跑满。最早人们通过多进程来解决这个问题，后来发现进程实在是太笨重， 转而使用线程来解决这个问题，但是线程切换对于大量短时io依然过重。所以最后人们转而开始强调并发，不再强调并行， 也就是所谓的异步。 这就是为什么Python这样的有GIL存在的， 串行执行的语言，在web开发上依然能有一席之地的原因。所以要用Python高效的实现服务，良好地异步是必不可少的。 Python 3.4 新加了asyncio，一直很感兴趣，但是也没时间去深入研究。 最近在实验室需要做一个FTP，pyftpdlib是一个十分优秀的FTP服务器实现， 其本身的实现是基于异步的，同时也支持线程和进程模型。当然考虑到性能问题，最后肯定需要采用异步模型。 但是在这里我遇到了一个问题，pyftpdlib本身有自己的异步IO loop，如果强行上gevent的monkey_patch有可能导致各种奇怪的bug？ 基于这个考虑 …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="../../../2016/12/08/async-python-note.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2016-12-08 10:29:03+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="../../../author/hui-yiqun.html">
+<meta property="article:section" content="Python"/>
+<meta property="og:image" content="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120">
+
+  <title>Notepad &ndash; 异步Python学习笔记</title>
+
 </head>
+<body>
+  <aside>
+    <div>
+      <a href="../../..">
+        <img src="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120" alt="Notepad" title="Notepad">
+      </a>
+      <h1><a href="../../..">Notepad</a></h1>
 
-<body id="index" class="home">
-        <header id="banner" class="body">
-                <h1><a href="../../../">Notepad </a></h1>
-                <nav><ul>
-                    <li><a href="../../../category/android.html">Android</a></li>
-                    <li><a href="../../../category/multimedia.html">Multimedia</a></li>
-                    <li><a href="../../../category/ops.html">Ops</a></li>
-                    <li class="active"><a href="../../../category/python.html">Python</a></li>
-                </ul></nav>
-        </header><!-- /#banner -->
-<section id="content" class="body">
-  <article>
-    <header>
-      <h1 class="entry-title">
-        <a href="../../../2016/12/08/async-python-note.html" rel="bookmark"
-           title="Permalink to 异步Python学习笔记">异步Python学习笔记</a></h1>
-    </header>
+<p>The Power of Writing</p>
+      <nav>
+        <ul class="list">
 
-    <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-12-08T10:29:03+08:00">
-                Published: Thu 08 December 2016
-        </abbr>
+          <li><a href="https://tuna.moe/" target="_blank">TUNA</a></li>
+        </ul>
+      </nav>
 
-        <address class="vcard author">
-                By                         <a class="url fn" href="../../../author/hui-yiqun.html">Hui Yiqun</a>
-        </address>
-<p>In <a href="../../../category/python.html">Python</a>.</p>
+      <ul class="social">
+        <li><a class="sc-Github" href="https://github.com/huiyiqun" target="_blank"><i class="fa fa-Github"></i></a></li>
+        <li><a class="sc-Stack Overflow" href="https://stackoverflow.com/users/2825773/given92" target="_blank"><i class="fa fa-Stack Overflow"></i></a></li>
+        <li><a class="sc-Google+" href="https://plus.google.com/u/0/107187513671494024284" target="_blank"><i class="fa fa-Google+"></i></a></li>
+        <li><a class="sc-Telegram" href="https://telegram.me/huiyiqun" target="_blank"><i class="fa fa-Telegram"></i></a></li>
+      </ul>
+    </div>
 
-</footer><!-- /.post-info -->      <h1>About</h1>
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="../../..">    Home
+</a>
+
+
+      <a href="https://blog.huiyiqun.me/feed.xml">    Atom
+</a>
+
+    </nav>
+
+<article class="single">
+  <header>
+    <h1 id="async-python-note">异步Python学习笔记</h1>
+    <p>
+          Posted on Thu 08 December 2016 in <a href="../../../category/python.html">Python</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <h1>About</h1>
 <p>一般来说说到Python都会说这是一种十分低效的语言，慢等等，然而之前用Gevent做了一个restful，发现其实性能还不错。</p>
 <p>其实Python很慢这一点当然是不错的，不适合直接用来作复杂算法的实现。但是当我们需要实现Web服务器等软件时，
 性能的瓶颈实际并不在CPU上，多数时间我们都在等待IO，如果IO需要1s，这个时候你用Python实现一段代码运行需要0.01s，
@@ -204,70 +260,59 @@
 <p>总的来说，gevent在非并行的Python上实现了原本不支持的异步编程，对于实现高并发服务器来说十分友好。</p>
 <p>从架构角色的角度来说，我觉得可以这么说，gevent在Python层面上基于libev实现了libevent的角色。</p>
 <p><strong>asyncio的内容晚些再补</strong></p>
-    </div><!-- /.entry-content -->
-    <div class="comments">
-      <h2>Comments !</h2>
-      <div id="disqus_thread"></div>
-      <script type="text/javascript">
-        var disqus_shortname = 'huiyiqun';
-        var disqus_identifier = '2016/12/08/async-python-note.html';
-        var disqus_url = '../../../2016/12/08/async-python-note.html';
-        (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = '//huiyiqun.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-        })();
-      </script>
-      <noscript>Please enable JavaScript to view the comments.</noscript>
-    </div>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
 
-  </article>
-</section>
-        <section id="extras" class="body">
-                <div class="blogroll">
-                        <h2>links</h2>
-                        <ul>
-                            <li><a href="https://tuna.moe/">TUNA</a></li>
-                        </ul>
-                </div><!-- /.blogroll -->
-                <div class="social">
-                        <h2>social</h2>
-                        <ul>
-                            <li><a href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
 
-                            <li><a href="https://github.com/huiyiqun">Github</a></li>
-                            <li><a href="https://stackoverflow.com/users/2825773/given92">Stack Overflow</a></li>
-                            <li><a href="https://plus.google.com/u/0/107187513671494024284">Google+</a></li>
-                            <li><a href="https://telegram.me/huiyiqun">Telegram</a></li>
-                        </ul>
-                </div><!-- /.social -->
-        </section><!-- /#extras -->
 
-        <footer id="contentinfo" class="body">
-                <address id="about" class="vcard body">
-                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
-                </address><!-- /#about -->
 
-                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
-        </footer><!-- /#contentinfo -->
-
-    <script type="text/javascript">
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-89649249-1', 'auto');
-    ga('send', 'pageview');
-    </script>
+<div id="disqus_thread"></div>
 <script type="text/javascript">
     var disqus_shortname = 'huiyiqun';
-    (function () {
-        var s = document.createElement('script'); s.async = true;
-        s.type = 'text/javascript';
-        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
-        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
-    }());
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>
+        Please enable JavaScript to view comments.
+
+</noscript>
+</article>
+
+    <footer>
+<p>&copy; Hui Yiqun 2016</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-89649249-1', 'auto');
+  ga('send', 'pageview');
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Notepad ",
+  "url" : "../../..",
+  "image": "https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120",
+  "description": ""
+}
 </script>
 </body>
 </html>

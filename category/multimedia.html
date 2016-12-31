@@ -1,41 +1,99 @@
+
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-        <meta charset="utf-8" />
-        <title>Notepad - Multimedia</title>
-        <link rel="stylesheet" href="../theme/css/main.css" />
-        <link href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate" title="Notepad Atom Feed" />
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
 
-        <!--[if IE]>
-            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
+    <link rel="stylesheet" type="text/css" href="../theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="../theme/pygments/github.min.css">
+  <link rel="stylesheet" type="text/css" href="../theme/font-awesome/css/font-awesome.min.css">
+
+
+    <link href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate" title="Notepad Atom">
+
+
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="" />
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="white">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="white">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <meta name="author" content="Hui Yiqun" />
+    <meta name="description" content="" />
+<meta property="og:site_name" content="Notepad"/>
+<meta property="og:type" content="blog"/>
+<meta property="og:title" content="Notepad"/>
+<meta property="og:description" content=""/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content=".."/>
+<meta property="og:image" content="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120">
+
+  <title>Notepad &ndash;     Category Multimedia
+</title>
+
 </head>
+<body>
+  <aside>
+    <div>
+      <a href="..">
+        <img src="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120" alt="Notepad" title="Notepad">
+      </a>
+      <h1><a href="..">Notepad</a></h1>
 
-<body id="index" class="home">
-        <header id="banner" class="body">
-                <h1><a href="../">Notepad </a></h1>
-                <nav><ul>
-                    <li><a href="../category/android.html">Android</a></li>
-                    <li class="active"><a href="../category/multimedia.html">Multimedia</a></li>
-                    <li><a href="../category/ops.html">Ops</a></li>
-                    <li><a href="../category/python.html">Python</a></li>
-                </ul></nav>
-        </header><!-- /#banner -->
+<p>The Power of Writing</p>
+      <nav>
+        <ul class="list">
 
-            <aside id="featured" class="body">
-                <article>
-                    <h1 class="entry-title"><a href="../2016/10/31/notes-about-media-streams.html">多媒体学习小记</a></h1>
-<footer class="post-info">
-        <abbr class="published" title="2016-10-31T16:07:23+08:00">
-                Published: Mon 31 October 2016
-        </abbr>
+          <li><a href="https://tuna.moe/" target="_blank">TUNA</a></li>
+        </ul>
+      </nav>
 
-        <address class="vcard author">
-                By                         <a class="url fn" href="../author/hui-yiqun.html">Hui Yiqun</a>
-        </address>
-<p>In <a href="../category/multimedia.html">Multimedia</a>.</p>
+      <ul class="social">
+        <li><a class="sc-Github" href="https://github.com/huiyiqun" target="_blank"><i class="fa fa-Github"></i></a></li>
+        <li><a class="sc-Stack Overflow" href="https://stackoverflow.com/users/2825773/given92" target="_blank"><i class="fa fa-Stack Overflow"></i></a></li>
+        <li><a class="sc-Google+" href="https://plus.google.com/u/0/107187513671494024284" target="_blank"><i class="fa fa-Google+"></i></a></li>
+        <li><a class="sc-Telegram" href="https://telegram.me/huiyiqun" target="_blank"><i class="fa fa-Telegram"></i></a></li>
+      </ul>
+    </div>
 
-</footer><!-- /.post-info --><h2>起因</h2>
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="..">    Home
+</a>
+
+
+      <a href="https://blog.huiyiqun.me/feed.xml">    Atom
+</a>
+
+    </nav>
+
+
+
+<article>
+  <header>
+    <h2><a href="../2016/10/31/notes-about-media-streams.html#notes-about-media-streams">多媒体学习小记</a></h2>
+    <p>
+          Posted on Mon 31 October 2016 in <a href="../category/multimedia.html">Multimedia</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <h2>起因</h2>
 <p>实验室最近想要对视频站点的重编码和重采样进行逆向分析，保证水印信息能够在这个过程中存活。本来我觉得这是一个很容易的工作，
 毕竟我们有ffprobe可以直接用，感觉ffprobe再diff一下就可以了。然而问题在于，之前虽然上过流媒体课，也折腾过nginx-rtmp-module，
 但是对于视频流的很多更细节的实现，所以借着这个机会，想更深入地对多媒体的编码存储进行一下更深入
@@ -48,173 +106,7 @@
 <div class="math">$$ Sample Aspect Ratio = Pixel Aspect Ratio $$</div>
 <p>画面上实际显示的高宽比是Display Aspect Ratio，计算公式如下：</p>
 <div class="math">$$ Display Aspect Ratio = Frame Aspect Ratio \times Sample Aspect Ratio $$</div>
-<h3>tbr tbn tbc</h3>
-<p>关于这三个参数，<a href="http://ffmpeg-users.933282.n4.nabble.com/What-does-the-output-of-ffmpeg-mean-tbr-tbn-tbc-etc-td941538.html">邮件列表</a>里有讨论，
-但是实际讲的比较模糊，所以我决定还是直接看<a href="https://github.com/FFmpeg/FFmpeg/blob/0c0da45f0fc0626d12796f017918800f735512c8/libavformat/dump.c#L496">代码</a>。</p>
-<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="n">fps</span> <span class="o">=</span> <span class="n">st</span><span class="o">-&gt;</span><span class="n">avg_frame_rate</span><span class="p">.</span><span class="n">den</span> <span class="o">&amp;&amp;</span> <span class="n">st</span><span class="o">-&gt;</span><span class="n">avg_frame_rate</span><span class="p">.</span><span class="n">num</span><span class="p">;</span>
-<span class="kt">int</span> <span class="n">tbr</span> <span class="o">=</span> <span class="n">st</span><span class="o">-&gt;</span><span class="n">r_frame_rate</span><span class="p">.</span><span class="n">den</span> <span class="o">&amp;&amp;</span> <span class="n">st</span><span class="o">-&gt;</span><span class="n">r_frame_rate</span><span class="p">.</span><span class="n">num</span><span class="p">;</span>
-<span class="kt">int</span> <span class="n">tbn</span> <span class="o">=</span> <span class="n">st</span><span class="o">-&gt;</span><span class="n">time_base</span><span class="p">.</span><span class="n">den</span> <span class="o">&amp;&amp;</span> <span class="n">st</span><span class="o">-&gt;</span><span class="n">time_base</span><span class="p">.</span><span class="n">num</span><span class="p">;</span>
-<span class="kt">int</span> <span class="n">tbc</span> <span class="o">=</span> <span class="n">st</span><span class="o">-&gt;</span><span class="n">codec</span><span class="o">-&gt;</span><span class="n">time_base</span><span class="p">.</span><span class="n">den</span> <span class="o">&amp;&amp;</span> <span class="n">st</span><span class="o">-&gt;</span><span class="n">codec</span><span class="o">-&gt;</span><span class="n">time_base</span><span class="p">.</span><span class="n">num</span><span class="p">;</span>
-
-<span class="k">if</span> <span class="p">(</span><span class="n">fps</span> <span class="o">||</span> <span class="n">tbr</span> <span class="o">||</span> <span class="n">tbn</span> <span class="o">||</span> <span class="n">tbc</span><span class="p">)</span>
-    <span class="n">av_log</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">AV_LOG_INFO</span><span class="p">,</span> <span class="s">&quot;%s&quot;</span><span class="p">,</span> <span class="n">separator</span><span class="p">);</span>
-
-<span class="k">if</span> <span class="p">(</span><span class="n">fps</span><span class="p">)</span>
-    <span class="n">print_fps</span><span class="p">(</span><span class="n">av_q2d</span><span class="p">(</span><span class="n">st</span><span class="o">-&gt;</span><span class="n">avg_frame_rate</span><span class="p">),</span> <span class="n">tbr</span> <span class="o">||</span> <span class="n">tbn</span> <span class="o">||</span> <span class="n">tbc</span> <span class="o">?</span> <span class="s">&quot;fps, &quot;</span> <span class="o">:</span> <span class="s">&quot;fps&quot;</span><span class="p">);</span>
-<span class="k">if</span> <span class="p">(</span><span class="n">tbr</span><span class="p">)</span>
-    <span class="n">print_fps</span><span class="p">(</span><span class="n">av_q2d</span><span class="p">(</span><span class="n">st</span><span class="o">-&gt;</span><span class="n">r_frame_rate</span><span class="p">),</span> <span class="n">tbn</span> <span class="o">||</span> <span class="n">tbc</span> <span class="o">?</span> <span class="s">&quot;tbr, &quot;</span> <span class="o">:</span> <span class="s">&quot;tbr&quot;</span><span class="p">);</span>
-<span class="k">if</span> <span class="p">(</span><span class="n">tbn</span><span class="p">)</span>
-    <span class="n">print_fps</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">av_q2d</span><span class="p">(</span><span class="n">st</span><span class="o">-&gt;</span><span class="n">time_base</span><span class="p">),</span> <span class="n">tbc</span> <span class="o">?</span> <span class="s">&quot;tbn, &quot;</span> <span class="o">:</span> <span class="s">&quot;tbn&quot;</span><span class="p">);</span>
-<span class="k">if</span> <span class="p">(</span><span class="n">tbc</span><span class="p">)</span>
-    <span class="n">print_fps</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">av_q2d</span><span class="p">(</span><span class="n">st</span><span class="o">-&gt;</span><span class="n">codec</span><span class="o">-&gt;</span><span class="n">time_base</span><span class="p">),</span> <span class="s">&quot;tbc&quot;</span><span class="p">);</span>
-</pre></div>
-
-
-<p>这里用到了四个有理数，libav里有理数的定义在<a href="https://github.com/FFmpeg/FFmpeg/blob/415f907ce8dcca87c9e7cfdc954b92df399d3d80/libavutil/rational.h">这</a>，
-其中den为分母，num为分子，这里的<code>fps</code>、<code>tbr</code>、<code>tbn</code>、<code>tbc</code>四个变量分别代指对应的数据是否为合法的值（分子分母都不为0）。</p>
-<p>所以实际的输出是来自于下面的print，
-其中<code>print_fps</code>的定义在<a href="https://github.com/FFmpeg/FFmpeg/blob/0c0da45f0fc0626d12796f017918800f735512c8/libavformat/dump.c#L120">这</a>，
-<code>av_q2d</code>的定义在<a href="https://github.com/FFmpeg/FFmpeg/blob/415f907ce8dcca87c9e7cfdc954b92df399d3d80/libavutil/rational.h#L104">这</a>。</p>
-<p><code>av_q2d</code>实际是简单地把有理数转为双精度浮点数。<code>print_fps</code>就更简单了，就是一个不带回车的print，后面那么复杂的判断主要是为了在数据间加上逗号。</p>
-<p>所以关键在于<code>st-&gt;avg_frame_rate</code>、<code>st-&gt;r_frame_rate</code>、<code>st-&gt;time_base</code>及<code>st-&gt;codec-&gt;time_base</code>这四个变量的含义，
-它们的描述在<a href="https://ffmpeg.org/doxygen/3.1/structAVStream.html#a946e1e9b89eeeae4cab8a833b482c1ad">文档</a>里都有。
-由于暂时没有深读代码，我也没有自信翻译这些文档，还是直接看英文原文吧。</p>
-<h3>interlaced/progressive</h3>
-<p>视频的分辨率里常常有p和i的区别，比如1080p和1080i等。这里的p和i就是指progressive和interlaced。这两个概念其实十分简单。</p>
-<p>以前的视频信号主要是模拟信号，并且受到接收端的限制，传输过程中是不作压缩的，所以带宽严重限制了传输过程中的码率。
-因此，有人就想出了利用视觉停留等现象，降低传输码率的方法，这就是interlaced。也就是对于相邻两帧，分别只取奇数行和偶数行，
-将两帧合并为一帧，这样传输过程中的码率就降低到了原来的一半。<strong>需要注意的是，这种扫描方式通常是和硬件实现结合在一起的。</strong></p>
-<p>然而，随着现在数字电视及互联网的普及，接收端越来越智能，可以胜任越来越复杂的解码工作，因此编码端可以使用更复杂高效的方式对视频进行编码，
-人们发现相比于interlaced的方式，每一帧都取完整的一帧，编码出来的码率反而更低(为什么？因为引入了一些额外的高频分量)。这种取完整帧的方式就是progressive。</p>
-<p>所以一般来说，现在更流行的分辨率通常是以p结尾，以i结尾的分辨率已经很少了。但是由于历史遗留问题和实现的原因（i比p硬件上更容易实现），
-很多视频设备输出的视频依然是interlaced的。</p>
-<p>另外，需要注意到的是，interlaced的视频，其奇数行和偶数行的内容分别为两个field，这个概念在编码的过程中也会遇到。</p>
-<h2>cheatsheet</h2>
-<ul>
-<li>从视频中取出每一帧</li>
-</ul>
-<div class="highlight"><pre><span></span>~&gt; ffmpeg -i &lt;input&gt; frame_%d.bmp
-</pre></div>
-
-
-<h2>abbreviations</h2>
-<p>其实从来零开始学习视频编码有个非常蛋疼的问题是缩写通常看不懂。
-因此摘抄了一些缩写，用于检索。</p>
-<table>
-<thead>
-<tr>
-<th>CABAC</th>
-<th>Context-based Adaptive Binary Arithmetic Coding</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>CBR</td>
-<td>Constant Bit Rate</td>
-</tr>
-<tr>
-<td>CPB</td>
-<td>Coded Picture Buffer</td>
-</tr>
-<tr>
-<td>DPB</td>
-<td>Decoded Picture Buffer</td>
-</tr>
-<tr>
-<td>DUT</td>
-<td>Decoder under test</td>
-</tr>
-<tr>
-<td>FIFO</td>
-<td>First-In, First-Out</td>
-</tr>
-<tr>
-<td>HRD</td>
-<td>Hypothetical Reference Decoder</td>
-</tr>
-<tr>
-<td>HSS</td>
-<td>Hypothetical Stream Scheduler</td>
-</tr>
-<tr>
-<td>IDR</td>
-<td>Instantaneous Decoding Refresh</td>
-</tr>
-<tr>
-<td>LSB</td>
-<td>Least Significant Bit</td>
-</tr>
-<tr>
-<td>MB</td>
-<td>Macroblock</td>
-</tr>
-<tr>
-<td>MBAFF</td>
-<td>Macroblock-Adaptive Frame-Field Coding</td>
-</tr>
-<tr>
-<td>MSB</td>
-<td>Most Significant Bit</td>
-</tr>
-<tr>
-<td>MVC</td>
-<td>Multiview Video Coding</td>
-</tr>
-<tr>
-<td>NAL</td>
-<td>Network Abstraction Layer</td>
-</tr>
-<tr>
-<td>RBSP</td>
-<td>Raw Byte Sequence Payload</td>
-</tr>
-<tr>
-<td>SEI</td>
-<td>Supplemental Enhancement Information</td>
-</tr>
-<tr>
-<td>SODB</td>
-<td>String Of Data Bits</td>
-</tr>
-<tr>
-<td>SVC</td>
-<td>Scalable Video Coding</td>
-</tr>
-<tr>
-<td>UUID</td>
-<td>Universal Unique Identifier</td>
-</tr>
-<tr>
-<td>VBR</td>
-<td>Variable Bit Rate</td>
-</tr>
-<tr>
-<td>VCL</td>
-<td>Video Coding Layer</td>
-</tr>
-<tr>
-<td>VLC</td>
-<td>Variable Length Coding</td>
-</tr>
-<tr>
-<td>VUI</td>
-<td>Video Usability Information</td>
-</tr>
-<tr>
-<td>ME</td>
-<td>Motion Estimation</td>
-</tr>
-<tr>
-<td>CRF</td>
-<td>Constant Rate Factor</td>
-</tr>
-<tr>
-<td>CQP</td>
-<td>Constant Quantization Parameter</td>
-</tr>
-</tbody>
-</table>
-<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+<h3>tbr tbn tbc …</h3><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
         linebreak = "false";
@@ -270,31 +162,25 @@
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-</script><p>There are <a href="../2016/10/31/notes-about-media-streams.html#disqus_thread">comments</a>.</p>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+</script>
+      <br>
+      <a class="btn" href="../2016/10/31/notes-about-media-streams.html#notes-about-media-streams">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="../2016/10/28/livestream-your-desktop-with-nginx-rtmp-module.html#livestream-your-desktop-with-nginx-rtmp-module">用nginx-rtmp-module直播写代码</a></h2>
+    <p>
+          Posted on Fri 28 October 2016 in <a href="../category/multimedia.html">Multimedia</a>
 
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="../2016/10/28/livestream-your-desktop-with-nginx-rtmp-module.html" rel="bookmark"
-                           title="Permalink to 用nginx-rtmp-module直播写代码">用nginx-rtmp-module直播写代码</a></h1>
-                </header>
 
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-10-28T15:30:40+08:00">
-                Published: Fri 28 October 2016
-        </abbr>
 
-        <address class="vcard author">
-                By                         <a class="url fn" href="../author/hui-yiqun.html">Hui Yiqun</a>
-        </address>
-<p>In <a href="../category/multimedia.html">Multimedia</a>.</p>
-
-</footer><!-- /.post-info -->                <h1>前言</h1>
+    </p>
+  </header>
+  <div>
+      <h1>前言</h1>
 <p>前段时间用nginx-rtmp-module搭了一个直播系统，测试的时候用来直播了一下桌面，感觉评价还不错，应邀写个简单的教程。</p>
 <h1>服务器</h1>
 <h2>安装</h2>
@@ -317,56 +203,45 @@
 <span class="p">}</span>
 
 <span class="k">rtmp …</span></pre></div>
-                <a class="readmore" href="../2016/10/28/livestream-your-desktop-with-nginx-rtmp-module.html">read more</a>
-<p>There are <a href="../2016/10/28/livestream-your-desktop-with-nginx-rtmp-module.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-                </ol><!-- /#posts-list -->
-                </section><!-- /#content -->
-        <section id="extras" class="body">
-                <div class="blogroll">
-                        <h2>links</h2>
-                        <ul>
-                            <li><a href="https://tuna.moe/">TUNA</a></li>
-                        </ul>
-                </div><!-- /.blogroll -->
-                <div class="social">
-                        <h2>social</h2>
-                        <ul>
-                            <li><a href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+      <br>
+      <a class="btn" href="../2016/10/28/livestream-your-desktop-with-nginx-rtmp-module.html#livestream-your-desktop-with-nginx-rtmp-module">    Continue reading
+</a>
+  </div>
+</article>
 
-                            <li><a href="https://github.com/huiyiqun">Github</a></li>
-                            <li><a href="https://stackoverflow.com/users/2825773/given92">Stack Overflow</a></li>
-                            <li><a href="https://plus.google.com/u/0/107187513671494024284">Google+</a></li>
-                            <li><a href="https://telegram.me/huiyiqun">Telegram</a></li>
-                        </ul>
-                </div><!-- /.social -->
-        </section><!-- /#extras -->
 
-        <footer id="contentinfo" class="body">
-                <address id="about" class="vcard body">
-                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
-                </address><!-- /#about -->
 
-                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
-        </footer><!-- /#contentinfo -->
 
-    <script type="text/javascript">
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-89649249-1', 'auto');
-    ga('send', 'pageview');
-    </script>
+    <footer>
+<p>&copy; Hui Yiqun 2016</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+<!-- Google Analytics -->
 <script type="text/javascript">
-    var disqus_shortname = 'huiyiqun';
-    (function () {
-        var s = document.createElement('script'); s.async = true;
-        s.type = 'text/javascript';
-        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
-        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
-    }());
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-89649249-1', 'auto');
+  ga('send', 'pageview');
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Notepad ",
+  "url" : "..",
+  "image": "https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120",
+  "description": ""
+}
 </script>
 </body>
 </html>

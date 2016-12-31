@@ -1,41 +1,99 @@
+
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-        <meta charset="utf-8" />
-        <title>Notepad - Ops</title>
-        <link rel="stylesheet" href="../theme/css/main.css" />
-        <link href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate" title="Notepad Atom Feed" />
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
 
-        <!--[if IE]>
-            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
+    <link rel="stylesheet" type="text/css" href="../theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="../theme/pygments/github.min.css">
+  <link rel="stylesheet" type="text/css" href="../theme/font-awesome/css/font-awesome.min.css">
+
+
+    <link href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate" title="Notepad Atom">
+
+
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="" />
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="white">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="white">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <meta name="author" content="Hui Yiqun" />
+    <meta name="description" content="" />
+<meta property="og:site_name" content="Notepad"/>
+<meta property="og:type" content="blog"/>
+<meta property="og:title" content="Notepad"/>
+<meta property="og:description" content=""/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content=".."/>
+<meta property="og:image" content="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120">
+
+  <title>Notepad &ndash;     Category Ops
+</title>
+
 </head>
+<body>
+  <aside>
+    <div>
+      <a href="..">
+        <img src="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120" alt="Notepad" title="Notepad">
+      </a>
+      <h1><a href="..">Notepad</a></h1>
 
-<body id="index" class="home">
-        <header id="banner" class="body">
-                <h1><a href="../">Notepad </a></h1>
-                <nav><ul>
-                    <li><a href="../category/android.html">Android</a></li>
-                    <li><a href="../category/multimedia.html">Multimedia</a></li>
-                    <li class="active"><a href="../category/ops.html">Ops</a></li>
-                    <li><a href="../category/python.html">Python</a></li>
-                </ul></nav>
-        </header><!-- /#banner -->
+<p>The Power of Writing</p>
+      <nav>
+        <ul class="list">
 
-            <aside id="featured" class="body">
-                <article>
-                    <h1 class="entry-title"><a href="../2016/12/31/give-your-nginx-powered-website-a-a-score.html">让你的nginx网站得到A+</a></h1>
-<footer class="post-info">
-        <abbr class="published" title="2016-12-31T13:32:07+08:00">
-                Published: Sat 31 December 2016
-        </abbr>
+          <li><a href="https://tuna.moe/" target="_blank">TUNA</a></li>
+        </ul>
+      </nav>
 
-        <address class="vcard author">
-                By                         <a class="url fn" href="../author/hui-yiqun.html">Hui Yiqun</a>
-        </address>
-<p>In <a href="../category/ops.html">Ops</a>.</p>
+      <ul class="social">
+        <li><a class="sc-Github" href="https://github.com/huiyiqun" target="_blank"><i class="fa fa-Github"></i></a></li>
+        <li><a class="sc-Stack Overflow" href="https://stackoverflow.com/users/2825773/given92" target="_blank"><i class="fa fa-Stack Overflow"></i></a></li>
+        <li><a class="sc-Google+" href="https://plus.google.com/u/0/107187513671494024284" target="_blank"><i class="fa fa-Google+"></i></a></li>
+        <li><a class="sc-Telegram" href="https://telegram.me/huiyiqun" target="_blank"><i class="fa fa-Telegram"></i></a></li>
+      </ul>
+    </div>
 
-</footer><!-- /.post-info --><h1>起因</h1>
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="..">    Home
+</a>
+
+
+      <a href="https://blog.huiyiqun.me/feed.xml">    Atom
+</a>
+
+    </nav>
+
+
+
+<article>
+  <header>
+    <h2><a href="../2016/12/31/give-your-nginx-powered-website-a-a-score.html#give-your-nginx-powered-website-a-a-score">让你的nginx网站得到A+</a></h2>
+    <p>
+          Posted on Sat 31 December 2016 in <a href="../category/ops.html">Ops</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <h1>起因</h1>
 <p>最近用 github 的 <a href="https://education.github.com/pack">student pack</a> 领了 <a href="https://www.namecheap.com/">namecheap</a> 的一年免费域名，并且把博客迁移到了新的域名下。</p>
 <p>最初是想直接用 github.io CNAME一下，然而问题在于就没有 https 了。忍了一个月，实在是忍无可忍，自己找了台VPS自己跑。正好服务器也一直空着，没跑什么东西。</p>
 <p>之前折腾了一下SSL的相关配置，正好趁机总结一下。</p>
@@ -50,65 +108,25 @@
 <p>将 nginx 配置的 server block 改成如下内容：</p>
 <div class="highlight"><pre><span></span><span class="k">server</span> <span class="p">{</span>
     <span class="kn">listen</span>      <span class="mi">80</span> <span class="s">default_server</span><span class="p">;</span>
-    <span class="kn">listen</span>      <span class="s">[::]:80</span> <span class="s">default_server</span><span class="p">;</span>
-    <span class="kn">server_name</span> <span class="s">&lt;domain_name&gt;</span><span class="p">;</span>
-    <span class="kn">root</span>        <span class="s">/path/to/your/site</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
+    <span class="kn">listen</span>      <span class="s">[::]:80 …</span></pre></div>
+      <br>
+      <a class="btn" href="../2016/12/31/give-your-nginx-powered-website-a-a-score.html#give-your-nginx-powered-website-a-a-score">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="../2016/11/24/virtualization-with-libvirt-kvm-and-macvtap.html#virtualization-with-libvirt-kvm-and-macvtap">基于libvirt kvm macvtap的虚拟化解决方案</a></h2>
+    <p>
+          Posted on Thu 24 November 2016 in <a href="../category/ops.html">Ops</a>
 
 
-<p>启动 nginx：</p>
-<div class="highlight"><pre><span></span>~&gt; sudo systemctl enable nginx --now
-</pre></div>
 
-
-<p>接着签证书：</p>
-<div class="highlight"><pre><span></span>~&gt; sudo certbot --nginx
-</pre></div>
-
-
-<p>certbot会修改nginx配置，因此需要以root身份运行。另外这个nginx插件会读nginx配置判断域名，因此在nginx配置的<code>server_name</code>处应该填入完整的域名。
-接着会有一个交互式的界面确认一些信息，顺序填写就好。</p>
-<p>最后重启nginx：</p>
-<div class="highlight"><pre><span></span>~&gt; sudo systemctl restart nginx
-</pre></div>
-
-
-<h1>nginx 调优</h1>
-<p>这个时候 https 应该已经配置好了，不过强迫症表示在 <a href="https://www.ssllabs.com/ssltest/analyze.html">ssllabs</a> 只能拿到B不太开心。</p>
-<p>关于如何调优，在<a href="https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html">这里</a>有完整的介绍，下面是我对 nginx 配置作的改动：</p>
-<ol>
-<li>把<code>listen 443 ssl;</code>改成<code>listen 443 ssl http2;</code>：添加 HTTP/2 支持。</li>
-<li>加上 <code>listen [::]:443 ssl http2</code>：certbot 的 nginx 似乎没有考虑到 IPv6 的支持，所以缺了这一行。</li>
-<li>将<code>ssl_ciphers</code>改成<code>"EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH"</code>：表示不想支持IE6。</li>
-<li>加上<code>Strict-Transport-Security "max-age=63072000; includeSubdomains; ";</code>这一行：HSTS（如果不想把http重定向加到https可以不加）。</li>
-<li>自制一个dhparam，加到配置里。</li>
-</ol>
-<p>接着重启 nginx 即可，现在能拿到 A+ 了，在<a href="https://tools.keycdn.com/http2-test">这里</a>也能测试到有 http2 支持了。</p><p>There are <a href="../2016/12/31/give-your-nginx-powered-website-a-a-score.html#disqus_thread">comments</a>.</p>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="../2016/11/24/virtualization-with-libvirt-kvm-and-macvtap.html" rel="bookmark"
-                           title="Permalink to 基于libvirt kvm macvtap的虚拟化解决方案">基于libvirt kvm macvtap的虚拟化解决方案</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-11-24T09:02:24+08:00">
-                Published: Thu 24 November 2016
-        </abbr>
-
-        <address class="vcard author">
-                By                         <a class="url fn" href="../author/hui-yiqun.html">Hui Yiqun</a>
-        </address>
-<p>In <a href="../category/ops.html">Ops</a>.</p>
-
-</footer><!-- /.post-info -->                <h2>前言</h2>
+    </p>
+  </header>
+  <div>
+      <h2>前言</h2>
 <p>这其实是很早以前折腾的东西，但是感觉网上的资料不是很清楚，现在补一下，以免以后想不起来。</p>
 <h2>macvlan 与 macvtap</h2>
 <p>其实之所以会用macvtap来做网络端口复用是因为libvirt默认用了它，后来折腾的过程中看了代码，理解了原理，
@@ -129,28 +147,24 @@
 
 
 <p>如果你的网络里有slaac或dhcp6，那么你应该能顺利地拿到IPv6地址。如果你的网络里有dhcp，那么你应该能顺利地拿到IPv4 …</p>
-                <a class="readmore" href="../2016/11/24/virtualization-with-libvirt-kvm-and-macvtap.html">read more</a>
-<p>There are <a href="../2016/11/24/virtualization-with-libvirt-kvm-and-macvtap.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
+      <br>
+      <a class="btn" href="../2016/11/24/virtualization-with-libvirt-kvm-and-macvtap.html#virtualization-with-libvirt-kvm-and-macvtap">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="../2016/10/21/openssh-freeze-inactive-session.html#openssh-freeze-inactive-session">不活跃的openssh连接被“冻结”的问题</a></h2>
+    <p>
+          Posted on Fri 21 October 2016 in <a href="../category/ops.html">Ops</a>
 
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="../2016/10/21/openssh-freeze-inactive-session.html" rel="bookmark"
-                           title="Permalink to 不活跃的openssh连接被“冻结”的问题">不活跃的openssh连接被“冻结”的问题</a></h1>
-                </header>
 
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-10-21T11:08:50+08:00">
-                Published: Fri 21 October 2016
-        </abbr>
 
-        <address class="vcard author">
-                By                         <a class="url fn" href="../author/hui-yiqun.html">Hui Yiqun</a>
-        </address>
-<p>In <a href="../category/ops.html">Ops</a>.</p>
-
-</footer><!-- /.post-info -->                <h1>起因</h1>
+    </p>
+  </header>
+  <div>
+      <h1>起因</h1>
 <p>最近做的两个项目都是跑在CentOS上的，前者是CentOS 6，现在用的是CentOS 7。一个让人
 非常恼火的问题是，调试或者看日志的时候，如果开了一个ssh连接，然后另开个窗口，去
 跑个ansible或者是改下代码什么的，时间稍微长一点，切回来的时候就会发现ssh连接被
@@ -169,28 +183,24 @@ disable这个“特性”。</p>
 <h1>解释</h1>
 <p>就像之前说的，我最初以为是CentOS上有某种玄学安全特性，所以我把服务器上的
 <code>/etc/ssh/sshd_config</code>取到本地看了一遍，然而并没有 …</p>
-                <a class="readmore" href="../2016/10/21/openssh-freeze-inactive-session.html">read more</a>
-<p>There are <a href="../2016/10/21/openssh-freeze-inactive-session.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
+      <br>
+      <a class="btn" href="../2016/10/21/openssh-freeze-inactive-session.html#openssh-freeze-inactive-session">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="../2016/10/08/syst-networkd-and-hostapd.md.html#syst-networkd-and-hostapd.md">archlinux上用systemd-networkd与hostapd配置无线ap</a></h2>
+    <p>
+          Posted on Sat 08 October 2016 in <a href="../category/ops.html">Ops</a>
 
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="../2016/10/08/syst-networkd-and-hostapd.md.html" rel="bookmark"
-                           title="Permalink to archlinux上用systemd-networkd与hostapd配置无线ap">archlinux上用systemd-networkd与hostapd配置无线ap</a></h1>
-                </header>
 
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-10-08T17:21:11+08:00">
-                Published: Sat 08 October 2016
-        </abbr>
 
-        <address class="vcard author">
-                By                         <a class="url fn" href="../author/hui-yiqun.html">Hui Yiqun</a>
-        </address>
-<p>In <a href="../category/ops.html">Ops</a>.</p>
-
-</footer><!-- /.post-info -->                <h1>环境</h1>
+    </p>
+  </header>
+  <div>
+      <h1>环境</h1>
 <p>这套配置我现在运行在了两个地方，一个是我家里的minipc上，当软路由用，另一个则是我实验室的
 PC，因为实验室的公共Wifi效果实在不能让人满意，决定自己在PC上插两个USB无线网卡当无线路由器用。</p>
 <p>环境上用的都是Archlinux。</p>
@@ -206,28 +216,24 @@ Bus 002 Device 002: ID 148f:5572 Ralink Technology, Corp. RT5572 Wireless Adapte
 <p>这是实验室PC上的无线网卡：</p>
 <div class="highlight"><pre><span></span>~&gt; lsusb
 Bus 003 Device 002 …</pre></div>
-                <a class="readmore" href="../2016/10/08/syst-networkd-and-hostapd.md.html">read more</a>
-<p>There are <a href="../2016/10/08/syst-networkd-and-hostapd.md.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
+      <br>
+      <a class="btn" href="../2016/10/08/syst-networkd-and-hostapd.md.html#syst-networkd-and-hostapd.md">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="../2016/10/07/auto-install-debian-with-libvirt-and-preseed.html#auto-install-debian-with-libvirt-and-preseed">使用libvirt和preseed自动部署运行于KVM上的Debian虚拟机</a></h2>
+    <p>
+          Posted on Fri 07 October 2016 in <a href="../category/ops.html">Ops</a>
 
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="../2016/10/07/auto-install-debian-with-libvirt-and-preseed.html" rel="bookmark"
-                           title="Permalink to 使用libvirt和preseed自动部署运行于KVM上的Debian虚拟机">使用libvirt和preseed自动部署运行于KVM上的Debian虚拟机</a></h1>
-                </header>
 
-                <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-10-07T15:40:30+08:00">
-                Published: Fri 07 October 2016
-        </abbr>
 
-        <address class="vcard author">
-                By                         <a class="url fn" href="../author/hui-yiqun.html">Hui Yiqun</a>
-        </address>
-<p>In <a href="../category/ops.html">Ops</a>.</p>
-
-</footer><!-- /.post-info -->                <h1>前言</h1>
+    </p>
+  </header>
+  <div>
+      <h1>前言</h1>
 <p>有一年多没有写东西了，期间还是做了不少事情，但是因为博(zi)客(ji)有(te)点(bie)丑(lan)，
 什么都没有写。很多东西花了很多时间去学和折腾，回头要用到的时候又需要重新去
 翻文档，实在是浪费时间，于是决定把博客续上。</p>
@@ -246,56 +252,45 @@ Bus 003 Device 002 …</pre></div>
 <p>宿主机是一个Debian jessie，上面跑了各种各样的其他服务，包括且不限于docker、nginx、
 私有的ldap服务等。</p>
 <p>虚拟机依然是一个Debian jessie …</p>
-                <a class="readmore" href="../2016/10/07/auto-install-debian-with-libvirt-and-preseed.html">read more</a>
-<p>There are <a href="../2016/10/07/auto-install-debian-with-libvirt-and-preseed.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-                </ol><!-- /#posts-list -->
-                </section><!-- /#content -->
-        <section id="extras" class="body">
-                <div class="blogroll">
-                        <h2>links</h2>
-                        <ul>
-                            <li><a href="https://tuna.moe/">TUNA</a></li>
-                        </ul>
-                </div><!-- /.blogroll -->
-                <div class="social">
-                        <h2>social</h2>
-                        <ul>
-                            <li><a href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+      <br>
+      <a class="btn" href="../2016/10/07/auto-install-debian-with-libvirt-and-preseed.html#auto-install-debian-with-libvirt-and-preseed">    Continue reading
+</a>
+  </div>
+</article>
 
-                            <li><a href="https://github.com/huiyiqun">Github</a></li>
-                            <li><a href="https://stackoverflow.com/users/2825773/given92">Stack Overflow</a></li>
-                            <li><a href="https://plus.google.com/u/0/107187513671494024284">Google+</a></li>
-                            <li><a href="https://telegram.me/huiyiqun">Telegram</a></li>
-                        </ul>
-                </div><!-- /.social -->
-        </section><!-- /#extras -->
 
-        <footer id="contentinfo" class="body">
-                <address id="about" class="vcard body">
-                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
-                </address><!-- /#about -->
 
-                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
-        </footer><!-- /#contentinfo -->
 
-    <script type="text/javascript">
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-89649249-1', 'auto');
-    ga('send', 'pageview');
-    </script>
+    <footer>
+<p>&copy; Hui Yiqun 2016</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+<!-- Google Analytics -->
 <script type="text/javascript">
-    var disqus_shortname = 'huiyiqun';
-    (function () {
-        var s = document.createElement('script'); s.async = true;
-        s.type = 'text/javascript';
-        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
-        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
-    }());
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-89649249-1', 'auto');
+  ga('send', 'pageview');
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Notepad ",
+  "url" : "..",
+  "image": "https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120",
+  "description": ""
+}
 </script>
 </body>
 </html>

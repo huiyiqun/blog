@@ -1,46 +1,102 @@
+
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-        <meta charset="utf-8" />
-        <title>不活跃的openssh连接被“冻结”的问题</title>
-        <link rel="stylesheet" href="../../../theme/css/main.css" />
-        <link href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate" title="Notepad Atom Feed" />
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
 
-        <!--[if IE]>
-            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
+    <link rel="stylesheet" type="text/css" href="../../../theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="../../../theme/pygments/github.min.css">
+  <link rel="stylesheet" type="text/css" href="../../../theme/font-awesome/css/font-awesome.min.css">
+
+
+    <link href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate" title="Notepad Atom">
+
+
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="" />
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="white">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="white">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<meta name="author" content="Hui Yiqun" />
+<meta name="description" content="起因 最近做的两个项目都是跑在CentOS上的，前者是CentOS 6，现在用的是CentOS 7。一个让人 非常恼火的问题是，调试或者看日志的时候，如果开了一个ssh连接，然后另开个窗口，去 跑个ansible或者是改下代码什么的，时间稍微长一点，切回来的时候就会发现ssh连接被 “冻结”了：敲键盘没有回显，同时连接也不会中断。最初我以为这是CentOS设置的某个安全 特性，避免连接被劫持之类的。但是时间长了之后觉得这个特性实在是有点烦，于是我准备 disable这个“特性”。 解决 简单地说，在笔记本上的ssh配置（如果是linux，在~/.ssh/config）上加上如下配置即可 Host * TCPKeepAlive yes ServerAliveInterval 15 ServerAliveCountMax 3 解释 就像之前说的，我最初以为是CentOS上有某种玄学安全特性，所以我把服务器上的 /etc/ssh/sshd_config取到本地看了一遍，然而并没有 …" />
+<meta name="keywords" content="">
+<meta property="og:site_name" content="Notepad"/>
+<meta property="og:title" content="不活跃的openssh连接被“冻结”的问题"/>
+<meta property="og:description" content="起因 最近做的两个项目都是跑在CentOS上的，前者是CentOS 6，现在用的是CentOS 7。一个让人 非常恼火的问题是，调试或者看日志的时候，如果开了一个ssh连接，然后另开个窗口，去 跑个ansible或者是改下代码什么的，时间稍微长一点，切回来的时候就会发现ssh连接被 “冻结”了：敲键盘没有回显，同时连接也不会中断。最初我以为这是CentOS设置的某个安全 特性，避免连接被劫持之类的。但是时间长了之后觉得这个特性实在是有点烦，于是我准备 disable这个“特性”。 解决 简单地说，在笔记本上的ssh配置（如果是linux，在~/.ssh/config）上加上如下配置即可 Host * TCPKeepAlive yes ServerAliveInterval 15 ServerAliveCountMax 3 解释 就像之前说的，我最初以为是CentOS上有某种玄学安全特性，所以我把服务器上的 /etc/ssh/sshd_config取到本地看了一遍，然而并没有 …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="../../../2016/10/21/openssh-freeze-inactive-session.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2016-10-21 11:08:50+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="../../../author/hui-yiqun.html">
+<meta property="article:section" content="Ops"/>
+<meta property="og:image" content="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120">
+
+  <title>Notepad &ndash; 不活跃的openssh连接被“冻结”的问题</title>
+
 </head>
+<body>
+  <aside>
+    <div>
+      <a href="../../..">
+        <img src="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120" alt="Notepad" title="Notepad">
+      </a>
+      <h1><a href="../../..">Notepad</a></h1>
 
-<body id="index" class="home">
-        <header id="banner" class="body">
-                <h1><a href="../../../">Notepad </a></h1>
-                <nav><ul>
-                    <li><a href="../../../category/android.html">Android</a></li>
-                    <li><a href="../../../category/multimedia.html">Multimedia</a></li>
-                    <li class="active"><a href="../../../category/ops.html">Ops</a></li>
-                    <li><a href="../../../category/python.html">Python</a></li>
-                </ul></nav>
-        </header><!-- /#banner -->
-<section id="content" class="body">
-  <article>
-    <header>
-      <h1 class="entry-title">
-        <a href="../../../2016/10/21/openssh-freeze-inactive-session.html" rel="bookmark"
-           title="Permalink to 不活跃的openssh连接被“冻结”的问题">不活跃的openssh连接被“冻结”的问题</a></h1>
-    </header>
+<p>The Power of Writing</p>
+      <nav>
+        <ul class="list">
 
-    <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-10-21T11:08:50+08:00">
-                Published: Fri 21 October 2016
-        </abbr>
+          <li><a href="https://tuna.moe/" target="_blank">TUNA</a></li>
+        </ul>
+      </nav>
 
-        <address class="vcard author">
-                By                         <a class="url fn" href="../../../author/hui-yiqun.html">Hui Yiqun</a>
-        </address>
-<p>In <a href="../../../category/ops.html">Ops</a>.</p>
+      <ul class="social">
+        <li><a class="sc-Github" href="https://github.com/huiyiqun" target="_blank"><i class="fa fa-Github"></i></a></li>
+        <li><a class="sc-Stack Overflow" href="https://stackoverflow.com/users/2825773/given92" target="_blank"><i class="fa fa-Stack Overflow"></i></a></li>
+        <li><a class="sc-Google+" href="https://plus.google.com/u/0/107187513671494024284" target="_blank"><i class="fa fa-Google+"></i></a></li>
+        <li><a class="sc-Telegram" href="https://telegram.me/huiyiqun" target="_blank"><i class="fa fa-Telegram"></i></a></li>
+      </ul>
+    </div>
 
-</footer><!-- /.post-info -->      <h1>起因</h1>
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="../../..">    Home
+</a>
+
+
+      <a href="https://blog.huiyiqun.me/feed.xml">    Atom
+</a>
+
+    </nav>
+
+<article class="single">
+  <header>
+    <h1 id="openssh-freeze-inactive-session">不活跃的openssh连接被“冻结”的问题</h1>
+    <p>
+          Posted on Fri 21 October 2016 in <a href="../../../category/ops.html">Ops</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <h1>起因</h1>
 <p>最近做的两个项目都是跑在CentOS上的，前者是CentOS 6，现在用的是CentOS 7。一个让人
 非常恼火的问题是，调试或者看日志的时候，如果开了一个ssh连接，然后另开个窗口，去
 跑个ansible或者是改下代码什么的，时间稍微长一点，切回来的时候就会发现ssh连接被
@@ -101,70 +157,59 @@ NAT的端口映射表也不会因为超时而被删除，“冻结”的情况�
 <p>我的配置中把这三个选项写到了客户端这边，实际上OpenSSH的服务器端也有类似的选项，
 可以实现类似的效果，但是需要在每台服务器上都写上，这样太过麻烦，因此选择了写
 到客户端。</p>
-    </div><!-- /.entry-content -->
-    <div class="comments">
-      <h2>Comments !</h2>
-      <div id="disqus_thread"></div>
-      <script type="text/javascript">
-        var disqus_shortname = 'huiyiqun';
-        var disqus_identifier = '2016/10/21/openssh-freeze-inactive-session.html';
-        var disqus_url = '../../../2016/10/21/openssh-freeze-inactive-session.html';
-        (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = '//huiyiqun.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-        })();
-      </script>
-      <noscript>Please enable JavaScript to view the comments.</noscript>
-    </div>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
 
-  </article>
-</section>
-        <section id="extras" class="body">
-                <div class="blogroll">
-                        <h2>links</h2>
-                        <ul>
-                            <li><a href="https://tuna.moe/">TUNA</a></li>
-                        </ul>
-                </div><!-- /.blogroll -->
-                <div class="social">
-                        <h2>social</h2>
-                        <ul>
-                            <li><a href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
 
-                            <li><a href="https://github.com/huiyiqun">Github</a></li>
-                            <li><a href="https://stackoverflow.com/users/2825773/given92">Stack Overflow</a></li>
-                            <li><a href="https://plus.google.com/u/0/107187513671494024284">Google+</a></li>
-                            <li><a href="https://telegram.me/huiyiqun">Telegram</a></li>
-                        </ul>
-                </div><!-- /.social -->
-        </section><!-- /#extras -->
 
-        <footer id="contentinfo" class="body">
-                <address id="about" class="vcard body">
-                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
-                </address><!-- /#about -->
 
-                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
-        </footer><!-- /#contentinfo -->
-
-    <script type="text/javascript">
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-89649249-1', 'auto');
-    ga('send', 'pageview');
-    </script>
+<div id="disqus_thread"></div>
 <script type="text/javascript">
     var disqus_shortname = 'huiyiqun';
-    (function () {
-        var s = document.createElement('script'); s.async = true;
-        s.type = 'text/javascript';
-        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
-        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
-    }());
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>
+        Please enable JavaScript to view comments.
+
+</noscript>
+</article>
+
+    <footer>
+<p>&copy; Hui Yiqun 2016</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-89649249-1', 'auto');
+  ga('send', 'pageview');
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Notepad ",
+  "url" : "../../..",
+  "image": "https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120",
+  "description": ""
+}
 </script>
 </body>
 </html>

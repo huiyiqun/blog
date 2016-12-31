@@ -1,46 +1,102 @@
+
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-        <meta charset="utf-8" />
-        <title>基于libvirt kvm macvtap的虚拟化解决方案</title>
-        <link rel="stylesheet" href="../../../theme/css/main.css" />
-        <link href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate" title="Notepad Atom Feed" />
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
 
-        <!--[if IE]>
-            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
+    <link rel="stylesheet" type="text/css" href="../../../theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="../../../theme/pygments/github.min.css">
+  <link rel="stylesheet" type="text/css" href="../../../theme/font-awesome/css/font-awesome.min.css">
+
+
+    <link href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate" title="Notepad Atom">
+
+
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="" />
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="white">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="white">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<meta name="author" content="Hui Yiqun" />
+<meta name="description" content="前言 这其实是很早以前折腾的东西，但是感觉网上的资料不是很清楚，现在补一下，以免以后想不起来。 macvlan 与 macvtap 其实之所以会用macvtap来做网络端口复用是因为libvirt默认用了它，后来折腾的过程中看了代码，理解了原理， 才明白它相比于以前的bridge方案确实有一些优势，如果虚拟机的流量确实很大，可以用这套方案，来减少物理机的CPU和 网卡的压力。 macvtap与macvlan实际上是内核里面的两个特性，用于在物理网卡后面接一些虚拟端口，复用物理端口，但是利用了网卡 的一个较新的特性，所以从性能上来说比纯虚拟交换性能更高，属于一种半虚拟化方案。 macvlan实际上和虚拟机并不是紧耦合的，你也可以在自己的机器上开一个macvlan做试验： ~> sudo ip link add link eno1 type macvlan 注意把eno1替换成你的物理端口名 好了，你现在有一个macvlan0了，你可以试试 ~> sudo ip link set macvlan0 up ~> sudo dhcpcd macvlan0 如果你的网络里有slaac或dhcp6，那么你应该能顺利地拿到IPv6地址。如果你的网络里有dhcp，那么你应该能顺利地拿到IPv4 …" />
+<meta name="keywords" content="">
+<meta property="og:site_name" content="Notepad"/>
+<meta property="og:title" content="基于libvirt kvm macvtap的虚拟化解决方案"/>
+<meta property="og:description" content="前言 这其实是很早以前折腾的东西，但是感觉网上的资料不是很清楚，现在补一下，以免以后想不起来。 macvlan 与 macvtap 其实之所以会用macvtap来做网络端口复用是因为libvirt默认用了它，后来折腾的过程中看了代码，理解了原理， 才明白它相比于以前的bridge方案确实有一些优势，如果虚拟机的流量确实很大，可以用这套方案，来减少物理机的CPU和 网卡的压力。 macvtap与macvlan实际上是内核里面的两个特性，用于在物理网卡后面接一些虚拟端口，复用物理端口，但是利用了网卡 的一个较新的特性，所以从性能上来说比纯虚拟交换性能更高，属于一种半虚拟化方案。 macvlan实际上和虚拟机并不是紧耦合的，你也可以在自己的机器上开一个macvlan做试验： ~> sudo ip link add link eno1 type macvlan 注意把eno1替换成你的物理端口名 好了，你现在有一个macvlan0了，你可以试试 ~> sudo ip link set macvlan0 up ~> sudo dhcpcd macvlan0 如果你的网络里有slaac或dhcp6，那么你应该能顺利地拿到IPv6地址。如果你的网络里有dhcp，那么你应该能顺利地拿到IPv4 …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="../../../2016/11/24/virtualization-with-libvirt-kvm-and-macvtap.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2016-11-24 09:02:24+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="../../../author/hui-yiqun.html">
+<meta property="article:section" content="Ops"/>
+<meta property="og:image" content="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120">
+
+  <title>Notepad &ndash; 基于libvirt kvm macvtap的虚拟化解决方案</title>
+
 </head>
+<body>
+  <aside>
+    <div>
+      <a href="../../..">
+        <img src="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120" alt="Notepad" title="Notepad">
+      </a>
+      <h1><a href="../../..">Notepad</a></h1>
 
-<body id="index" class="home">
-        <header id="banner" class="body">
-                <h1><a href="../../../">Notepad </a></h1>
-                <nav><ul>
-                    <li><a href="../../../category/android.html">Android</a></li>
-                    <li><a href="../../../category/multimedia.html">Multimedia</a></li>
-                    <li class="active"><a href="../../../category/ops.html">Ops</a></li>
-                    <li><a href="../../../category/python.html">Python</a></li>
-                </ul></nav>
-        </header><!-- /#banner -->
-<section id="content" class="body">
-  <article>
-    <header>
-      <h1 class="entry-title">
-        <a href="../../../2016/11/24/virtualization-with-libvirt-kvm-and-macvtap.html" rel="bookmark"
-           title="Permalink to 基于libvirt kvm macvtap的虚拟化解决方案">基于libvirt kvm macvtap的虚拟化解决方案</a></h1>
-    </header>
+<p>The Power of Writing</p>
+      <nav>
+        <ul class="list">
 
-    <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2016-11-24T09:02:24+08:00">
-                Published: Thu 24 November 2016
-        </abbr>
+          <li><a href="https://tuna.moe/" target="_blank">TUNA</a></li>
+        </ul>
+      </nav>
 
-        <address class="vcard author">
-                By                         <a class="url fn" href="../../../author/hui-yiqun.html">Hui Yiqun</a>
-        </address>
-<p>In <a href="../../../category/ops.html">Ops</a>.</p>
+      <ul class="social">
+        <li><a class="sc-Github" href="https://github.com/huiyiqun" target="_blank"><i class="fa fa-Github"></i></a></li>
+        <li><a class="sc-Stack Overflow" href="https://stackoverflow.com/users/2825773/given92" target="_blank"><i class="fa fa-Stack Overflow"></i></a></li>
+        <li><a class="sc-Google+" href="https://plus.google.com/u/0/107187513671494024284" target="_blank"><i class="fa fa-Google+"></i></a></li>
+        <li><a class="sc-Telegram" href="https://telegram.me/huiyiqun" target="_blank"><i class="fa fa-Telegram"></i></a></li>
+      </ul>
+    </div>
 
-</footer><!-- /.post-info -->      <h2>前言</h2>
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="../../..">    Home
+</a>
+
+
+      <a href="https://blog.huiyiqun.me/feed.xml">    Atom
+</a>
+
+    </nav>
+
+<article class="single">
+  <header>
+    <h1 id="virtualization-with-libvirt-kvm-and-macvtap">基于libvirt kvm macvtap的虚拟化解决方案</h1>
+    <p>
+          Posted on Thu 24 November 2016 in <a href="../../../category/ops.html">Ops</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <h2>前言</h2>
 <p>这其实是很早以前折腾的东西，但是感觉网上的资料不是很清楚，现在补一下，以免以后想不起来。</p>
 <h2>macvlan 与 macvtap</h2>
 <p>其实之所以会用macvtap来做网络端口复用是因为libvirt默认用了它，后来折腾的过程中看了代码，理解了原理，
@@ -170,70 +226,59 @@ Neighbor Advertisement，如果收到了，认为出现了地址冲突，这个�
 的时候发现，macvlan是不会把macvlan端口发出来的包又送回到原端口的，
 有可能是因为当时调试的时候开了allmulticast或者promisc，
 <strong>进一步确认需要再看一下代码</strong>。</p>
-    </div><!-- /.entry-content -->
-    <div class="comments">
-      <h2>Comments !</h2>
-      <div id="disqus_thread"></div>
-      <script type="text/javascript">
-        var disqus_shortname = 'huiyiqun';
-        var disqus_identifier = '2016/11/24/virtualization-with-libvirt-kvm-and-macvtap.html';
-        var disqus_url = '../../../2016/11/24/virtualization-with-libvirt-kvm-and-macvtap.html';
-        (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = '//huiyiqun.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-        })();
-      </script>
-      <noscript>Please enable JavaScript to view the comments.</noscript>
-    </div>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
 
-  </article>
-</section>
-        <section id="extras" class="body">
-                <div class="blogroll">
-                        <h2>links</h2>
-                        <ul>
-                            <li><a href="https://tuna.moe/">TUNA</a></li>
-                        </ul>
-                </div><!-- /.blogroll -->
-                <div class="social">
-                        <h2>social</h2>
-                        <ul>
-                            <li><a href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
 
-                            <li><a href="https://github.com/huiyiqun">Github</a></li>
-                            <li><a href="https://stackoverflow.com/users/2825773/given92">Stack Overflow</a></li>
-                            <li><a href="https://plus.google.com/u/0/107187513671494024284">Google+</a></li>
-                            <li><a href="https://telegram.me/huiyiqun">Telegram</a></li>
-                        </ul>
-                </div><!-- /.social -->
-        </section><!-- /#extras -->
 
-        <footer id="contentinfo" class="body">
-                <address id="about" class="vcard body">
-                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
-                </address><!-- /#about -->
 
-                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
-        </footer><!-- /#contentinfo -->
-
-    <script type="text/javascript">
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-89649249-1', 'auto');
-    ga('send', 'pageview');
-    </script>
+<div id="disqus_thread"></div>
 <script type="text/javascript">
     var disqus_shortname = 'huiyiqun';
-    (function () {
-        var s = document.createElement('script'); s.async = true;
-        s.type = 'text/javascript';
-        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
-        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
-    }());
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>
+        Please enable JavaScript to view comments.
+
+</noscript>
+</article>
+
+    <footer>
+<p>&copy; Hui Yiqun 2016</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-89649249-1', 'auto');
+  ga('send', 'pageview');
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Notepad ",
+  "url" : "../../..",
+  "image": "https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120",
+  "description": ""
+}
 </script>
 </body>
 </html>
