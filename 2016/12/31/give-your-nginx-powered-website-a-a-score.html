@@ -29,16 +29,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <meta name="author" content="Hui Yiqun" />
-<meta name="description" content="起因 最近用 github 的 student pack 领了 namecheap 的一年免费域名，并且把博客迁移到了新的域名下。 最初是想直接用 github.io CNAME一下，然而问题在于就没有 https 了。忍了一个月，实在是忍无可忍，自己找了台VPS自己跑。正好服务器也一直空着，没跑什么东西。 之前折腾了一下SSL的相关配置，正好趁机总结一下。 安装部署 服务器用的是 archlinux，安装nginx和certbot的方式如下： ~> sudo pacman -Syu ~> sudo pacman -S nginx-mainline certbot-nginx nginx 配置 将 nginx 配置的 server block 改成如下内容： server { listen 80 default_server; listen [::]:80 …" />
+<meta name="description" content="起因 最近用 github 的 student pack 领了 namecheap 的一年免费域名 ， 并且把博客迁移到了新的域名下 。 最初是想直接用 github.io CNAME 一下 ， 然而问题在于就没有 https 了 。 忍了一个月 ， 实在是忍无可忍 ， 自己找了台 VPS 自己跑 。 正好服务器也一直空着 ， 没跑什么东西 。 之前折腾了一下 SSL 的相关配置 ， 正好趁机总结一下 。 安装部署 服务器用的是 archlinux， 安装 nginx 和 certbot 的方式如下 ： ~> sudo pacman -Syu ~> sudo pacman -S nginx-mainline certbot-nginx nginx 配置 将 nginx 配置的 …" />
 <meta name="keywords" content="">
 <meta property="og:site_name" content="Notepad"/>
 <meta property="og:title" content="让你的nginx网站得到A+"/>
-<meta property="og:description" content="起因 最近用 github 的 student pack 领了 namecheap 的一年免费域名，并且把博客迁移到了新的域名下。 最初是想直接用 github.io CNAME一下，然而问题在于就没有 https 了。忍了一个月，实在是忍无可忍，自己找了台VPS自己跑。正好服务器也一直空着，没跑什么东西。 之前折腾了一下SSL的相关配置，正好趁机总结一下。 安装部署 服务器用的是 archlinux，安装nginx和certbot的方式如下： ~> sudo pacman -Syu ~> sudo pacman -S nginx-mainline certbot-nginx nginx 配置 将 nginx 配置的 server block 改成如下内容： server { listen 80 default_server; listen [::]:80 …"/>
+<meta property="og:description" content="起因 最近用 github 的 student pack 领了 namecheap 的一年免费域名 ， 并且把博客迁移到了新的域名下 。 最初是想直接用 github.io CNAME 一下 ， 然而问题在于就没有 https 了 。 忍了一个月 ， 实在是忍无可忍 ， 自己找了台 VPS 自己跑 。 正好服务器也一直空着 ， 没跑什么东西 。 之前折腾了一下 SSL 的相关配置 ， 正好趁机总结一下 。 安装部署 服务器用的是 archlinux， 安装 nginx 和 certbot 的方式如下 ： ~> sudo pacman -Syu ~> sudo pacman -S nginx-mainline certbot-nginx nginx 配置 将 nginx 配置的 …"/>
 <meta property="og:locale" content="zh_CN"/>
 <meta property="og:url" content="../../../2016/12/31/give-your-nginx-powered-website-a-a-score.html"/>
 <meta property="og:type" content="article"/>
-<meta property="article:published_time" content="2016-12-31 13:32:07+08:00"/>
-<meta property="article:modified_time" content=""/>
+<meta property="article:published_time" content="2016-12-31 15:32:49+08:00"/>
+<meta property="article:modified_time" content="2016-12-31 21:10:53+08:00"/>
 <meta property="article:author" content="../../../author/hui-yiqun.html">
 <meta property="article:section" content="Ops"/>
 <meta property="og:image" content="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120">
@@ -88,19 +88,19 @@
 
 
   <div>
-    <h1>起因</h1>
-<p>最近用 github 的 <a href="https://education.github.com/pack">student pack</a> 领了 <a href="https://www.namecheap.com/">namecheap</a> 的一年免费域名，并且把博客迁移到了新的域名下。</p>
-<p>最初是想直接用 github.io CNAME一下，然而问题在于就没有 https 了。忍了一个月，实在是忍无可忍，自己找了台VPS自己跑。正好服务器也一直空着，没跑什么东西。</p>
-<p>之前折腾了一下SSL的相关配置，正好趁机总结一下。</p>
-<h1>安装部署</h1>
-<p>服务器用的是 archlinux，安装nginx和certbot的方式如下：</p>
+    <h1> 起因 </h1>
+<p> 最近用  github  的  <a href="https://education.github.com/pack">student pack</a>  领了  <a href="https://www.namecheap.com/">namecheap</a>  的一年免费域名 ， 并且把博客迁移到了新的域名下 。</p>
+<p> 最初是想直接用  github.io CNAME 一下 ， 然而问题在于就没有  https  了 。 忍了一个月 ， 实在是忍无可忍 ， 自己找了台 VPS 自己跑 。 正好服务器也一直空着 ， 没跑什么东西 。</p>
+<p> 之前折腾了一下 SSL 的相关配置 ， 正好趁机总结一下 。</p>
+<h1> 安装部署 </h1>
+<p> 服务器用的是  archlinux， 安装 nginx 和 certbot 的方式如下 ：</p>
 <div class="highlight"><pre><span></span>~&gt; sudo pacman -Syu
 ~&gt; sudo pacman -S nginx-mainline certbot-nginx
 </pre></div>
 
 
-<h1>nginx 配置</h1>
-<p>将 nginx 配置的 server block 改成如下内容：</p>
+<h1>nginx  配置 </h1>
+<p> 将  nginx  配置的  server block  改成如下内容 ：</p>
 <div class="highlight"><pre><span></span><span class="k">server</span> <span class="p">{</span>
     <span class="kn">listen</span>      <span class="mi">80</span> <span class="s">default_server</span><span class="p">;</span>
     <span class="kn">listen</span>      <span class="s">[::]:80</span> <span class="s">default_server</span><span class="p">;</span>
@@ -110,34 +110,34 @@
 </pre></div>
 
 
-<p>启动 nginx：</p>
+<p> 启动  nginx：</p>
 <div class="highlight"><pre><span></span>~&gt; sudo systemctl enable nginx --now
 </pre></div>
 
 
-<p>接着签证书：</p>
+<p> 接着签证书 ：</p>
 <div class="highlight"><pre><span></span>~&gt; sudo certbot --nginx
 </pre></div>
 
 
-<p>certbot会修改nginx配置，因此需要以root身份运行。另外这个nginx插件会读nginx配置判断域名，因此在nginx配置的<code>server_name</code>处应该填入完整的域名。
-接着会有一个交互式的界面确认一些信息，顺序填写就好。</p>
-<p>最后重启nginx：</p>
+<p>certbot 会修改 nginx 配置 ， 因此需要以 root 身份运行 。 另外这个 nginx 插件会读 nginx 配置判断域名 ， 因此在 nginx 配置的 <code>server_name</code> 处应该填入完整的域名 。
+ 接着会有一个交互式的界面确认一些信息 ， 顺序填写就好 。</p>
+<p> 最后重启 nginx：</p>
 <div class="highlight"><pre><span></span>~&gt; sudo systemctl restart nginx
 </pre></div>
 
 
-<h1>nginx 调优</h1>
-<p>这个时候 https 应该已经配置好了，不过强迫症表示在 <a href="https://www.ssllabs.com/ssltest/analyze.html">ssllabs</a> 只能拿到B不太开心。</p>
-<p>关于如何调优，在<a href="https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html">这里</a>有完整的介绍，下面是我对 nginx 配置作的改动：</p>
+<h1>nginx  调优 </h1>
+<p> 这个时候  https  应该已经配置好了 ， 不过强迫症表示在  <a href="https://www.ssllabs.com/ssltest/analyze.html">ssllabs</a>  只能拿到 B 不太开心 。</p>
+<p> 关于如何调优 ， 在 <a href="https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html"> 这里 </a> 有完整的介绍 ， 下面是我对  nginx  配置作的改动 ：</p>
 <ol>
-<li>把<code>listen 443 ssl;</code>改成<code>listen 443 ssl http2;</code>：添加 HTTP/2 支持。</li>
-<li>加上 <code>listen [::]:443 ssl http2</code>：certbot 的 nginx 似乎没有考虑到 IPv6 的支持，所以缺了这一行。</li>
-<li>将<code>ssl_ciphers</code>改成<code>"EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH"</code>：表示不想支持IE6。</li>
-<li>加上<code>Strict-Transport-Security "max-age=63072000; includeSubdomains; ";</code>这一行：HSTS（如果不想把http重定向加到https可以不加）。</li>
-<li>自制一个dhparam，加到配置里。</li>
+<li> 把 <code>listen 443 ssl;</code> 改成 <code>listen 443 ssl http2;</code>： 添加  HTTP/2  支持 。</li>
+<li> 加上  <code>listen [::]:443 ssl http2</code>：certbot  的  nginx  似乎没有考虑到  IPv6  的支持 ， 所以缺了这一行 。</li>
+<li> 将 <code>ssl_ciphers</code> 改成 <code>"EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH"</code>： 表示不想支持 IE6。</li>
+<li> 加上 <code>Strict-Transport-Security "max-age=63072000; includeSubdomains; ";</code> 这一行 ：HSTS（ 如果不想把 http 重定向加到 https 可以不加 ）。</li>
+<li> 自制一个 dhparam， 加到配置里 。</li>
 </ol>
-<p>接着重启 nginx 即可，现在能拿到 A+ 了，在<a href="https://tools.keycdn.com/http2-test">这里</a>也能测试到有 http2 支持了。</p>
+<p> 接着重启  nginx  即可 ， 现在能拿到  A+  了 ， 在 <a href="https://tools.keycdn.com/http2-test"> 这里 </a> 也能测试到有  http2  支持了 。</p>
   </div>
   <div class="tag-cloud">
     <p>

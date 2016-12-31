@@ -29,16 +29,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <meta name="author" content="Hui Yiqun" />
-<meta name="description" content="前言 前段时间用nginx-rtmp-module搭了一个直播系统，测试的时候用来直播了一下桌面，感觉评价还不错，应邀写个简单的教程。 服务器 安装 服务器端我用的是nginx-rtmp-module，操作系统用的是CentOS 7，部署其实很简单， 它主页上就有教程。 当然为了系统比较干净，推荐还是简单打个包，CentOS的话我推荐从nginx的官方源下载 源码包，在configure的参数上加一条--add-module=/path/to/nginx-rtmp-module即可。 如果是archlinux的话可以考虑用aur的里的包。 基本配置 nginx的基本配置可以参考如下: user nginx; worker_processes 1; error_log /var/log/nginx/error.log warn; pid /var/run/nginx.pid; events { worker_connections 1024; } rtmp …" />
+<meta name="description" content="前言 前段时间用 nginx-rtmp-module 搭了一个直播系统 ， 测试的时候用来直播了一下桌面 ， 感觉评价还不错 ， 应邀写个简单的教程 。 服务器 安装 服务器端我用的是 nginx-rtmp-module， 操作系统用的是 CentOS 7， 部署其实很简单 ， 它主页上就有 教程 。 当然为了系统比较干净 ， 推荐还是简单打个包 ，CentOS 的话我推荐从 nginx 的官方源 下载 源码包 ， 在 configure 的参数上加一条 --add-module=/path/to/nginx-rtmp-module 即可 。 如果是 archlinux 的话可以考虑用 aur 的里的包 。 基本配置 nginx 的基本配置可以参考如下 : user nginx; worker_processes 1; error_log /var/log/nginx/error …" />
 <meta name="keywords" content="">
 <meta property="og:site_name" content="Notepad"/>
 <meta property="og:title" content="用nginx-rtmp-module直播写代码"/>
-<meta property="og:description" content="前言 前段时间用nginx-rtmp-module搭了一个直播系统，测试的时候用来直播了一下桌面，感觉评价还不错，应邀写个简单的教程。 服务器 安装 服务器端我用的是nginx-rtmp-module，操作系统用的是CentOS 7，部署其实很简单， 它主页上就有教程。 当然为了系统比较干净，推荐还是简单打个包，CentOS的话我推荐从nginx的官方源下载 源码包，在configure的参数上加一条--add-module=/path/to/nginx-rtmp-module即可。 如果是archlinux的话可以考虑用aur的里的包。 基本配置 nginx的基本配置可以参考如下: user nginx; worker_processes 1; error_log /var/log/nginx/error.log warn; pid /var/run/nginx.pid; events { worker_connections 1024; } rtmp …"/>
+<meta property="og:description" content="前言 前段时间用 nginx-rtmp-module 搭了一个直播系统 ， 测试的时候用来直播了一下桌面 ， 感觉评价还不错 ， 应邀写个简单的教程 。 服务器 安装 服务器端我用的是 nginx-rtmp-module， 操作系统用的是 CentOS 7， 部署其实很简单 ， 它主页上就有 教程 。 当然为了系统比较干净 ， 推荐还是简单打个包 ，CentOS 的话我推荐从 nginx 的官方源 下载 源码包 ， 在 configure 的参数上加一条 --add-module=/path/to/nginx-rtmp-module 即可 。 如果是 archlinux 的话可以考虑用 aur 的里的包 。 基本配置 nginx 的基本配置可以参考如下 : user nginx; worker_processes 1; error_log /var/log/nginx/error …"/>
 <meta property="og:locale" content="zh_CN"/>
 <meta property="og:url" content="../../../2016/10/28/livestream-your-desktop-with-nginx-rtmp-module.html"/>
 <meta property="og:type" content="article"/>
-<meta property="article:published_time" content="2016-10-28 15:30:40+08:00"/>
-<meta property="article:modified_time" content=""/>
+<meta property="article:published_time" content="2016-10-28 17:10:21+08:00"/>
+<meta property="article:modified_time" content="2016-12-31 21:10:53+08:00"/>
 <meta property="article:author" content="../../../author/hui-yiqun.html">
 <meta property="article:section" content="Multimedia"/>
 <meta property="og:image" content="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120">
@@ -88,17 +88,17 @@
 
 
   <div>
-    <h1>前言</h1>
-<p>前段时间用nginx-rtmp-module搭了一个直播系统，测试的时候用来直播了一下桌面，感觉评价还不错，应邀写个简单的教程。</p>
-<h1>服务器</h1>
-<h2>安装</h2>
-<p>服务器端我用的是<a href="https://github.com/arut/nginx-rtmp-module">nginx-rtmp-module</a>，操作系统用的是CentOS 7，部署其实很简单，
-它主页上就有<a href="https://github.com/arut/nginx-rtmp-module#build">教程</a>。</p>
-<p>当然为了系统比较干净，推荐还是简单打个包，CentOS的话我推荐从<a href="https://nginx.org/packages/centos/7/SRPMS/">nginx的官方源</a>下载
-源码包，在configure的参数上加一条<code>--add-module=/path/to/nginx-rtmp-module</code>即可。</p>
-<p>如果是archlinux的话可以考虑用<a href="https://aur.archlinux.org/packages/nginx-rtmp">aur的里的包</a>。</p>
-<h2>基本配置</h2>
-<p>nginx的基本配置可以参考如下:</p>
+    <h1> 前言 </h1>
+<p> 前段时间用 nginx-rtmp-module 搭了一个直播系统 ， 测试的时候用来直播了一下桌面 ， 感觉评价还不错 ， 应邀写个简单的教程 。</p>
+<h1> 服务器 </h1>
+<h2> 安装 </h2>
+<p> 服务器端我用的是 <a href="https://github.com/arut/nginx-rtmp-module">nginx-rtmp-module</a>， 操作系统用的是 CentOS 7， 部署其实很简单 ，
+ 它主页上就有 <a href="https://github.com/arut/nginx-rtmp-module#build"> 教程 </a>。</p>
+<p> 当然为了系统比较干净 ， 推荐还是简单打个包 ，CentOS 的话我推荐从 <a href="https://nginx.org/packages/centos/7/SRPMS/">nginx 的官方源 </a> 下载 
+ 源码包 ， 在 configure 的参数上加一条 <code>--add-module=/path/to/nginx-rtmp-module</code> 即可 。</p>
+<p> 如果是 archlinux 的话可以考虑用 <a href="https://aur.archlinux.org/packages/nginx-rtmp">aur 的里的包 </a>。</p>
+<h2> 基本配置 </h2>
+<p>nginx 的基本配置可以参考如下 :</p>
 <div class="highlight"><pre><span></span><span class="k">user</span>  <span class="s">nginx</span><span class="p">;</span>
 <span class="k">worker_processes</span>  <span class="mi">1</span><span class="p">;</span>
 
@@ -124,22 +124,22 @@
 </pre></div>
 
 
-<p>如果单纯想用rtmp作推流和播放的话，以上的配置就足够了，pull可以让nginx-rtmp-module自动从其他地址拖流在本地播放，
-如果不需要可以去掉。</p>
-<p>如果服务器有SELinux的话，可以考虑关掉，主要是因为1935这个端口号。</p>
-<h2>认证与动态拉流</h2>
-<p>这里有两个问题，第一是任何一个知道这个url的用户都可以向这个地址推流，第二是拉流的地址是固定好的，如果你临时起意
-想从某个地址拉流，那么你必须修改这个配置文件并且重启nginx（注意reload是无效的，因为rtmp是一个有状态的长连接，
-reload并不能让nginx切到新的配置，这个算是nginx-rtmp-module的bug吧）。</p>
-<p>nginx-rtmp-module提供了一个方案是<a href="https://github.com/arut/nginx-rtmp-module/wiki/Directives#notify">notify</a>，
-也就是采用回调的方式对用户的身份进行验证，同时也允许你动态定义从什么地址动态拉流。</p>
-<p>简单说来就是，每当有一个播放或推流请求时，nginx-rtmp-module都会向你指定的地址发送一个http请求，并带上一些参数，
-如请求类型（connect, play, publish等），请求地址，url（会带上rtmp的参数）。针对服务器返回的值，nginx-rtmp-module
-会采用不同的行为。2xx会正常放行，3xx会从另一个地址拖流，其他返回值则使这个请求被中断。接下来就完全由的你想象来决定
-你的rtmp服务器有什么样的访问控制了。</p>
-<p>另外在连接断开的时候也有类似的<a href="https://github.com/arut/nginx-rtmp-module/wiki/Directives#on_play_done">回调请求</a>，
-但是服务器的返回值不会对nginx-rtmp-module的行为造成影响。可以用来记录在线人数，播放时长等。</p>
-<p>相关的配置如下：</p>
+<p> 如果单纯想用 rtmp 作推流和播放的话 ， 以上的配置就足够了 ，pull 可以让 nginx-rtmp-module 自动从其他地址拖流在本地播放 ，
+ 如果不需要可以去掉 。</p>
+<p> 如果服务器有 SELinux 的话 ， 可以考虑关掉 ， 主要是因为 1935 这个端口号 。</p>
+<h2> 认证与动态拉流 </h2>
+<p> 这里有两个问题 ， 第一是任何一个知道这个 url 的用户都可以向这个地址推流 ， 第二是拉流的地址是固定好的 ， 如果你临时起意 
+ 想从某个地址拉流 ， 那么你必须修改这个配置文件并且重启 nginx（ 注意 reload 是无效的 ， 因为 rtmp 是一个有状态的长连接 ，
+reload 并不能让 nginx 切到新的配置 ， 这个算是 nginx-rtmp-module 的 bug 吧 ）。</p>
+<p>nginx-rtmp-module 提供了一个方案是 <a href="https://github.com/arut/nginx-rtmp-module/wiki/Directives#notify">notify</a>，
+ 也就是采用回调的方式对用户的身份进行验证 ， 同时也允许你动态定义从什么地址动态拉流 。</p>
+<p> 简单说来就是 ， 每当有一个播放或推流请求时 ，nginx-rtmp-module 都会向你指定的地址发送一个 http 请求 ， 并带上一些参数 ，
+ 如请求类型 （connect, play, publish 等 ）， 请求地址 ，url（ 会带上 rtmp 的参数 ）。 针对服务器返回的值 ，nginx-rtmp-module
+ 会采用不同的行为 。2xx 会正常放行 ，3xx 会从另一个地址拖流 ， 其他返回值则使这个请求被中断 。 接下来就完全由的你想象来决定 
+ 你的 rtmp 服务器有什么样的访问控制了 。</p>
+<p> 另外在连接断开的时候也有类似的 <a href="https://github.com/arut/nginx-rtmp-module/wiki/Directives#on_play_done"> 回调请求 </a>，
+ 但是服务器的返回值不会对 nginx-rtmp-module 的行为造成影响 。 可以用来记录在线人数 ， 播放时长等 。</p>
+<p> 相关的配置如下 ：</p>
 <div class="highlight"><pre><span></span><span class="k">...</span>
 
 <span class="s">rtmp</span> <span class="p">{</span>
@@ -191,15 +191,15 @@ reload并不能让nginx切到新的配置，这个算是nginx-rtmp-module的bug�
 </pre></div>
 
 
-<p>需要注意的是，nginx-rtmp-module的所有回调都不支持https，所以如果想用https在远端作控制需要用http在本地中转一次。</p>
-<h1>Dash与HLS</h1>
-<p>rtmp虽然是一种老牌的流媒体协议，但是它存在一些固有的问题。比如对现有的CDN基础设施不友好，相对于HTTP更复杂，
-有状态。现在的流媒体也有倾向于采用HTTP协议来进行流媒体传输的趋势。但是HTTP协议存在延时大的问题，算是各有利弊。</p>
-<p>nginx-rtmp-module内置了对hls和dash的支持。其中hls我用了一段时间，感觉还好，dash没用过，我就不评价了。</p>
-<p>其实hls的支持也很简单，就是简单地进行了切片。如果需要转码、多码率等功能，需要自己用push和
-<a href="https://github.com/arut/nginx-rtmp-module/wiki/Directives#exec_push">exec_push</a>拼一下，我之前试的时候效果并
-不好，所以不太推荐，当然也可能是我之前机器不太好（因为ffmpeg可能会吃掉所有CPU，机器好不好影响挺大的）。</p>
-<p>hls的配置如下</p>
+<p> 需要注意的是 ，nginx-rtmp-module 的所有回调都不支持 https， 所以如果想用 https 在远端作控制需要用 http 在本地中转一次 。</p>
+<h1>Dash 与 HLS</h1>
+<p>rtmp 虽然是一种老牌的流媒体协议 ， 但是它存在一些固有的问题 。 比如对现有的 CDN 基础设施不友好 ， 相对于 HTTP 更复杂 ，
+ 有状态 。 现在的流媒体也有倾向于采用 HTTP 协议来进行流媒体传输的趋势 。 但是 HTTP 协议存在延时大的问题 ， 算是各有利弊 。</p>
+<p>nginx-rtmp-module 内置了对 hls 和 dash 的支持 。 其中 hls 我用了一段时间 ， 感觉还好 ，dash 没用过 ， 我就不评价了 。</p>
+<p> 其实 hls 的支持也很简单 ， 就是简单地进行了切片 。 如果需要转码 、 多码率等功能 ， 需要自己用 push 和 
+<a href="https://github.com/arut/nginx-rtmp-module/wiki/Directives#exec_push">exec_push</a> 拼一下 ， 我之前试的时候效果并 
+ 不好 ， 所以不太推荐 ， 当然也可能是我之前机器不太好 （ 因为 ffmpeg 可能会吃掉所有 CPU， 机器好不好影响挺大的 ）。</p>
+<p>hls 的配置如下 </p>
 <div class="highlight"><pre><span></span><span class="k">...</span>
 
 <span class="s">rtmp</span> <span class="p">{</span>
@@ -255,11 +255,11 @@ reload并不能让nginx切到新的配置，这个算是nginx-rtmp-module的bug�
 </pre></div>
 
 
-<p>简单说，nginx-rtmp-module会帮你把hls切好，你需要自己用http服务器把它服务出去。</p>
-<h2>状态监视</h2>
-<p>之前说了可以用notify实现在线人数监视，不过这个也不那么可靠（毕竟HTTP请求失败了nginx-rtmp-module不会重试），另外
-相对也挺复杂的。其实nginx-rtmp-module内置了一个状态信息。</p>
-<p>配置如下：</p>
+<p> 简单说 ，nginx-rtmp-module 会帮你把 hls 切好 ， 你需要自己用 http 服务器把它服务出去 。</p>
+<h2> 状态监视 </h2>
+<p> 之前说了可以用 notify 实现在线人数监视 ， 不过这个也不那么可靠 （ 毕竟 HTTP 请求失败了 nginx-rtmp-module 不会重试 ）， 另外 
+ 相对也挺复杂的 。 其实 nginx-rtmp-module 内置了一个状态信息 。</p>
+<p> 配置如下 ：</p>
 <div class="highlight"><pre><span></span><span class="k">...</span>
 
 <span class="s">http</span> <span class="p">{</span>
@@ -282,44 +282,44 @@ reload并不能让nginx切到新的配置，这个算是nginx-rtmp-module的bug�
 </pre></div>
 
 
-<p>简单地在nginx的http配置里加上rtmp_stat就可以了，会返回一个xml文件，如果你想在浏览器里比较舒服地看这个xml文件，
-可以从<a href="https://github.com/arut/nginx-rtmp-module/blob/master/stat.xsl">这里</a>下载xsl文件放到服务器上，并且加上
-后面的配置。最后如果不想被围观，可以加上acl。（如果你已经写了一个回调http服务器的话，也可以用
-<a href="https://nginx.org/en/docs/http/ngx_http_auth_request_module.html">这个模块</a>，效果拔群。</p>
+<p> 简单地在 nginx 的 http 配置里加上 rtmp_stat 就可以了 ， 会返回一个 xml 文件 ， 如果你想在浏览器里比较舒服地看这个 xml 文件 ，
+ 可以从 <a href="https://github.com/arut/nginx-rtmp-module/blob/master/stat.xsl"> 这里 </a> 下载 xsl 文件放到服务器上 ， 并且加上 
+ 后面的配置 。 最后如果不想被围观 ， 可以加上 acl。（ 如果你已经写了一个回调 http 服务器的话 ， 也可以用 
+<a href="https://nginx.org/en/docs/http/ngx_http_auth_request_module.html"> 这个模块 </a>， 效果拔群 。</p>
 <h2>Alternative</h2>
-<p>我在接触直播之后用的第一rtmp服务器就是nginx-rtmp-module，感觉用起来还不错，就一直用下来的。前天讨论的时候感谢
-@typcn 童鞋指出了，nginx-rtmp-module的一些问题：</p>
+<p> 我在接触直播之后用的第一 rtmp 服务器就是 nginx-rtmp-module， 感觉用起来还不错 ， 就一直用下来的 。 前天讨论的时候感谢 
+@typcn  童鞋指出了 ，nginx-rtmp-module 的一些问题 ：</p>
 <ol>
-<li>没有修 pts，只是简单复制，兼容性差</li>
-<li>没有GOP重传，用户加入之后拿到的第一帧不是关键帧，导致用户开始播放后，会有数秒的黑屏，直到收到下一个IDR帧</li>
+<li> 没有修  pts， 只是简单复制 ， 兼容性差 </li>
+<li> 没有 GOP 重传 ， 用户加入之后拿到的第一帧不是关键帧 ， 导致用户开始播放后 ， 会有数秒的黑屏 ， 直到收到下一个 IDR 帧 </li>
 </ol>
-<p>他的原话是</p>
+<p> 他的原话是 </p>
 <blockquote>
-<p>nginx-rtmp 是最差的 rtmp 服务器：</p>
+<p>nginx-rtmp  是最差的  rtmp  服务器 ：</p>
 </blockquote>
-<p>他指出的2我已经验证过了。即使如此，我觉得nginx-rtmp也有一些可圈可点之处：</p>
+<p> 他指出的 2 我已经验证过了 。 即使如此 ， 我觉得 nginx-rtmp 也有一些可圈可点之处 ：</p>
 <ol>
-<li>在直播的过程中，不可避免的还是会用到http服务（认证、HLS、状态），nginx作为久经考验的http服务器，还是值得信赖的。
-既然会用上nginx，能all-in-one的话还是不错的，而且配置也能放在一起，比较方便维护。</li>
-<li>文档质量很高。nginx-rtmp-module的<a href="https://github.com/arut/nginx-rtmp-module/wiki/Directives">reference</a>非常
-清晰，结构清楚。</li>
+<li> 在直播的过程中 ， 不可避免的还是会用到 http 服务 （ 认证 、HLS、 状态 ），nginx 作为久经考验的 http 服务器 ， 还是值得信赖的 。
+ 既然会用上 nginx， 能 all-in-one 的话还是不错的 ， 而且配置也能放在一起 ， 比较方便维护 。</li>
+<li> 文档质量很高 。nginx-rtmp-module 的 <a href="https://github.com/arut/nginx-rtmp-module/wiki/Directives">reference</a> 非常 
+ 清晰 ， 结构清楚 。</li>
 </ol>
-<p>@typcn 和 @youngcow 老师相对于 nginx-rtmp-module 都更推荐 srs。感兴趣的可以去尝试。</p>
-<h1>客户端</h1>
-<p>现在我们已经有一个能正常运转的rtmp服务器了，接下来需要的是是从本地把桌面的视频和音频通过rtmp发到服务器上。</p>
-<p>这是我在Linux下用的命令：</p>
+<p>@typcn  和  @youngcow  老师相对于  nginx-rtmp-module  都更推荐  srs。 感兴趣的可以去尝试 。</p>
+<h1> 客户端 </h1>
+<p> 现在我们已经有一个能正常运转的 rtmp 服务器了 ， 接下来需要的是是从本地把桌面的视频和音频通过 rtmp 发到服务器上 。</p>
+<p> 这是我在 Linux 下用的命令 ：</p>
 <div class="highlight"><pre><span></span><span class="x">~&gt; ffmpeg -video_size 1920x1080 -framerate 25 -f x11grab -i :0.0+0,0 -f pulse -ac 2 -i default -f flv -codec:v libx264 -preset slow -crf 22 -x264opts keyint=100:min-keyint=20:scenecut=-1 -codec:a aac &quot;rtmp://</span><span class="cp">{{</span><span class="nv">server_ip</span><span class="cp">}}</span><span class="x">/live/tuna&quot;</span>
 </pre></div>
 
 
 <ol>
-<li><code>-video_size 1920x1080 -framerate 25 -f x11grab -i :0.0+0,0</code>从我的X服务器屏幕上抓了1920x1080的视频。</li>
-<li><code>-f pulse -ac 2 -i default</code>从我的pulseaudio服务器把音频抓了出来。理论上从alsa抓也可以，但是我没有成功。arch下如果要从pulseaudio抓音频的话，只需要装pulseaudio这个包，重启一下机器，然后装pavucontrol，运行上面的命令之后在pavucontrol的record这个tab下就会看到我们的流，选择一个合适声卡就可以了。</li>
-<li><code>-codec:v libx264 -preset slow -crt 22 -codec:a aac</code>编码成h264和aac。这是nginx-rtmp-module官方支持的编码。</li>
-<li><code>-x264opts keyint=100:min-keyint=20:scenecut=-1</code>是为了避免 @typcn 提出的问题2，也就是故意在视频中插入较多的关键 帧，减少黑屏的出现，相应的也会增高码率。</li>
-<li>最后是rtmp的url，因为我们用了rtmp的默认端口，可以不用写端口号，live是application的名字，tuna则是channel的名字。</li>
+<li><code>-video_size 1920x1080 -framerate 25 -f x11grab -i :0.0+0,0</code> 从我的 X 服务器屏幕上抓了 1920x1080 的视频 。</li>
+<li><code>-f pulse -ac 2 -i default</code> 从我的 pulseaudio 服务器把音频抓了出来 。 理论上从 alsa 抓也可以 ， 但是我没有成功 。arch 下如果要从 pulseaudio 抓音频的话 ， 只需要装 pulseaudio 这个包 ， 重启一下机器 ， 然后装 pavucontrol， 运行上面的命令之后在 pavucontrol 的 record 这个 tab 下就会看到我们的流 ， 选择一个合适声卡就可以了 。</li>
+<li><code>-codec:v libx264 -preset slow -crt 22 -codec:a aac</code> 编码成 h264 和 aac。 这是 nginx-rtmp-module 官方支持的编码 。</li>
+<li><code>-x264opts keyint=100:min-keyint=20:scenecut=-1</code> 是为了避免  @typcn  提出的问题 2， 也就是故意在视频中插入较多的关键   帧 ， 减少黑屏的出现 ， 相应的也会增高码率 。</li>
+<li> 最后是 rtmp 的 url， 因为我们用了 rtmp 的默认端口 ， 可以不用写端口号 ，live 是 application 的名字 ，tuna 则是 channel 的名字 。</li>
 </ol>
-<p>其他操作系统的用户可以参照<a href="https://trac.ffmpeg.org/wiki/Capture/Desktop">这里</a>。</p>
+<p> 其他操作系统的用户可以参照 <a href="https://trac.ffmpeg.org/wiki/Capture/Desktop"> 这里 </a>。</p>
   </div>
   <div class="tag-cloud">
     <p>

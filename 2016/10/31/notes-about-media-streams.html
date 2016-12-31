@@ -29,16 +29,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <meta name="author" content="Hui Yiqun" />
-<meta name="description" content="起因 实验室最近想要对视频站点的重编码和重采样进行逆向分析，保证水印信息能够在这个过程中存活。本来我觉得这是一个很容易的工作， 毕竟我们有ffprobe可以直接用，感觉ffprobe再diff一下就可以了。然而问题在于，之前虽然上过流媒体课，也折腾过nginx-rtmp-module， 但是对于视频流的很多更细节的实现，所以借着这个机会，想更深入地对多媒体的编码存储进行一下更深入 地学习。 概念 Aspect Ratio 在ffprobe的输出里一般会看到display_aspect_ratio和sample_aspect_ratio，而且数字上比较奇怪。 这里有一个浅显简单的解释，简单说来就是： $$ Frame Aspect Ratio = Storage Aspect Ratio $$ $$ Sample Aspect Ratio = Pixel Aspect Ratio $$ 画面上实际显示的高宽比是Display Aspect Ratio，计算公式如下： $$ Display Aspect Ratio = Frame Aspect Ratio \times Sample Aspect Ratio $$ tbr tbn tbc …if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) { var align = "center", indent = "0em", linebreak = "false"; if (false) { align = (screen.width" />
+<meta name="description" content="起因 实验室最近想要对视频站点的重编码和重采样进行逆向分析 ， 保证水印信息能够在这个过程中存活 。 本来我觉得这是一个很容易的工作 ， 毕竟我们有 ffprobe 可以直接用 ， 感觉 ffprobe 再 diff 一下就可以了 。 然而问题在于 ， 之前虽然上过流媒体课 ， 也折腾过 nginx-rtmp-module， 但是对于视频流的很多更细节的实现 ， 所以借着这个机会 ， 想更深入地对多媒体的编码存储进行一下更深入 地学习 。 概念 Aspect Ratio 在 ffprobe 的输出里一般会看到 display_aspect_ratio 和 sample_aspect_ratio， 而且数字上比较奇怪 。 这里 有一个浅显简单的解释 ， 简单说来就是 ： $$ Frame Aspect Ratio = Storage Aspect Ratio $$ $$ Sample Aspect Ratio = Pixel Aspect Ratio $$ 画面上实际显示的高宽比是 Display Aspect Ratio， 计算公式如下 …if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) { var align = "center", indent = "0em", linebreak = "false"; if (false) { align = (screen.width" />
 <meta name="keywords" content="">
 <meta property="og:site_name" content="Notepad"/>
 <meta property="og:title" content="多媒体学习小记"/>
-<meta property="og:description" content="起因 实验室最近想要对视频站点的重编码和重采样进行逆向分析，保证水印信息能够在这个过程中存活。本来我觉得这是一个很容易的工作， 毕竟我们有ffprobe可以直接用，感觉ffprobe再diff一下就可以了。然而问题在于，之前虽然上过流媒体课，也折腾过nginx-rtmp-module， 但是对于视频流的很多更细节的实现，所以借着这个机会，想更深入地对多媒体的编码存储进行一下更深入 地学习。 概念 Aspect Ratio 在ffprobe的输出里一般会看到display_aspect_ratio和sample_aspect_ratio，而且数字上比较奇怪。 这里有一个浅显简单的解释，简单说来就是： $$ Frame Aspect Ratio = Storage Aspect Ratio $$ $$ Sample Aspect Ratio = Pixel Aspect Ratio $$ 画面上实际显示的高宽比是Display Aspect Ratio，计算公式如下： $$ Display Aspect Ratio = Frame Aspect Ratio \times Sample Aspect Ratio $$ tbr tbn tbc …if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) { var align = "center", indent = "0em", linebreak = "false"; if (false) { align = (screen.width"/>
+<meta property="og:description" content="起因 实验室最近想要对视频站点的重编码和重采样进行逆向分析 ， 保证水印信息能够在这个过程中存活 。 本来我觉得这是一个很容易的工作 ， 毕竟我们有 ffprobe 可以直接用 ， 感觉 ffprobe 再 diff 一下就可以了 。 然而问题在于 ， 之前虽然上过流媒体课 ， 也折腾过 nginx-rtmp-module， 但是对于视频流的很多更细节的实现 ， 所以借着这个机会 ， 想更深入地对多媒体的编码存储进行一下更深入 地学习 。 概念 Aspect Ratio 在 ffprobe 的输出里一般会看到 display_aspect_ratio 和 sample_aspect_ratio， 而且数字上比较奇怪 。 这里 有一个浅显简单的解释 ， 简单说来就是 ： $$ Frame Aspect Ratio = Storage Aspect Ratio $$ $$ Sample Aspect Ratio = Pixel Aspect Ratio $$ 画面上实际显示的高宽比是 Display Aspect Ratio， 计算公式如下 …if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) { var align = "center", indent = "0em", linebreak = "false"; if (false) { align = (screen.width"/>
 <meta property="og:locale" content="zh_CN"/>
 <meta property="og:url" content="../../../2016/10/31/notes-about-media-streams.html"/>
 <meta property="og:type" content="article"/>
-<meta property="article:published_time" content="2016-10-31 16:07:23+08:00"/>
-<meta property="article:modified_time" content=""/>
+<meta property="article:published_time" content="2016-10-31 16:59:04+08:00"/>
+<meta property="article:modified_time" content="2016-12-31 21:10:53+08:00"/>
 <meta property="article:author" content="../../../author/hui-yiqun.html">
 <meta property="article:section" content="Multimedia"/>
 <meta property="og:image" content="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120">
@@ -88,22 +88,22 @@
 
 
   <div>
-    <h2>起因</h2>
-<p>实验室最近想要对视频站点的重编码和重采样进行逆向分析，保证水印信息能够在这个过程中存活。本来我觉得这是一个很容易的工作，
-毕竟我们有ffprobe可以直接用，感觉ffprobe再diff一下就可以了。然而问题在于，之前虽然上过流媒体课，也折腾过nginx-rtmp-module，
-但是对于视频流的很多更细节的实现，所以借着这个机会，想更深入地对多媒体的编码存储进行一下更深入
-地学习。</p>
-<h2>概念</h2>
+    <h2> 起因 </h2>
+<p> 实验室最近想要对视频站点的重编码和重采样进行逆向分析 ， 保证水印信息能够在这个过程中存活 。 本来我觉得这是一个很容易的工作 ，
+ 毕竟我们有 ffprobe 可以直接用 ， 感觉 ffprobe 再 diff 一下就可以了 。 然而问题在于 ， 之前虽然上过流媒体课 ， 也折腾过 nginx-rtmp-module，
+ 但是对于视频流的很多更细节的实现 ， 所以借着这个机会 ， 想更深入地对多媒体的编码存储进行一下更深入 
+ 地学习 。</p>
+<h2> 概念 </h2>
 <h3>Aspect Ratio</h3>
-<p>在ffprobe的输出里一般会看到display_aspect_ratio和sample_aspect_ratio，而且数字上比较奇怪。</p>
-<p><a href="http://forum.videohelp.com/threads/323530-please-explain-SAR-DAR-PAR">这里</a>有一个浅显简单的解释，简单说来就是：</p>
+<p> 在 ffprobe 的输出里一般会看到 display_aspect_ratio 和 sample_aspect_ratio， 而且数字上比较奇怪 。</p>
+<p><a href="http://forum.videohelp.com/threads/323530-please-explain-SAR-DAR-PAR"> 这里 </a> 有一个浅显简单的解释 ， 简单说来就是 ：</p>
 <div class="math">$$ Frame Aspect Ratio = Storage Aspect Ratio $$</div>
 <div class="math">$$ Sample Aspect Ratio = Pixel Aspect Ratio $$</div>
-<p>画面上实际显示的高宽比是Display Aspect Ratio，计算公式如下：</p>
+<p> 画面上实际显示的高宽比是 Display Aspect Ratio， 计算公式如下 ：</p>
 <div class="math">$$ Display Aspect Ratio = Frame Aspect Ratio \times Sample Aspect Ratio $$</div>
 <h3>tbr tbn tbc</h3>
-<p>关于这三个参数，<a href="http://ffmpeg-users.933282.n4.nabble.com/What-does-the-output-of-ffmpeg-mean-tbr-tbn-tbc-etc-td941538.html">邮件列表</a>里有讨论，
-但是实际讲的比较模糊，所以我决定还是直接看<a href="https://github.com/FFmpeg/FFmpeg/blob/0c0da45f0fc0626d12796f017918800f735512c8/libavformat/dump.c#L496">代码</a>。</p>
+<p> 关于这三个参数 ，<a href="http://ffmpeg-users.933282.n4.nabble.com/What-does-the-output-of-ffmpeg-mean-tbr-tbn-tbc-etc-td941538.html"> 邮件列表 </a> 里有讨论 ，
+ 但是实际讲的比较模糊 ， 所以我决定还是直接看 <a href="https://github.com/FFmpeg/FFmpeg/blob/0c0da45f0fc0626d12796f017918800f735512c8/libavformat/dump.c#L496"> 代码 </a>。</p>
 <div class="highlight"><pre><span></span><span class="kt">int</span> <span class="n">fps</span> <span class="o">=</span> <span class="n">st</span><span class="o">-&gt;</span><span class="n">avg_frame_rate</span><span class="p">.</span><span class="n">den</span> <span class="o">&amp;&amp;</span> <span class="n">st</span><span class="o">-&gt;</span><span class="n">avg_frame_rate</span><span class="p">.</span><span class="n">num</span><span class="p">;</span>
 <span class="kt">int</span> <span class="n">tbr</span> <span class="o">=</span> <span class="n">st</span><span class="o">-&gt;</span><span class="n">r_frame_rate</span><span class="p">.</span><span class="n">den</span> <span class="o">&amp;&amp;</span> <span class="n">st</span><span class="o">-&gt;</span><span class="n">r_frame_rate</span><span class="p">.</span><span class="n">num</span><span class="p">;</span>
 <span class="kt">int</span> <span class="n">tbn</span> <span class="o">=</span> <span class="n">st</span><span class="o">-&gt;</span><span class="n">time_base</span><span class="p">.</span><span class="n">den</span> <span class="o">&amp;&amp;</span> <span class="n">st</span><span class="o">-&gt;</span><span class="n">time_base</span><span class="p">.</span><span class="n">num</span><span class="p">;</span>
@@ -123,36 +123,36 @@
 </pre></div>
 
 
-<p>这里用到了四个有理数，libav里有理数的定义在<a href="https://github.com/FFmpeg/FFmpeg/blob/415f907ce8dcca87c9e7cfdc954b92df399d3d80/libavutil/rational.h">这</a>，
-其中den为分母，num为分子，这里的<code>fps</code>、<code>tbr</code>、<code>tbn</code>、<code>tbc</code>四个变量分别代指对应的数据是否为合法的值（分子分母都不为0）。</p>
-<p>所以实际的输出是来自于下面的print，
-其中<code>print_fps</code>的定义在<a href="https://github.com/FFmpeg/FFmpeg/blob/0c0da45f0fc0626d12796f017918800f735512c8/libavformat/dump.c#L120">这</a>，
-<code>av_q2d</code>的定义在<a href="https://github.com/FFmpeg/FFmpeg/blob/415f907ce8dcca87c9e7cfdc954b92df399d3d80/libavutil/rational.h#L104">这</a>。</p>
-<p><code>av_q2d</code>实际是简单地把有理数转为双精度浮点数。<code>print_fps</code>就更简单了，就是一个不带回车的print，后面那么复杂的判断主要是为了在数据间加上逗号。</p>
-<p>所以关键在于<code>st-&gt;avg_frame_rate</code>、<code>st-&gt;r_frame_rate</code>、<code>st-&gt;time_base</code>及<code>st-&gt;codec-&gt;time_base</code>这四个变量的含义，
-它们的描述在<a href="https://ffmpeg.org/doxygen/3.1/structAVStream.html#a946e1e9b89eeeae4cab8a833b482c1ad">文档</a>里都有。
-由于暂时没有深读代码，我也没有自信翻译这些文档，还是直接看英文原文吧。</p>
+<p> 这里用到了四个有理数 ，libav 里有理数的定义在 <a href="https://github.com/FFmpeg/FFmpeg/blob/415f907ce8dcca87c9e7cfdc954b92df399d3d80/libavutil/rational.h"> 这 </a>，
+ 其中 den 为分母 ，num 为分子 ， 这里的 <code>fps</code>、<code>tbr</code>、<code>tbn</code>、<code>tbc</code> 四个变量分别代指对应的数据是否为合法的值 （ 分子分母都不为 0）。</p>
+<p> 所以实际的输出是来自于下面的 print，
+ 其中 <code>print_fps</code> 的定义在 <a href="https://github.com/FFmpeg/FFmpeg/blob/0c0da45f0fc0626d12796f017918800f735512c8/libavformat/dump.c#L120"> 这 </a>，
+<code>av_q2d</code> 的定义在 <a href="https://github.com/FFmpeg/FFmpeg/blob/415f907ce8dcca87c9e7cfdc954b92df399d3d80/libavutil/rational.h#L104"> 这 </a>。</p>
+<p><code>av_q2d</code> 实际是简单地把有理数转为双精度浮点数 。<code>print_fps</code> 就更简单了 ， 就是一个不带回车的 print， 后面那么复杂的判断主要是为了在数据间加上逗号 。</p>
+<p> 所以关键在于 <code>st-&gt;avg_frame_rate</code>、<code>st-&gt;r_frame_rate</code>、<code>st-&gt;time_base</code> 及 <code>st-&gt;codec-&gt;time_base</code> 这四个变量的含义 ，
+ 它们的描述在 <a href="https://ffmpeg.org/doxygen/3.1/structAVStream.html#a946e1e9b89eeeae4cab8a833b482c1ad"> 文档 </a> 里都有 。
+ 由于暂时没有深读代码 ， 我也没有自信翻译这些文档 ， 还是直接看英文原文吧 。</p>
 <h3>interlaced/progressive</h3>
-<p>视频的分辨率里常常有p和i的区别，比如1080p和1080i等。这里的p和i就是指progressive和interlaced。这两个概念其实十分简单。</p>
-<p>以前的视频信号主要是模拟信号，并且受到接收端的限制，传输过程中是不作压缩的，所以带宽严重限制了传输过程中的码率。
-因此，有人就想出了利用视觉停留等现象，降低传输码率的方法，这就是interlaced。也就是对于相邻两帧，分别只取奇数行和偶数行，
-将两帧合并为一帧，这样传输过程中的码率就降低到了原来的一半。<strong>需要注意的是，这种扫描方式通常是和硬件实现结合在一起的。</strong></p>
-<p>然而，随着现在数字电视及互联网的普及，接收端越来越智能，可以胜任越来越复杂的解码工作，因此编码端可以使用更复杂高效的方式对视频进行编码，
-人们发现相比于interlaced的方式，每一帧都取完整的一帧，编码出来的码率反而更低(为什么？因为引入了一些额外的高频分量)。这种取完整帧的方式就是progressive。</p>
-<p>所以一般来说，现在更流行的分辨率通常是以p结尾，以i结尾的分辨率已经很少了。但是由于历史遗留问题和实现的原因（i比p硬件上更容易实现），
-很多视频设备输出的视频依然是interlaced的。</p>
-<p>另外，需要注意到的是，interlaced的视频，其奇数行和偶数行的内容分别为两个field，这个概念在编码的过程中也会遇到。</p>
+<p> 视频的分辨率里常常有 p 和 i 的区别 ， 比如 1080p 和 1080i 等 。 这里的 p 和 i 就是指 progressive 和 interlaced。 这两个概念其实十分简单 。</p>
+<p> 以前的视频信号主要是模拟信号 ， 并且受到接收端的限制 ， 传输过程中是不作压缩的 ， 所以带宽严重限制了传输过程中的码率 。
+ 因此 ， 有人就想出了利用视觉停留等现象 ， 降低传输码率的方法 ， 这就是 interlaced。 也就是对于相邻两帧 ， 分别只取奇数行和偶数行 ，
+ 将两帧合并为一帧 ， 这样传输过程中的码率就降低到了原来的一半 。<strong> 需要注意的是 ， 这种扫描方式通常是和硬件实现结合在一起的 。</strong></p>
+<p> 然而 ， 随着现在数字电视及互联网的普及 ， 接收端越来越智能 ， 可以胜任越来越复杂的解码工作 ， 因此编码端可以使用更复杂高效的方式对视频进行编码 ，
+ 人们发现相比于 interlaced 的方式 ， 每一帧都取完整的一帧 ， 编码出来的码率反而更低 ( 为什么 ？ 因为引入了一些额外的高频分量 )。 这种取完整帧的方式就是 progressive。</p>
+<p> 所以一般来说 ， 现在更流行的分辨率通常是以 p 结尾 ， 以 i 结尾的分辨率已经很少了 。 但是由于历史遗留问题和实现的原因 （i 比 p 硬件上更容易实现 ），
+ 很多视频设备输出的视频依然是 interlaced 的 。</p>
+<p> 另外 ， 需要注意到的是 ，interlaced 的视频 ， 其奇数行和偶数行的内容分别为两个 field， 这个概念在编码的过程中也会遇到 。</p>
 <h2>cheatsheet</h2>
 <ul>
-<li>从视频中取出每一帧</li>
+<li> 从视频中取出每一帧 </li>
 </ul>
 <div class="highlight"><pre><span></span>~&gt; ffmpeg -i &lt;input&gt; frame_%d.bmp
 </pre></div>
 
 
 <h2>abbreviations</h2>
-<p>其实从来零开始学习视频编码有个非常蛋疼的问题是缩写通常看不懂。
-因此摘抄了一些缩写，用于检索。</p>
+<p> 其实从来零开始学习视频编码有个非常蛋疼的问题是缩写通常看不懂 。
+ 因此摘抄了一些缩写 ， 用于检索 。</p>
 <table>
 <thead>
 <tr>

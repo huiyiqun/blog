@@ -85,20 +85,18 @@
     </p>
   </header>
   <div>
-      <h2>起因</h2>
-<p>实验室最近想要对视频站点的重编码和重采样进行逆向分析，保证水印信息能够在这个过程中存活。本来我觉得这是一个很容易的工作，
-毕竟我们有ffprobe可以直接用，感觉ffprobe再diff一下就可以了。然而问题在于，之前虽然上过流媒体课，也折腾过nginx-rtmp-module，
-但是对于视频流的很多更细节的实现，所以借着这个机会，想更深入地对多媒体的编码存储进行一下更深入
-地学习。</p>
-<h2>概念</h2>
+      <h2> 起因 </h2>
+<p> 实验室最近想要对视频站点的重编码和重采样进行逆向分析 ， 保证水印信息能够在这个过程中存活 。 本来我觉得这是一个很容易的工作 ，
+ 毕竟我们有 ffprobe 可以直接用 ， 感觉 ffprobe 再 diff 一下就可以了 。 然而问题在于 ， 之前虽然上过流媒体课 ， 也折腾过 nginx-rtmp-module，
+ 但是对于视频流的很多更细节的实现 ， 所以借着这个机会 ， 想更深入地对多媒体的编码存储进行一下更深入 
+ 地学习 。</p>
+<h2> 概念 </h2>
 <h3>Aspect Ratio</h3>
-<p>在ffprobe的输出里一般会看到display_aspect_ratio和sample_aspect_ratio，而且数字上比较奇怪。</p>
-<p><a href="http://forum.videohelp.com/threads/323530-please-explain-SAR-DAR-PAR">这里</a>有一个浅显简单的解释，简单说来就是：</p>
+<p> 在 ffprobe 的输出里一般会看到 display_aspect_ratio 和 sample_aspect_ratio， 而且数字上比较奇怪 。</p>
+<p><a href="http://forum.videohelp.com/threads/323530-please-explain-SAR-DAR-PAR"> 这里 </a> 有一个浅显简单的解释 ， 简单说来就是 ：</p>
 <div class="math">$$ Frame Aspect Ratio = Storage Aspect Ratio $$</div>
 <div class="math">$$ Sample Aspect Ratio = Pixel Aspect Ratio $$</div>
-<p>画面上实际显示的高宽比是Display Aspect Ratio，计算公式如下：</p>
-<div class="math">$$ Display Aspect Ratio = Frame Aspect Ratio \times Sample Aspect Ratio $$</div>
-<h3>tbr tbn tbc …</h3><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+<p> 画面上实际显示的高宽比是 Display Aspect Ratio， 计算公式如下 …</p><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
         linebreak = "false";
@@ -172,29 +170,21 @@
     </p>
   </header>
   <div>
-      <h1>前言</h1>
-<p>前段时间用nginx-rtmp-module搭了一个直播系统，测试的时候用来直播了一下桌面，感觉评价还不错，应邀写个简单的教程。</p>
-<h1>服务器</h1>
-<h2>安装</h2>
-<p>服务器端我用的是<a href="https://github.com/arut/nginx-rtmp-module">nginx-rtmp-module</a>，操作系统用的是CentOS 7，部署其实很简单，
-它主页上就有<a href="https://github.com/arut/nginx-rtmp-module#build">教程</a>。</p>
-<p>当然为了系统比较干净，推荐还是简单打个包，CentOS的话我推荐从<a href="https://nginx.org/packages/centos/7/SRPMS/">nginx的官方源</a>下载
-源码包，在configure的参数上加一条<code>--add-module=/path/to/nginx-rtmp-module</code>即可。</p>
-<p>如果是archlinux的话可以考虑用<a href="https://aur.archlinux.org/packages/nginx-rtmp">aur的里的包</a>。</p>
-<h2>基本配置</h2>
-<p>nginx的基本配置可以参考如下:</p>
+      <h1> 前言 </h1>
+<p> 前段时间用 nginx-rtmp-module 搭了一个直播系统 ， 测试的时候用来直播了一下桌面 ， 感觉评价还不错 ， 应邀写个简单的教程 。</p>
+<h1> 服务器 </h1>
+<h2> 安装 </h2>
+<p> 服务器端我用的是 <a href="https://github.com/arut/nginx-rtmp-module">nginx-rtmp-module</a>， 操作系统用的是 CentOS 7， 部署其实很简单 ，
+ 它主页上就有 <a href="https://github.com/arut/nginx-rtmp-module#build"> 教程 </a>。</p>
+<p> 当然为了系统比较干净 ， 推荐还是简单打个包 ，CentOS 的话我推荐从 <a href="https://nginx.org/packages/centos/7/SRPMS/">nginx 的官方源 </a> 下载 
+ 源码包 ， 在 configure 的参数上加一条 <code>--add-module=/path/to/nginx-rtmp-module</code> 即可 。</p>
+<p> 如果是 archlinux 的话可以考虑用 <a href="https://aur.archlinux.org/packages/nginx-rtmp">aur 的里的包 </a>。</p>
+<h2> 基本配置 </h2>
+<p>nginx 的基本配置可以参考如下 :</p>
 <div class="highlight"><pre><span></span><span class="k">user</span>  <span class="s">nginx</span><span class="p">;</span>
 <span class="k">worker_processes</span>  <span class="mi">1</span><span class="p">;</span>
 
-<span class="k">error_log</span>  <span class="s">/var/log/nginx/error.log</span> <span class="s">warn</span><span class="p">;</span>
-<span class="k">pid</span>        <span class="s">/var/run/nginx.pid</span><span class="p">;</span>
-
-
-<span class="k">events</span> <span class="p">{</span>
-    <span class="kn">worker_connections</span>  <span class="mi">1024</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="k">rtmp …</span></pre></div>
+<span class="k">error_log</span>  <span class="s">/var/log/nginx/error …</span></pre></div>
       <br>
       <a class="btn" href="../2016/10/28/livestream-your-desktop-with-nginx-rtmp-module.html#livestream-your-desktop-with-nginx-rtmp-module">    Continue reading
 </a>
