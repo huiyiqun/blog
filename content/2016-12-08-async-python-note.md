@@ -13,8 +13,8 @@ Category: Python
 
 所以最重要的是如何地让用户请求不阻塞，充分地让IO跑满。最早人们通过多进程来解决这个问题，后来发现进程实在是太笨重，
 转而使用线程来解决这个问题，但是线程切换对于大量短时io依然过重。所以最后人们转而开始强调并发，不再强调并行，
-也就是所谓的异步。 这就是为什么Python这样的有PIL存在的，单进程执行语言，在web开发上依然能有一席之地的原因。
-所以要用Python高效的实现服务，良好地异步是必不可少的。
+也就是所谓的异步。 这就是为什么Python这样的有[GIL](https://wiki.python.org/moin/GlobalInterpreterLock)存在的，
+串行执行的语言，在web开发上依然能有一席之地的原因。所以要用Python高效的实现服务，良好地异步是必不可少的。
 
 Python 3.4 新加了[asyncio](https://docs.python.org/3/library/asyncio.html)，一直很感兴趣，但是也没时间去深入研究。
 
@@ -33,33 +33,34 @@ Python 3.4 新加了[asyncio](https://docs.python.org/3/library/asyncio.html)，
 
 官网上的两个例子很适合理解，我就摘抄到这里了：
 
+```python
+from greenlet import greenlet
 
-    from greenlet import greenlet
+def test1():
+    print 12
+    gr2.switch()
+    print 34
 
-    def test1():
-        print 12
-        gr2.switch()
-        print 34
-
-    def test2():
-        print 56
-        gr1.switch()
-        print 78
-
-    gr1 = greenlet(test1)
-    gr2 = greenlet(test2)
+def test2():
+    print 56
     gr1.switch()
+    print 78
+
+gr1 = greenlet(test1)
+gr2 = greenlet(test2)
+gr1.switch()
+```
 
 
 这个例子很简单，首先定义了两个函数作为`greenlet`的入口，在外部定义两个`greenlet`，然后`switch`到`gr1`，
 这个时候`gr1`会`switch`到`gr2`，然后`gr2`重新`switch`到`gr1`，`gr1`结束退出，整个程序结束退出。
 程序运行的输出如下：
 
-
-    12
-    56
-    34
-
+```
+12
+56
+34
+```
 
 我们可以看到：
 
@@ -73,42 +74,43 @@ Python 3.4 新加了[asyncio](https://docs.python.org/3/library/asyncio.html)，
 
 Greenlet的另一个例子更有实用价值一些，假设你写了一个console程序：
 
+```python
+def process_commands(*args):
+    while True:
+        line = ''
+        while not line.endswith('\n'):
+            line += read_next_char()
+        if line == 'quit\n':
+            print "are you sure?"
+            if read_next_char() != 'y':
+                continue    # ignore the command
+        process_command(line)
+```
 
-    def process_commands(*args):
-        while True:
-            line = ''
-            while not line.endswith('\n'):
-                line += read_next_char()
-            if line == 'quit\n':
-                print "are you sure?"
-                if read_next_char() != 'y':
-                    continue    # ignore the command
-            process_command(line)
-
-
-你想把它变成一个GUI程序，然而GUI框架一般是基于事件的，所以应该如何从read\_next\_char里读到下一个字符，
+你想把它变成一个GUI程序，然而GUI框架一般是基于事件的，所以应该如何从`read_next_char`里读到下一个字符，
 同时又不阻塞执行呢？一般我们采用多线程，让UI线程和上面的线程进行线程间同步。但是写过多线程的同学应该都知道，
 锁的数量多了之后很容易把程序弄得一团糟。
 
 一个解决方法是使用greenlet：
 
 
-    def event_keydown(key):
-             # jump into g_processor, sending it the key
-        g_processor.switch(key)
+```python
+def event_keydown(key):
+         # jump into g_processor, sending it the key
+    g_processor.switch(key)
 
-    def read_next_char():
-            # g_self is g_processor in this simple example
-        g_self = greenlet.getcurrent()
-            # jump to the parent (main) greenlet, waiting for the next key
-        next_char = g_self.parent.switch()
-        return next_char
+def read_next_char():
+        # g_self is g_processor in this simple example
+    g_self = greenlet.getcurrent()
+        # jump to the parent (main) greenlet, waiting for the next key
+    next_char = g_self.parent.switch()
+    return next_char
 
-    g_processor = greenlet(process_commands)
-    g_processor.switch(*args)   # input arguments to process_commands()
+g_processor = greenlet(process_commands)
+g_processor.switch(*args)   # input arguments to process_commands()
 
-    gui.mainloop()
-
+gui.mainloop()
+```
 
 代码整个和多线程很类似，但是由于greenlet采用了显式的context切换，所以完全没有必要存在锁。
 
@@ -120,33 +122,33 @@ Greenlet的另一个例子更有实用价值一些，假设你写了一个consol
 
 parent除了用于方便索引外，另一个意义在于当greenlet退出时会自动switch到它的parent。比如：
 
+```python
+from greenlet import greenlet
 
-    from greenlet import greenlet
+def test1():
+    print 12
+    gr2.switch()
+    print 34
+    return '1 return'
 
-    def test1():
-        print 12
-        gr2.switch()
-        print 34
-        return '1 return'
+def test2():
+    print 56
+    print 78
+    return '2 return'
 
-    def test2():
-        print 56
-        print 78
-        return '2 return'
-
-    gr1 = greenlet(test1)
-    gr2 = greenlet(test2)
-    print gr1.switch()
-
+gr1 = greenlet(test1)
+gr2 = greenlet(test2)
+print gr1.switch()
+```
 
 `gr2`退出之后自动switch到其parent，也就是main，因此main中的`gr1.switch`返回了test2的返回值，整个输出如下：
 
-
-    12
-    56
-    78
-    2 return
-
+```
+12
+56
+78
+2 return
+```
 
 # libev
 
@@ -179,8 +181,10 @@ libevent和libev从功能上来看差距不大，主要是对操作系统层面�
 
 一般来说，在程序开头执行如下代码：
 
-    from gevent import monkey
-    monkey.patch_all()
+```python
+from gevent import monkey
+monkey.patch_all()
+```
 
 你的程序就已经运行在gevent之下了，之后你就可以像使用线程和进程一样使用Greenlet了。
 

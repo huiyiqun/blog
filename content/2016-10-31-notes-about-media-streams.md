@@ -31,23 +31,24 @@ $$ Display Aspect Ratio = Frame Aspect Ratio \times Sample Aspect Ratio $$
 关于这三个参数，[邮件列表](http://ffmpeg-users.933282.n4.nabble.com/What-does-the-output-of-ffmpeg-mean-tbr-tbn-tbc-etc-td941538.html)里有讨论，
 但是实际讲的比较模糊，所以我决定还是直接看[代码](https://github.com/FFmpeg/FFmpeg/blob/0c0da45f0fc0626d12796f017918800f735512c8/libavformat/dump.c#L496)。
 
+```c
+int fps = st->avg_frame_rate.den && st->avg_frame_rate.num;
+int tbr = st->r_frame_rate.den && st->r_frame_rate.num;
+int tbn = st->time_base.den && st->time_base.num;
+int tbc = st->codec->time_base.den && st->codec->time_base.num;
 
-    int fps = st->avg_frame_rate.den && st->avg_frame_rate.num;
-    int tbr = st->r_frame_rate.den && st->r_frame_rate.num;
-    int tbn = st->time_base.den && st->time_base.num;
-    int tbc = st->codec->time_base.den && st->codec->time_base.num;
+if (fps || tbr || tbn || tbc)
+    av_log(NULL, AV_LOG_INFO, "%s", separator);
 
-    if (fps || tbr || tbn || tbc)
-        av_log(NULL, AV_LOG_INFO, "%s", separator);
-
-    if (fps)
-        print_fps(av_q2d(st->avg_frame_rate), tbr || tbn || tbc ? "fps, " : "fps");
-    if (tbr)
-        print_fps(av_q2d(st->r_frame_rate), tbn || tbc ? "tbr, " : "tbr");
-    if (tbn)
-        print_fps(1 / av_q2d(st->time_base), tbc ? "tbn, " : "tbn");
-    if (tbc)
-        print_fps(1 / av_q2d(st->codec->time_base), "tbc");
+if (fps)
+    print_fps(av_q2d(st->avg_frame_rate), tbr || tbn || tbc ? "fps, " : "fps");
+if (tbr)
+    print_fps(av_q2d(st->r_frame_rate), tbn || tbc ? "tbr, " : "tbr");
+if (tbn)
+    print_fps(1 / av_q2d(st->time_base), tbc ? "tbn, " : "tbn");
+if (tbc)
+    print_fps(1 / av_q2d(st->codec->time_base), "tbc");
+```
 
 
 这里用到了四个有理数，libav里有理数的定义在[这](https://github.com/FFmpeg/FFmpeg/blob/415f907ce8dcca87c9e7cfdc954b92df399d3d80/libavutil/rational.h)，
@@ -85,7 +86,7 @@ $$ Display Aspect Ratio = Frame Aspect Ratio \times Sample Aspect Ratio $$
 * 从视频中取出每一帧
 
 ```
-ffmpeg -i <input> frame_%d.bmp
+~> ffmpeg -i <input> frame_%d.bmp
 ```
 
 ## abbreviations

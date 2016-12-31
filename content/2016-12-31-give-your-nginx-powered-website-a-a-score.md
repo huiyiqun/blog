@@ -24,7 +24,7 @@ Category: Ops
 
 将 nginx 配置的 server block 改成如下内容：
 
-```
+```nginx
 server {
     listen      80 default_server;
     listen      [::]:80 default_server;

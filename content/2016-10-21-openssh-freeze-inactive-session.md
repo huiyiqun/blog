@@ -15,7 +15,7 @@ disable这个“特性”。
 # 解决
 简单地说，在笔记本上的ssh配置（如果是linux，在`~/.ssh/config`）上加上如下配置即可
 
-```
+```sshconfig
 Host *
     TCPKeepAlive yes
     ServerAliveInterval 15
@@ -47,7 +47,7 @@ ACK之后，TCP就认为这个连接是好的，之后如果没有新的数据�
 
 ssh的TCPKeepAlive这个选项的解释如下：
 
-```
+```man
      TCPKeepAlive
              Specifies whether the system should send TCP keepalive messages to
              the other side.  If they are sent, death of the connection or crash

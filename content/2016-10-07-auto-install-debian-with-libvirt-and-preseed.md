@@ -17,7 +17,7 @@ Category:   Ops
 
 1. 萌新可能把机器弄坏或者机器需要搬家
 2. 以后会长可能会让我装第二个机器
-3. ~~好久没折腾了感觉皮子有点紧~~
+3. <s>好久没折腾了感觉皮子有点紧~~</s>
 
 决定用ansible自动安装。整个过程花了大概两天左右，其实ansible和libvirt都还算好，文档挺齐全
 的，而且实现上bug不多，但是preseed的文档少而且比较乱，经常遇到文档和实际情况不符合的情况。
@@ -190,7 +190,7 @@ kernel和initrd里的文件理论上应该从iso里面解出来，在这里，�
 然后通过
 
 ```
-$ sudo tail -f /tmp/shared-guest-serial0.log
+~> sudo tail -f /tmp/shared-guest-serial0.log
 ```
 
 这个命令就可以查看安装进度了，但是不能进行交互了。
@@ -213,7 +213,7 @@ $ sudo tail -f /tmp/shared-guest-serial0.log
 有几个地方需要注意：
 
 1. 网络配置是不会起作用的，不要白费力气了。
-2. ~~不要设置`apt-setup/security_host`！如果你设置`apt-setup/security_host`为`mirror.example.com`，那么apt会尝试访问`http://mirror.example.com/`而不是`http://mirror.example.com/debian-security`，google了一下发现有一个`apt-setup/security_path`这个参数解决这个问题，但是首先example里没有，其次我加上也没有效果，应该是这个版本的bug。~~根据@zhsj提供的信息，可以把`security_path`放到`security_host`后面workaround这个问题，也就是`apt-setup/security_host=https://mirrors.tuna.tsinghua.edu.cn/debian-security`。
+2. <s>不要设置`apt-setup/security_host`！如果你设置`apt-setup/security_host`为`mirror.example.com`，那么apt会尝试访问`http://mirror.example.com/`而不是`http://mirror.example.com/debian-security`，google了一下发现有一个`apt-setup/security_path`这个参数解决这个问题，但是首先example里没有，其次我加上也没有效果，应该是这个版本的bug。</s>根据@zhsj提供的信息，可以把`security_path`放到`security_host`后面workaround这个问题，也就是`apt-setup/security_host=https://mirrors.tuna.tsinghua.edu.cn/debian-security`。
 3. 同理也不要设置`apt-setup/non-free`和`apt-setup/contrib`，类似的问题。不过mirror settings没问题。
 4. `tasksel/first`这里一定要配置，并且只留下standard，否则会给你把gnome一起装上。
 5. `debian-installer/exit/poweroff`是没什么用的，最后系统还是会halt住，`virsh status`里显示的依然是running。

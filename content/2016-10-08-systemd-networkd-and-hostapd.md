@@ -13,10 +13,10 @@ PC，因为实验室的公共Wifi效果实在不能让人满意，决定自己�
 这是minipc上的无线网卡：
 
 ```
-$ lsusb
+~> lsusb
 Bus 002 Device 002: ID 148f:5572 Ralink Technology, Corp. RT5572 Wireless Adapter
 
-$ lspci
+~> lspci
 01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller(rev 06)
 ```
 
@@ -63,7 +63,7 @@ hostapd的配置其实比较简单，顺着默认的配置文件读一遍就基�
 
 因此修改之后的service应该是：
 
-```
+```systemd
 [Unit]
 Description=Hostapd IEEE 802.11 AP, IEEE 802.1X/WPA/WPA2/EAP/RADIUS Authenticator
 After=sys-subsystem-net-devices-%i.device
@@ -88,13 +88,13 @@ WantedBy=multi-user.target
 禁用系统自带的service：
 
 ```
-$ sudo systemctl mask hostapd
+~> sudo systemctl mask hostapd
 ```
 
 启用新的service：
 
 ```
-$ sudo systemctl enable hostapd@<interface> --now
+~> sudo systemctl enable hostapd@<interface> --now
 ```
 
 如果service运行不出错，interface就已经正常起来了，这个时候你的手机已经能搜到这个ap了，但是现在是连不上的，
@@ -115,20 +115,20 @@ systemd-networkd一个比较舒服的地方是，你可以简单的把所有的�
 玄学路由，后来家昌喵配了另一个VPN，需要这套玄学路由，居然把他的VPN的up脚本直接写到了我的
 `up.sh`里，最后网络变得一团糟。
 
-后来跳板机迁移，我在up.sh里就写了ip link xxx up。其他的配置都扔到了systemd.network里，这样
+后来跳板机迁移，我在up.sh里就写了`ip link xxx up`。其他的配置都扔到了systemd.network里，这样
 思路就清晰多了，玄学路由也被拆了出来。
 
 对于systemd-networkd来说，它不在乎你的interface来自于vpn，有线网卡还是无线网卡，只要interface
 up了，它就将配置写进去。这样能让我专注于网络拓扑本身，而不是它的接入方式。
 
-如果仅仅只有一个无线网卡需要配置，那么直接写一个systemd.network配置就可以了。但是我的两个pc
+如果仅仅只有一个无线网卡需要配置，那么直接写一个`systemd.network`配置就可以了。但是我的两个pc
 都有两个网卡，而且我希望这个两个网卡的ap接入的是同一个子网（大多数市面上的无线路由器都是这样的），
 因此需要用网桥把两个interface接到一起。
 
 systemd-networkd在最近的版本里已经支持了网桥，只需要在`/etc/systemd/network/`下放一个netdev文件，
-如br0.netdev：
+如`br0.netdev`：
 
-```
+```systemd
 [NetDev]
 Name=br0
 Kind=bridge
@@ -136,7 +136,7 @@ Kind=bridge
 
 接着用一个network文件(如ap.network)来配置interface加入到这个网桥里。
 
-```
+```systemd
 [Match]
 Name=xxxx
 Name=yyyy
@@ -156,7 +156,7 @@ Name 是你希望加入到这个网络中的网卡的interface名，也可以通
 这样restart systemd-networkd之后就发现网卡已经加入到新建的bridge里了。这个时候直接配置这个bridge就可以了。
 依然通过一个network文件(如br0.network)来配置。
 
-```
+```systemd
 [Match]
 Name=br0
 

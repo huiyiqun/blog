@@ -19,7 +19,7 @@ macvtap与macvlan实际上是内核里面的两个特性，用于在物理网卡
 macvlan实际上和虚拟机并不是紧耦合的，你也可以在自己的机器上开一个macvlan做试验：
 
 ```
-sudo ip link add link eno1 type macvlan
+~> sudo ip link add link eno1 type macvlan
 ```
 
 __注意把eno1替换成你的物理端口名__
@@ -27,8 +27,8 @@ __注意把eno1替换成你的物理端口名__
 好了，你现在有一个macvlan0了，你可以试试
 
 ```
-sudo ip link set macvlan0 up
-sudo dhcpcd macvlan0
+~> sudo ip link set macvlan0 up
+~> sudo dhcpcd macvlan0
 ```
 
 如果你的网络里有slaac或dhcp6，那么你应该能顺利地拿到IPv6地址。如果你的网络里有dhcp，那么你应该能顺利地拿到IPv4
@@ -120,7 +120,7 @@ libvirt的这个
 如果你的环境不支持上面的需求，可以简单地workaround一下：在物理机上设置macvtap网卡的allmulticast flag：
 
 ```
-ip link set macvtap0 allmulticast on
+~> ip link set macvtap0 allmulticast on
 ```
 
 __把macvtap0替换成你的macvtap端口__

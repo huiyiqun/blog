@@ -23,7 +23,7 @@ Category: Multimedia
 
 nginx的基本配置可以参考如下:
 
-```
+```nginx
 user  nginx;
 worker_processes  1;
 
@@ -73,7 +73,7 @@ nginx-rtmp-module提供了一个方案是[notify](https://github.com/arut/nginx-
 相关的配置如下：
 
 
-```
+```nginx
 ...
 
 rtmp {
@@ -139,7 +139,7 @@ nginx-rtmp-module内置了对hls和dash的支持。其中hls我用了一段时�
 
 hls的配置如下
 
-```
+```nginx
 ...
 
 rtmp {
@@ -203,7 +203,7 @@ http {
 
 配置如下：
 
-```
+```nginx
 ...
 
 http {
