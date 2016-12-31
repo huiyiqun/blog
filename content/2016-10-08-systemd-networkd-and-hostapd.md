@@ -1,10 +1,6 @@
----
-layout: post
-title: "archlinux上用systemd-networkd与hostapd配置无线ap"
-date: "2016-10-08 17:21:11 +0800"
-comments: true
-Category: systemd-networkd
----
+Title:      archlinux上用systemd-networkd与hostapd配置无线ap
+Date:       2016-10-08 17:21:11
+Category:   Ops
 
 # 环境
 

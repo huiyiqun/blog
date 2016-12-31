@@ -1,9 +1,6 @@
----
-layout: post
-title: "用nginx-rtmp-module直播写代码"
-date: "2016-10-28 15:30:40 +0800"
-comments: true
----
+Title:    用nginx-rtmp-module直播写代码
+Date:     2016-10-28 15:30:40
+Category: multimedia
 
 # 前言
 

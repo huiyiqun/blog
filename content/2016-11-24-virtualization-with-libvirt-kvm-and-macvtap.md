@@ -1,9 +1,6 @@
----
-layout: post
-title: "基于libvirt kvm macvtap的虚拟化解决方案"
-date: "2016-11-24 09:02:24 +0800"
-comments: true
----
+Title:     基于libvirt kvm macvtap的虚拟化解决方案
+Date:      2016-11-24 09:02:24
+Category:  Ops
 
 ## 前言
 

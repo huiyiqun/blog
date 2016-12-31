@@ -1,9 +1,6 @@
----
-layout: post
-title: "异步Python学习笔记"
-date: "2016-12-08 10:29:03 +0800"
-comments: true
----
+Title:    异步Python学习笔记
+Date:     2016-12-08 10:29:03
+Category: python
 
 # About
 

@@ -1,9 +1,6 @@
----
-layout: post
-title: "不活跃的openssh连接被“冻结”的问题"
-comments: true
-date: "2016-10-21 11:08:50 +0800"
----
+Title:      不活跃的openssh连接被“冻结”的问题
+Date:       2016-10-21 11:08:50
+Category:   Ops
 
 # 起因
 最近做的两个项目都是跑在CentOS上的，前者是CentOS 6，现在用的是CentOS 7。一个让人

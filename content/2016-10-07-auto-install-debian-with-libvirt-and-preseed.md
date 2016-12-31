@@ -1,10 +1,7 @@
----
-layout: post
-title:  "使用libvirt和preseed自动部署运行于KVM上的Debian虚拟机"
-date:   2016-10-07 15:40:30
-comments: true
-categories: ansible kvm libvirt preseed
----
+Title:      使用libvirt和preseed自动部署运行于KVM上的Debian虚拟机
+Date:       2016-10-07 15:40:30
+Category:   Ops
+
 # 前言
 
 有一年多没有写东西了，期间还是做了不少事情，但是因为博(zi)客(ji)有(te)点(bie)丑(lan)，

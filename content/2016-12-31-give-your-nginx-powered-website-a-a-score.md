@@ -1,9 +1,6 @@
----
-layout: post
-title: "让你的nginx网站得到A+"
-date: "2016-12-31 13:32:07 +0800"
-comments: true
----
+Title:    让你的nginx网站得到A+
+Date:     2016-12-31 13:32:07
+Category: Ops
 
 # 起因
 
