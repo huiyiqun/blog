@@ -2,3 +2,7 @@
 	path = plugins
 	url = https://github.com/Krastanov/pelican-plugins.git
 	branch = patch-1
+[submodule "themes"]
+	path = themes
+	url = https://github.com/getpelican/pelican-themes.git
+	branch = master

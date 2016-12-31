@@ -5,6 +5,7 @@ from os import path
 
 root_path = path.dirname(__file__)
 plugin_path = path.join(root_path, 'plugins')
+theme_path = path.join(root_path, 'themes')
 
 AUTHOR = 'Hui Yiqun'
 SITENAME = 'Notepad'
@@ -44,5 +45,16 @@ PLUGINS = [
     'render_math',
 ]
 
+THEME = path.join(theme_path, 'Flex')
+
 # Uncomment following line if you want document-relative URLs when developing
 RELATIVE_URLS = True
+
+# Additional configuration for the current theme
+SITETITLE = SITENAME
+SITESUBTITLE = 'The Power of Writing'
+SITELOGO = 'https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120'
+BROWSER_COLOR = 'white'
+OG_LOCALE = 'zh_CN'
+COPYRIGHT_YEAR = '2016'
+MAIN_MENU = True
