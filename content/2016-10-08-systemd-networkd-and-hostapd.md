@@ -1,5 +1,6 @@
 Title:      archlinux上用systemd-networkd与hostapd配置无线ap
 Date:       2016-10-08 17:21:11
+slug:       syst-networkd-and-hostapd.md
 Category:   Ops
 
 # 环境

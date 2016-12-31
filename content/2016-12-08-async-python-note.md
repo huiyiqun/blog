@@ -1,5 +1,6 @@
 Title:    异步Python学习笔记
 Date:     2016-12-08 10:29:03
+slug:     async-python-note
 Category: Python
 
 # About

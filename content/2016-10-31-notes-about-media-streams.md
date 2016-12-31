@@ -1,5 +1,6 @@
 Title:    多媒体学习小记
 Date:     2016-10-31 16:07:23
+slug:     notes-about-media-streams
 Category: Multimedia
 
 ## 起因

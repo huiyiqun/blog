@@ -1,5 +1,6 @@
 Title:      不活跃的openssh连接被“冻结”的问题
 Date:       2016-10-21 11:08:50
+slug:       openssh-freeze-inactive-session
 Category:   Ops
 
 # 起因

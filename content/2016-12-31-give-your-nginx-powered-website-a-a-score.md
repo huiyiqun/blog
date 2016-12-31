@@ -1,5 +1,6 @@
 Title:    让你的nginx网站得到A+
 Date:     2016-12-31 13:32:07
+slug:     give-your-nginx-powered-website-a-a-score
 Category: Ops
 
 # 起因

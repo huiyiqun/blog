@@ -1,5 +1,6 @@
 Title:    用nginx-rtmp-module直播写代码
 Date:     2016-10-28 15:30:40
+slug:     livestream-your-desktop-with-nginx-rtmp-module
 Category: Multimedia
 
 # 前言

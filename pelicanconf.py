@@ -28,5 +28,9 @@ SOCIAL = (('Github', 'https://github.com/huiyiqun'),
 
 DEFAULT_PAGINATION = False
 
+# Same path like jekyll
+ARTICLE_URL = '{date:%Y}/{date:%m}/{date:%d}/{slug}.html'
+ARTICLE_SAVE_AS = ARTICLE_URL
+
 # Uncomment following line if you want document-relative URLs when developing
 #RELATIVE_URLS = True
