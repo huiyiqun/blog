@@ -57,3 +57,4 @@ SITELOGO = 'https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?
 BROWSER_COLOR = 'white'
 OG_LOCALE = 'zh_CN'
 COPYRIGHT_YEAR = '2016'
+PYGMENTS_STYLE = 'native'
