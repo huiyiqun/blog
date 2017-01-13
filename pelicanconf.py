@@ -43,7 +43,7 @@ ARTICLE_SAVE_AS = ARTICLE_URL
 PLUGIN_PATHS = [plugin_path, ]
 PLUGINS = [
     'render_math',
-    'cjk-auto-spacing',
+#    'cjk-auto-spacing',
     'filetime_from_git',
 ]
 
