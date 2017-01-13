@@ -29,11 +29,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <meta name="author" content="Hui Yiqun" />
-<meta name="description" content="起因 最近做的两个项目都是跑在 CentOS 上的 ， 前者是 CentOS 6， 现在用的是 CentOS 7。 一个让人 非常恼火的问题是 ， 调试或者看日志的时候 ， 如果开了一个 ssh 连接 ， 然后另开个窗口 ， 去 跑个 ansible 或者是改下代码什么的 ， 时间稍微长一点 ， 切回来的时候就会发现 ssh 连接被 “ 冻结 ” 了 ： 敲键盘没有回显 ， 同时连接也不会中断 。 最初我以为这是 CentOS 设置的某个安全 特性 ， 避免连接被劫持之类的 。 但是时间长了之后觉得这个特性实在是有点烦 ， 于是我准备 disable 这个 “ 特性 ”。 解决 简单地说 ， 在笔记本上的 ssh 配置 （ 如果是 linux， 在 ~/.ssh/config） 上加上如下配置即可 …" />
+<meta name="description" content="起因 最近做的两个项目都是跑在CentOS上的，前者是CentOS 6，现在用的是CentOS 7。一个让人 非常恼火的问题是，调试或者看日志的时候，如果开了一个ssh连接，然后另开个窗口，去 跑个ansible或者是改下代码什么的，时间稍微长一点，切回来的时候就会发现ssh连接被 “冻结”了：敲键盘没有回显，同时连接也不会中断。最初我以为这是CentOS设置的某个安全 特性，避免连接被劫持之类的。但是时间长了之后觉得这个特性实在是有点烦，于是我准备 disable这个“特性”。 解决 简单地说，在笔记本上的ssh配置（如果是linux，在~/.ssh/config）上加上如下配置即可 Host * TCPKeepAlive yes ServerAliveInterval 15 ServerAliveCountMax 3 解释 就像之前说的，我最初以为是CentOS上有某种玄学安全特性，所以我把服务器上的 /etc/ssh/sshd_config取到本地看了一遍，然而并没有 …" />
 <meta name="keywords" content="">
 <meta property="og:site_name" content="Notepad"/>
 <meta property="og:title" content="不活跃的openssh连接被“冻结”的问题"/>
-<meta property="og:description" content="起因 最近做的两个项目都是跑在 CentOS 上的 ， 前者是 CentOS 6， 现在用的是 CentOS 7。 一个让人 非常恼火的问题是 ， 调试或者看日志的时候 ， 如果开了一个 ssh 连接 ， 然后另开个窗口 ， 去 跑个 ansible 或者是改下代码什么的 ， 时间稍微长一点 ， 切回来的时候就会发现 ssh 连接被 “ 冻结 ” 了 ： 敲键盘没有回显 ， 同时连接也不会中断 。 最初我以为这是 CentOS 设置的某个安全 特性 ， 避免连接被劫持之类的 。 但是时间长了之后觉得这个特性实在是有点烦 ， 于是我准备 disable 这个 “ 特性 ”。 解决 简单地说 ， 在笔记本上的 ssh 配置 （ 如果是 linux， 在 ~/.ssh/config） 上加上如下配置即可 …"/>
+<meta property="og:description" content="起因 最近做的两个项目都是跑在CentOS上的，前者是CentOS 6，现在用的是CentOS 7。一个让人 非常恼火的问题是，调试或者看日志的时候，如果开了一个ssh连接，然后另开个窗口，去 跑个ansible或者是改下代码什么的，时间稍微长一点，切回来的时候就会发现ssh连接被 “冻结”了：敲键盘没有回显，同时连接也不会中断。最初我以为这是CentOS设置的某个安全 特性，避免连接被劫持之类的。但是时间长了之后觉得这个特性实在是有点烦，于是我准备 disable这个“特性”。 解决 简单地说，在笔记本上的ssh配置（如果是linux，在~/.ssh/config）上加上如下配置即可 Host * TCPKeepAlive yes ServerAliveInterval 15 ServerAliveCountMax 3 解释 就像之前说的，我最初以为是CentOS上有某种玄学安全特性，所以我把服务器上的 /etc/ssh/sshd_config取到本地看了一遍，然而并没有 …"/>
 <meta property="og:locale" content="zh_CN"/>
 <meta property="og:url" content="../../../2016/10/21/openssh-freeze-inactive-session.html"/>
 <meta property="og:type" content="article"/>
@@ -96,15 +96,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 
   <div>
-    <h1> 起因 </h1>
-<p> 最近做的两个项目都是跑在 CentOS 上的 ， 前者是 CentOS 6， 现在用的是 CentOS 7。 一个让人 
- 非常恼火的问题是 ， 调试或者看日志的时候 ， 如果开了一个 ssh 连接 ， 然后另开个窗口 ， 去 
- 跑个 ansible 或者是改下代码什么的 ， 时间稍微长一点 ， 切回来的时候就会发现 ssh 连接被 
-“ 冻结 ” 了 ： 敲键盘没有回显 ， 同时连接也不会中断 。 最初我以为这是 CentOS 设置的某个安全 
- 特性 ， 避免连接被劫持之类的 。 但是时间长了之后觉得这个特性实在是有点烦 ， 于是我准备 
-disable 这个 “ 特性 ”。</p>
-<h1> 解决 </h1>
-<p> 简单地说 ， 在笔记本上的 ssh 配置 （ 如果是 linux， 在 <code>~/.ssh/config</code>） 上加上如下配置即可 </p>
+    <h1>起因</h1>
+<p>最近做的两个项目都是跑在CentOS上的，前者是CentOS 6，现在用的是CentOS 7。一个让人
+非常恼火的问题是，调试或者看日志的时候，如果开了一个ssh连接，然后另开个窗口，去
+跑个ansible或者是改下代码什么的，时间稍微长一点，切回来的时候就会发现ssh连接被
+“冻结”了：敲键盘没有回显，同时连接也不会中断。最初我以为这是CentOS设置的某个安全
+特性，避免连接被劫持之类的。但是时间长了之后觉得这个特性实在是有点烦，于是我准备
+disable这个“特性”。</p>
+<h1>解决</h1>
+<p>简单地说，在笔记本上的ssh配置（如果是linux，在<code>~/.ssh/config</code>）上加上如下配置即可</p>
 <div class="highlight"><pre><span></span>Host *
     TCPKeepAlive yes
     ServerAliveInterval 15
@@ -112,24 +112,24 @@ disable 这个 “ 特性 ”。</p>
 </pre></div>
 
 
-<h1> 解释 </h1>
-<p> 就像之前说的 ， 我最初以为是 CentOS 上有某种玄学安全特性 ， 所以我把服务器上的 
-<code>/etc/ssh/sshd_config</code> 取到本地看了一遍 ， 然而并没有 ， 接着我又看了一遍 iptables
- 的 filter 表 ， 依然没有找到这样的安全配置 。</p>
-<p> 那么这个 “ 冻结 ” 究竟发生在哪呢 ？</p>
-<p> 从 TCP 开始分析 。TCP 以下的 IP 层是不会有问题的 ， 因为只要地址是对的 ， 那么包永远都能送 
- 达 。TCP 层本身是没有超时中断这一概念的 ， 也就是说只要 TCP 里的数据发到对方并且被正常 
-ACK 之后 ，TCP 就认为这个连接是好的 ， 之后如果没有新的数据需要传输 ，TCP 两端同时静默 
- 不管多久 ，TCP 都不会认为这个连接有问题 ， 除非收到了 RST 或 FIN， 那么连接才会被中断 。</p>
-<p> 然后 TCP 之上就是 ssh 了 ， 既然 TCP 和 ssh 就没有设计超时中断 ， 为什么我的 ssh 连接会中断呢 ？</p>
-<p> 在 Google 的时候一个回答启发了我 （ 找不到链接了 ）， 虽然两边同时静默不会影响 TCP 的连 
- 接 ， 但是由于现在的网络中常常会有 NAT， 比如家用的无线路由器等 ，NAT 为了保证动态的 
- 端口与端口 / 主机映射关系 ， 会维护一张端口映射表 ， 这张映射表一般会有一个超时时间 ，
- 当一个 TCP 连接长时间处于不活跃状态时 ，NAT 会从这个映射表中删除该表项 ， 之后就不再 
- 知道这个映射关系 ， 接下来的 TCP 数据也不能继续传输了 ， 也就出现了这个 “ 冻结 ” 的状态 。</p>
-<p> 为了验证 NAT 的存在 ， 可以用 <code>ss</code> 来验证 ，ssh 到服务器之后 ， 运行 <code>ss -nt</code>， 再在本地运 
- 行 ， 对比二者的端口和地址 ， 来确定你与服务器之间是否有 NAT。</p>
-<p>ssh 的 TCPKeepAlive 这个选项的解释如下 ：</p>
+<h1>解释</h1>
+<p>就像之前说的，我最初以为是CentOS上有某种玄学安全特性，所以我把服务器上的
+<code>/etc/ssh/sshd_config</code>取到本地看了一遍，然而并没有，接着我又看了一遍iptables
+的filter表，依然没有找到这样的安全配置。</p>
+<p>那么这个“冻结”究竟发生在哪呢？</p>
+<p>从TCP开始分析。TCP以下的IP层是不会有问题的，因为只要地址是对的，那么包永远都能送
+达。TCP层本身是没有超时中断这一概念的，也就是说只要TCP里的数据发到对方并且被正常
+ACK之后，TCP就认为这个连接是好的，之后如果没有新的数据需要传输，TCP两端同时静默
+不管多久，TCP都不会认为这个连接有问题，除非收到了RST或FIN，那么连接才会被中断。</p>
+<p>然后TCP之上就是ssh了，既然TCP和ssh就没有设计超时中断，为什么我的ssh连接会中断呢？</p>
+<p>在Google的时候一个回答启发了我（找不到链接了），虽然两边同时静默不会影响TCP的连
+接，但是由于现在的网络中常常会有NAT，比如家用的无线路由器等，NAT为了保证动态的
+端口与端口/主机映射关系，会维护一张端口映射表，这张映射表一般会有一个超时时间，
+当一个TCP连接长时间处于不活跃状态时，NAT会从这个映射表中删除该表项，之后就不再
+知道这个映射关系，接下来的TCP数据也不能继续传输了，也就出现了这个“冻结”的状态。</p>
+<p>为了验证NAT的存在，可以用<code>ss</code>来验证，ssh到服务器之后，运行<code>ss -nt</code>，再在本地运
+行，对比二者的端口和地址，来确定你与服务器之间是否有NAT。</p>
+<p>ssh的TCPKeepAlive这个选项的解释如下：</p>
 <div class="highlight"><pre><span></span>     TCPKeepAlive
              Specifies whether the system should send TCP keepalive messages to
              the other side.  If they are sent, death of the connection or crash
@@ -145,18 +145,18 @@ ACK 之后 ，TCP 就认为这个连接是好的 ， 之后如果没有新的数
 </pre></div>
 
 
-<p> 简单说 ， 它的本意是为了保证即使在静默的情况下 ， 也能发现对端主机或者网络出现了问 
- 题 ， 实现方式在 <a href="http://tldp.org/HOWTO/TCP-Keepalive-HOWTO/overview.html"> 这里 </a>
- 有详细解释 ， 这是一种比较通用的做法 。</p>
-<p> 然而它的一个副作用是 ， 即使 ssh 隧道中没有流量 ， 在 tcp 中依然有 “ 空的数据流 ” 流过 ， 因此 
-NAT 的端口映射表也不会因为超时而被删除 ，“ 冻结 ” 的情况也被消除了 。</p>
-<p> 文档里面也提到了 ，TCPKeepAlive 会导致网络临时出问题时连接会中断 ， 让人觉得很烦 ，
- 针对这种情况 ， 可以把 ServerAliveCountMax 和 ServerAliveInterval 的数值调大 ， 一般来 
- 说 ，ServerAliveInterval 只要低于 NAT 映射表的超时时间即可 ，ServerAliveCountMax 则 
- 可以直接改成一个非常大的值 ， 连接中断也不会触发了 。</p>
-<p> 我的配置中把这三个选项写到了客户端这边 ， 实际上 OpenSSH 的服务器端也有类似的选项 ，
- 可以实现类似的效果 ， 但是需要在每台服务器上都写上 ， 这样太过麻烦 ， 因此选择了写 
- 到客户端 。</p>
+<p>简单说，它的本意是为了保证即使在静默的情况下，也能发现对端主机或者网络出现了问
+题，实现方式在<a href="http://tldp.org/HOWTO/TCP-Keepalive-HOWTO/overview.html">这里</a>
+有详细解释，这是一种比较通用的做法。</p>
+<p>然而它的一个副作用是，即使ssh隧道中没有流量，在tcp中依然有“空的数据流”流过，因此
+NAT的端口映射表也不会因为超时而被删除，“冻结”的情况也被消除了。</p>
+<p>文档里面也提到了，TCPKeepAlive会导致网络临时出问题时连接会中断，让人觉得很烦，
+针对这种情况，可以把ServerAliveCountMax和ServerAliveInterval的数值调大，一般来
+说，ServerAliveInterval只要低于NAT映射表的超时时间即可，ServerAliveCountMax则
+可以直接改成一个非常大的值，连接中断也不会触发了。</p>
+<p>我的配置中把这三个选项写到了客户端这边，实际上OpenSSH的服务器端也有类似的选项，
+可以实现类似的效果，但是需要在每台服务器上都写上，这样太过麻烦，因此选择了写
+到客户端。</p>
   </div>
   <div class="tag-cloud">
     <p>

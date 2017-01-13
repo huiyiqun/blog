@@ -1,0 +1,426 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" type="text/css" href="../../../theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="../../../theme/pygments/default.min.css">
+  <link rel="stylesheet" type="text/css" href="../../../theme/font-awesome/css/font-awesome.min.css">
+
+
+    <link href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate" title="Notepad Atom">
+
+
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="" />
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="white">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="white">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<meta name="author" content="Hui Yiqun" />
+<meta name="description" content="起因 最近项目需要，需要提供一个http的接口，让用户可以通过浏览器上传文件。本来是一件很简单的事情，不需要认证，也不需要支持断点续传，只要能够上传就可以了， 以为肯定用nginx就能支持。然而一番调研下来发现这一件事情并没有想象中那么简单，不过庆幸的是，最终我还是用nginx+一个简单的Python脚本搞定了这件事情。 主要参考了这篇博客， 里面提到的其他解决方案包括一些三方扩展，然而添加扩展需要重新编译打包nginx，不到万不得已我还是不太愿意。 最后一个解决方案是用nginx_http_core_module里的client_body_in_file_only。 下面的方案就是围绕这个选项实现一个轻量的上传工具。 背景 根据这篇博客里的说法，如果不设置这个特性，nginx会把用户请求整个存到硬盘，再将这个文件传给后端，后端再根据自己实现的逻辑解析这个文件，得到想要的东西。 对于上传任务，后端一般会从body中解析出文件，分别存储到硬盘，再放回结果给nginx。 需要注意到，这里有两个问题： 我想要的上传器是十分简单的，既不需要验证，也不需要一个请求上传多个文件，因此实际上整个body就是一个文件，如果我把body从文件里读出来，再写到另一个硬盘， 那么客户端会很奇怪地发现，为什么我发完最后一段数据之后服务器就没响应了？实际上服务器在做一个非常傻的重io操作。 既然我想实现一个简单的上传器，如果要我去实现一个非常复杂的后端，解析用户请求，考虑异步操作，依赖三方库 …" />
+<meta name="keywords" content="">
+<meta property="og:site_name" content="Notepad"/>
+<meta property="og:title" content="一个非常轻量级的HTTP上传工具"/>
+<meta property="og:description" content="起因 最近项目需要，需要提供一个http的接口，让用户可以通过浏览器上传文件。本来是一件很简单的事情，不需要认证，也不需要支持断点续传，只要能够上传就可以了， 以为肯定用nginx就能支持。然而一番调研下来发现这一件事情并没有想象中那么简单，不过庆幸的是，最终我还是用nginx+一个简单的Python脚本搞定了这件事情。 主要参考了这篇博客， 里面提到的其他解决方案包括一些三方扩展，然而添加扩展需要重新编译打包nginx，不到万不得已我还是不太愿意。 最后一个解决方案是用nginx_http_core_module里的client_body_in_file_only。 下面的方案就是围绕这个选项实现一个轻量的上传工具。 背景 根据这篇博客里的说法，如果不设置这个特性，nginx会把用户请求整个存到硬盘，再将这个文件传给后端，后端再根据自己实现的逻辑解析这个文件，得到想要的东西。 对于上传任务，后端一般会从body中解析出文件，分别存储到硬盘，再放回结果给nginx。 需要注意到，这里有两个问题： 我想要的上传器是十分简单的，既不需要验证，也不需要一个请求上传多个文件，因此实际上整个body就是一个文件，如果我把body从文件里读出来，再写到另一个硬盘， 那么客户端会很奇怪地发现，为什么我发完最后一段数据之后服务器就没响应了？实际上服务器在做一个非常傻的重io操作。 既然我想实现一个简单的上传器，如果要我去实现一个非常复杂的后端，解析用户请求，考虑异步操作，依赖三方库 …"/>
+<meta property="og:locale" content="zh_CN"/>
+<meta property="og:url" content="../../../2017/01/14/a-very-light-http-uploader.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2017-01-14 01:35:41+08:00"/>
+<meta property="article:modified_time" content="2017-01-14 01:35:41+08:00"/>
+<meta property="article:author" content="../../../author/hui-yiqun.html">
+<meta property="article:section" content="Ops"/>
+<meta property="og:image" content="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120">
+
+  <title>Notepad &ndash; 一个非常轻量级的HTTP上传工具</title>
+
+</head>
+<body>
+<!-- Google Tag Manager -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-NW57T8B"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-NW57T8B');</script>
+<!-- End Google Tag Manager -->  <aside>
+    <div>
+      <a href="../../..">
+        <img src="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120" alt="Notepad" title="Notepad">
+      </a>
+      <h1><a href="../../..">Notepad</a></h1>
+
+<p>The Power of Writing</p>
+      <nav>
+        <ul class="list">
+
+          <li><a href="https://tuna.moe/" target="_blank">TUNA</a></li>
+        </ul>
+      </nav>
+
+      <ul class="social">
+        <li><a class="sc-github" href="https://github.com/huiyiqun" target="_blank"><i class="fa fa-github"></i></a></li>
+        <li><a class="sc-stack-overflow" href="https://stackoverflow.com/users/2825773/given92" target="_blank"><i class="fa fa-stack-overflow"></i></a></li>
+        <li><a class="sc-google-plus" href="https://plus.google.com/u/0/107187513671494024284" target="_blank"><i class="fa fa-google-plus"></i></a></li>
+        <li><a class="sc-telegram" href="https://telegram.me/huiyiqun" target="_blank"><i class="fa fa-telegram"></i></a></li>
+        <li><a class="sc-rss" href="https://blog.huiyiqun.me/feed.xml" target="_blank"><i class="fa fa-rss"></i></a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+
+<article class="single">
+  <header>
+    <h1 id="a-very-light-http-uploader">一个非常轻量级的HTTP上传工具</h1>
+    <p>
+          Posted on Sat 14 January 2017 in <a href="../../../category/ops.html">Ops</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <h1>起因</h1>
+<p>最近项目需要，需要提供一个http的接口，让用户可以通过浏览器上传文件。本来是一件很简单的事情，不需要认证，也不需要支持断点续传，只要能够上传就可以了，
+以为肯定用nginx就能支持。然而一番调研下来发现这一件事情并没有想象中那么简单，不过庆幸的是，最终我还是用nginx+一个简单的Python脚本搞定了这件事情。</p>
+<p>主要参考了<a href="https://coderwall.com/p/swgfvw/nginx-direct-file-upload-without-passing-them-through-backend">这篇博客</a>，
+里面提到的其他解决方案包括一些三方扩展，然而添加扩展需要重新编译打包nginx，不到万不得已我还是不太愿意。</p>
+<p>最后一个解决方案是用<code>nginx_http_core_module</code>里的<a href="https://nginx.org/en/docs/http/ngx_http_core_module.html#client_body_in_file_only">client_body_in_file_only</a>。
+下面的方案就是围绕这个选项实现一个轻量的上传工具。</p>
+<h1>背景</h1>
+<p>根据这篇博客里的说法，如果不设置这个特性，nginx会把用户请求整个存到硬盘，再将这个文件传给后端，后端再根据自己实现的逻辑解析这个文件，得到想要的东西。
+对于上传任务，后端一般会从body中解析出文件，分别存储到硬盘，再放回结果给nginx。</p>
+<p>需要注意到，这里有两个问题：</p>
+<ol>
+<li>我想要的上传器是十分简单的，既不需要验证，也不需要一个请求上传多个文件，因此实际上整个body就是一个文件，如果我把body从文件里读出来，再写到另一个硬盘，
+那么客户端会很奇怪地发现，为什么我发完最后一段数据之后服务器就没响应了？实际上服务器在做一个非常傻的重io操作。</li>
+<li>既然我想实现一个简单的上传器，如果要我去实现一个非常复杂的后端，解析用户请求，考虑异步操作，依赖三方库，简直不可想象，那么其实nginx的性能优势完全没有发挥出来。</li>
+</ol>
+<p>另外如果你需要认证的话，还有一些其他问题，比如用户验证是在nginx接收完所有用户数据之后才进行的，用户可能会等10分钟上传一个大文件，然后收到一个403，
+想想都觉得头大，由于和我的需求不相关，这里就不讨论这个问题了，大家可以参考上面引用的博客。</p>
+<h1>解决方案</h1>
+<h2>后端</h2>
+<p>首先是对原英文博客的解决方案的一个类似配置，去掉了认证，用<code>if</code>替换了原来的<code>limit_except</code>:</p>
+<div class="highlight"><pre><span></span><span class="k">location</span> <span class="s">/upload/</span> <span class="p">{</span>
+    <span class="kn">if</span> <span class="s">(</span><span class="nv">$request_method</span> <span class="s">!=</span> <span class="s">POST)</span> <span class="p">{</span>
+        <span class="kn">return</span> <span class="mi">405</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kn">client_body_temp_path</span>      <span class="s">/srv/nginx/</span><span class="p">;</span>
+    <span class="kn">client_body_in_file_only</span>   <span class="no">on</span><span class="p">;</span>
+    <span class="kn">client_body_buffer_size</span>    <span class="mi">128k</span><span class="p">;</span>
+    <span class="kn">client_max_body_size</span>       <span class="s">2000M</span><span class="p">;</span>
+
+    <span class="kn">proxy_pass_request_headers</span> <span class="no">on</span><span class="p">;</span>
+    <span class="kn">proxy_set_body</span>             <span class="no">off</span><span class="p">;</span>
+    <span class="kn">proxy_redirect</span>             <span class="no">off</span><span class="p">;</span>
+    <span class="kn">proxy_pass</span>                 <span class="s">http://127.0.0.1:8000</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>好，以上配置应该能让nginx把文件存储到/srv/nginx/下了，有两个问题：</p>
+<ol>
+<li>文件名是随机的数字，之后无法分辨用户本来上传的是哪个文件。</li>
+<li>这个后端怎么办呢？如果去掉proxy_pass，nginx会把这个请求当做GET处理，去找静态文件，但是这样我们就失去了继续处理这个文件的可能性。</li>
+</ol>
+<p>因此我认为合理的解决方案是在nginx把文件存储到临时目录下之后，由一个后端作一下<code>mv</code>，而<code>mv</code>这个操作在同一个文件系统下是十分廉价的，基本可以认为开销可以忽略。
+本着简单高(cu)效(bao)的原则，我用<code>Python3</code>的内置http服务器实现了这样一个后端。这个脚本性能应该不会有多好，但是考虑到正常情况下这个API并发数不会很高，
+我觉得是可以接受的。</p>
+<p>代码如下：</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">urllib</span>
+
+<span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">path</span>
+<span class="kn">from</span> <span class="nn">http.server</span> <span class="k">import</span> <span class="n">BaseHTTPRequestHandler</span><span class="p">,</span> <span class="n">HTTPServer</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;file-saver&#39;</span><span class="p">)</span>
+
+<span class="n">os_tmp_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;OS_TMP_DIR&#39;</span><span class="p">,</span> <span class="s1">&#39;/tmp/os/tmp&#39;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Handler</span><span class="p">(</span><span class="n">BaseHTTPRequestHandler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">do_POST</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tmp_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;X-TMP-FILE&#39;</span><span class="p">]</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">unquote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;X-TOKEN&#39;</span><span class="p">])</span>
+        <span class="n">original_name</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">unquote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;X-ORIGINAL-NAME&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">tmp_file</span> <span class="ow">and</span>
+                <span class="n">token</span> <span class="ow">and</span> <span class="s1">&#39;/&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">token</span> <span class="ow">and</span>
+                <span class="n">original_name</span> <span class="ow">and</span> <span class="s1">&#39;/&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">original_name</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">tmp_file</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">original_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="mi">400</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">end_headers</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="n">dest_file</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os_tmp_dir</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">original_name</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">tmp_file</span><span class="p">,</span> <span class="n">dest_file</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Invalid token: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">token</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="mi">400</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">end_headers</span><span class="p">()</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_headers</span><span class="p">()</span>
+
+<span class="n">httpd</span> <span class="o">=</span> <span class="n">HTTPServer</span><span class="p">((</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="mi">8000</span><span class="p">),</span> <span class="n">Handler</span><span class="p">)</span>
+<span class="n">httpd</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">()</span>
+</pre></div>
+
+
+<p>(最近YCM坏了，写得有点奇怪，凑活吧。）</p>
+<p>我希望文件被存到一个二级目录下，即<code>&lt;root&gt;/&lt;token&gt;/&lt;original_name&gt;</code>，这里取了个巧，让nginx替我解析路径，这样不用在代码里解析，因此nginx的配置需要改成：</p>
+<div class="highlight"><pre><span></span><span class="k">location</span> <span class="p">~</span> <span class="sr">^/upload/([^/]+)/([^/]+)$</span> <span class="p">{</span>
+
+    <span class="kn">set</span> <span class="nv">$token</span> <span class="nv">$1</span><span class="p">;</span>
+    <span class="kn">set</span> <span class="nv">$original</span> <span class="nv">$2</span><span class="p">;</span>
+
+    <span class="kn">if</span> <span class="s">(</span><span class="nv">$request_method</span> <span class="s">!=</span> <span class="s">POST)</span> <span class="p">{</span>
+        <span class="kn">return</span> <span class="mi">405</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kn">client_body_temp_path</span>      <span class="s">/srv/nginx/</span><span class="p">;</span>
+    <span class="kn">client_body_in_file_only</span>   <span class="no">on</span><span class="p">;</span>
+    <span class="kn">client_body_buffer_size</span>    <span class="mi">128k</span><span class="p">;</span>
+    <span class="kn">client_max_body_size</span>       <span class="s">2000M</span><span class="p">;</span>
+
+    <span class="kn">proxy_pass_request_headers</span> <span class="no">on</span><span class="p">;</span>
+    <span class="kn">proxy_set_header</span>           <span class="s">X-TMP-FILE</span> <span class="nv">$request_body_file</span><span class="p">;</span>
+    <span class="kn">proxy_set_header</span>           <span class="s">X-TOKEN</span> <span class="nv">$token</span><span class="p">;</span>
+    <span class="kn">proxy_set_header</span>           <span class="s">X-ORIGINAL-NAME</span> <span class="nv">$original</span><span class="p">;</span>
+    <span class="kn">proxy_set_body</span>             <span class="no">off</span><span class="p">;</span>
+    <span class="kn">proxy_redirect</span>             <span class="no">off</span><span class="p">;</span>
+    <span class="kn">proxy_pass</span>                 <span class="s">http://127.0.0.1:8000</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>需要注意nginx配置里的<code>client_body_temp_path</code>和python脚本里的<code>os_tmp_dir</code>应该保持在同一个文件系统下，否则跨文件系统复制文件可能失败或性能很低。</p>
+<p>如果我没有抄错代码，到这里你的上传器就可以用了，你可以：</p>
+<div class="highlight"><pre><span></span>~&gt; curl --data-binary @src.txt http://example.com/upload/this-is-a-path/dest.txt -v
+</pre></div>
+
+
+<p>测试一下。</p>
+<p>到了这，上传器的后端已经基本搭好了，不过如果用这个来作为web API在浏览器里调用，基本上会跪，有两个原因：</p>
+<ol>
+<li>nginx不支持<code>OPTIONS</code>方法，浏览器的安全策略会阻止<code>POST</code>请求。</li>
+<li>一般来说这种上传器都是'Software as a Service'吧，那么必须要解决CORS。</li>
+</ol>
+<p>完整的nginx配置如下：</p>
+<div class="highlight"><pre><span></span><span class="k">location</span> <span class="p">~</span> <span class="sr">^/upload/([^/]+)/([^/]+)$</span> <span class="p">{</span>
+    <span class="kn">set</span> <span class="nv">$token</span> <span class="nv">$1</span><span class="p">;</span>
+    <span class="kn">set</span> <span class="nv">$original</span> <span class="nv">$2</span><span class="p">;</span>
+    <span class="kn">add_header</span> <span class="s">&#39;Access-Control-Allow-Methods&#39;</span> <span class="s">&#39;POST,</span> <span class="s">OPTIONS&#39;</span> <span class="s">always</span><span class="p">;</span>
+    <span class="kn">add_header</span> <span class="s">&#39;Access-Control-Allow-Origin&#39;</span> <span class="s">&#39;*&#39;</span> <span class="s">always</span><span class="p">;</span>
+    <span class="kn">add_header</span> <span class="s">&#39;Access-Control-Allow-Headers&#39;</span> <span class="s">&#39;Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type&#39;</span> <span class="s">always</span><span class="p">;</span>
+    <span class="kn">add_header</span> <span class="s">&#39;Access-Control-Max-Age&#39;</span> <span class="mi">1728000</span> <span class="s">always</span><span class="p">;</span>
+    <span class="kn">add_header</span> <span class="s">X-Frame-Options</span> <span class="s">&quot;DENY&quot;</span><span class="p">;</span>
+
+    <span class="kn">if</span> <span class="s">(</span><span class="nv">$request_method</span> <span class="p">=</span> <span class="s">&#39;OPTIONS&#39;)</span> <span class="p">{</span>
+        <span class="kn">add_header</span> <span class="s">&#39;Content-Type&#39;</span> <span class="s">&#39;text/plain</span> <span class="s">charset=UTF-8&#39;</span><span class="p">;</span>
+        <span class="kn">add_header</span> <span class="s">&#39;Content-Length&#39;</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="kn">add_header</span> <span class="s">&#39;Access-Control-Allow-Methods&#39;</span> <span class="s">&#39;POST,</span> <span class="s">OPTIONS&#39;</span> <span class="s">always</span><span class="p">;</span>
+        <span class="kn">add_header</span> <span class="s">&#39;Access-Control-Allow-Origin&#39;</span> <span class="s">&#39;*&#39;</span> <span class="s">always</span><span class="p">;</span>
+        <span class="kn">add_header</span> <span class="s">&#39;Access-Control-Allow-Headers&#39;</span> <span class="s">&#39;Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type&#39;</span> <span class="s">always</span><span class="p">;</span>
+        <span class="kn">add_header</span> <span class="s">&#39;Access-Control-Max-Age&#39;</span> <span class="mi">1728000</span> <span class="s">always</span><span class="p">;</span>
+        <span class="kn">add_header</span> <span class="s">X-Frame-Options</span> <span class="s">&quot;DENY&quot;</span><span class="p">;</span>
+        <span class="kn">return</span> <span class="mi">204</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="kn">if</span> <span class="s">(</span><span class="nv">$request_method</span> <span class="s">!~</span> <span class="s">^(POST|OPTIONS)</span>$<span class="s">)</span> <span class="p">{</span>
+        <span class="kn">return</span> <span class="mi">405</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kn">client_body_temp_path</span>      <span class="s">/srv/nginx/</span><span class="p">;</span>
+    <span class="kn">client_body_in_file_only</span>   <span class="no">on</span><span class="p">;</span>
+    <span class="kn">client_body_buffer_size</span>    <span class="mi">128k</span><span class="p">;</span>
+    <span class="kn">client_max_body_size</span>       <span class="s">2000M</span><span class="p">;</span>
+
+    <span class="kn">proxy_pass_request_headers</span> <span class="no">on</span><span class="p">;</span>
+
+    <span class="kn">proxy_set_header</span>           <span class="s">X-TMP-FILE</span> <span class="nv">$request_body_file</span><span class="p">;</span>
+    <span class="kn">proxy_set_header</span>           <span class="s">X-TOKEN</span> <span class="nv">$token</span><span class="p">;</span>
+    <span class="kn">proxy_set_header</span>           <span class="s">X-ORIGINAL-NAME</span> <span class="nv">$original</span><span class="p">;</span>
+    <span class="kn">proxy_set_body</span>             <span class="no">off</span><span class="p">;</span>
+    <span class="kn">proxy_redirect</span>             <span class="no">off</span><span class="p">;</span>
+    <span class="kn">proxy_pass</span>                 <span class="s">http://127.0.0.1:8000</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>有两点需要注意，如果对nginx配置不熟悉的话：</p>
+<ol>
+<li><code>add_header</code> 被重复写多遍的原因是，<code>add_header</code>继承上层block的条件是本层没有<code>add_header</code>，因此如果你加了一个<code>add_header</code>，就需要把上层的所有<code>add_header</code>全部复制过来。</li>
+<li>配置中有两个正则匹配，需要在第一次匹配之后把结果存下来，否则第二次匹配的时候会覆盖第一次的结果。</li>
+</ol>
+<p>OK，后端完成了，个人感觉还是很轻而且很容易部署的，改一下nginx配置（如果你已经有一个在运行的nginx实例），再上传一个脚本，用systemd跑起来，确保它不会出错退出即可。</p>
+<h2>前端</h2>
+<p>关于前端我不会讲特别细，因为</p>
+<ol>
+<li>我觉得前端的实现是一个比较case-by-case的东西，我的代码应该不能直接使用。</li>
+<li>我前端比较弱，就不误人子弟了。</li>
+</ol>
+<p>如果有人想实现类似的效果，可以根据我的经验来实现，少走一些弯路吧。</p>
+<p>最初我尝试了一下 vue.js 的 cli 工具建立的模板项目，但是我那时候对 webpack 本身就不熟悉，生成的模板看不懂，最终放弃了。
+其实从一个最简单的 <code>webpack.conf.js</code> 开始写起反而比较容易，因为 <code>webpack.conf.js</code> 只需要写非常少的东西就能运行，
+之后你需要加什么功能就对应地加上插件和配置，学习曲线很平缓。</p>
+<p>当前 webpack 比较坑的是 2 还在beta，npm 直接安装会装 1，因此需要 <code>npm install webpack@beta</code>，另外 2 的文档很不全，搜到的大部分是 1 的，总的来说我觉得 2 还是用起来很舒服的，特别是rule的配置，比 1 科学。如果要查 webpack 2 的配置，权威的位置是<a href="https://webpack.js.org/">这里</a>，据我观察其他都是讲 1 的。</p>
+<p>以下是我现在的 <code>webpack.conf.js</code>：</p>
+<div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">HtmlWebpackPlugin</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;html-webpack-plugin&#39;</span><span class="p">);</span>
+<span class="kr">const</span> <span class="nx">webpack</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;webpack&#39;</span><span class="p">);</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">entry</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;whatwg-fetch&#39;</span><span class="p">,</span> <span class="s1">&#39;./src/index.js&#39;</span><span class="p">],</span>
+  <span class="nx">output</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">path</span><span class="o">:</span> <span class="s1">&#39;./dist&#39;</span><span class="p">,</span>
+    <span class="nx">filename</span><span class="o">:</span> <span class="s1">&#39;bundle.js&#39;</span><span class="p">,</span>
+  <span class="p">},</span>
+  <span class="nx">resolve</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">alias</span><span class="o">:</span> <span class="p">{</span>
+      <span class="s1">&#39;vue&#39;</span><span class="o">:</span> <span class="s1">&#39;vue/dist/vue.common.js&#39;</span><span class="p">,</span>
+      <span class="s1">&#39;bootstrap.css&#39;</span><span class="o">:</span> <span class="s1">&#39;bootstrap/dist/css/bootstrap.css&#39;</span><span class="p">,</span>
+      <span class="s1">&#39;bootstrap.js&#39;</span><span class="o">:</span> <span class="s1">&#39;bootstrap/dist/js/bootstrap.js&#39;</span><span class="p">,</span>
+    <span class="p">},</span>
+  <span class="p">},</span>
+  <span class="nx">module</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">rules</span><span class="o">:</span> <span class="p">[{</span>
+      <span class="nx">test</span><span class="o">:</span> <span class="sr">/\.(vue|js)$/</span><span class="p">,</span>
+      <span class="nx">enforce</span><span class="o">:</span> <span class="s1">&#39;pre&#39;</span><span class="p">,</span>
+      <span class="nx">exclude</span><span class="o">:</span> <span class="sr">/node_modules/</span><span class="p">,</span>
+      <span class="nx">loader</span><span class="o">:</span> <span class="s1">&#39;eslint-loader&#39;</span><span class="p">,</span>
+    <span class="p">},</span> <span class="p">{</span>
+      <span class="nx">test</span><span class="o">:</span> <span class="sr">/\.vue$/</span><span class="p">,</span>
+      <span class="nx">loader</span><span class="o">:</span> <span class="s1">&#39;vue-loader&#39;</span><span class="p">,</span>
+    <span class="p">},</span> <span class="p">{</span>
+      <span class="nx">test</span><span class="o">:</span> <span class="sr">/\.js$/</span><span class="p">,</span>
+      <span class="nx">exclude</span><span class="o">:</span> <span class="sr">/node_modules/</span><span class="p">,</span>
+      <span class="nx">loader</span><span class="o">:</span> <span class="s1">&#39;babel-loader&#39;</span><span class="p">,</span>
+    <span class="p">},</span> <span class="p">{</span>
+      <span class="nx">test</span><span class="o">:</span> <span class="sr">/\.css$/</span><span class="p">,</span>
+      <span class="nx">loader</span><span class="o">:</span> <span class="s1">&#39;css-loader&#39;</span><span class="p">,</span>
+    <span class="p">},</span> <span class="p">{</span>
+      <span class="nx">enforce</span><span class="o">:</span> <span class="s1">&#39;post&#39;</span><span class="p">,</span>
+      <span class="nx">test</span><span class="o">:</span> <span class="sr">/\.css$/</span><span class="p">,</span>
+      <span class="nx">loader</span><span class="o">:</span> <span class="s1">&#39;style-loader&#39;</span><span class="p">,</span>
+    <span class="p">},</span> <span class="p">{</span>
+      <span class="nx">enforce</span><span class="o">:</span> <span class="s1">&#39;post&#39;</span><span class="p">,</span>
+      <span class="nx">test</span><span class="o">:</span> <span class="sr">/\.(ttf|woff|woff2|eot|svg)/</span><span class="p">,</span>
+      <span class="nx">loader</span><span class="o">:</span> <span class="s1">&#39;file-loader&#39;</span><span class="p">,</span>
+      <span class="nx">options</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;fonts/[name].[ext]&#39;</span><span class="p">,</span>
+      <span class="p">},</span>
+    <span class="p">}],</span>
+  <span class="p">},</span>
+  <span class="nx">plugins</span><span class="o">:</span> <span class="p">[</span>
+    <span class="k">new</span> <span class="nx">HtmlWebpackPlugin</span><span class="p">({</span>
+      <span class="nx">template</span><span class="o">:</span> <span class="s1">&#39;!pug-loader!index.pug&#39;</span><span class="p">,</span>
+    <span class="p">}),</span>
+    <span class="k">new</span> <span class="nx">webpack</span><span class="p">.</span><span class="nx">optimize</span><span class="p">.</span><span class="nx">UglifyJsPlugin</span><span class="p">(),</span>
+    <span class="k">new</span> <span class="nx">webpack</span><span class="p">.</span><span class="nx">ProvidePlugin</span><span class="p">({</span>
+      <span class="nx">$</span><span class="o">:</span> <span class="s1">&#39;jquery&#39;</span><span class="p">,</span>
+      <span class="nx">jQuery</span><span class="o">:</span> <span class="s1">&#39;jquery&#39;</span><span class="p">,</span>
+    <span class="p">}),</span>
+  <span class="p">],</span>
+  <span class="nx">devtool</span><span class="o">:</span> <span class="s1">&#39;#inline-source-map&#39;</span><span class="p">,</span>
+<span class="p">};</span>
+</pre></div>
+
+
+<p>流程上大概是，以一个js作为入口，入口处使用vue-router设置整个app的route，逐层引入vue.js的单文件component作为依赖，其他部分主要是为了方便地用上三方库。
+最后用<code>HtmlWebpackPlugin</code>这个插件来渲染模板，插入我们的js入口，作为浏览器入口。</p>
+<p>当前有两个route，login和uploadList，uploadList包含多个uploadFile，每个uploadFile负责一个文件的上传。</p>
+<p>UI上，直接使用了bootstrap，没什么好说的，堪堪够用。</p>
+<p>上传部分的代码就非常简单了，因为XMLHttpRequest level 2直接提供了上传文件的支持：</p>
+<div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">xhr</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">window</span><span class="p">.</span><span class="nx">XMLHttpRequest</span><span class="p">();</span>
+<span class="nx">xhr</span><span class="p">.</span><span class="nx">open</span><span class="p">(</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="nx">url</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
+
+<span class="c1">// xhr.addEventListener...</span>
+
+<span class="nx">xhr</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">file</span><span class="p">);</span>
+</pre></div>
+
+
+<p>这里的file就是一个File。</p>
+<p>另外在写vue.js的时候建议遵循以下原则，算是我的一点小经验：</p>
+<ol>
+<li>向下传数据用 <code>v-bind</code>。</li>
+<li>向上传数据用 <code>$emit</code>。</li>
+<li>共享状态存到父节点，再用上面的方式来更新和传递。</li>
+<li>谨记使用 vue.js 是为了分离数据逻辑和UI逻辑，别依赖它做多余的事情。</li>
+</ol>
+<p>就会发现 vue.js 越写越顺畅。</p>
+<h1>总结</h1>
+<p>折腾这个东西花了我总共两个通宵的时间，虽然很累，但是顺便复习了一下vue.js，而且对webpack有了比较深的理解，感觉收获挺大的。</p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+    </p>
+  </div>
+
+
+
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'huiyiqun';
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>
+        Please enable JavaScript to view comments.
+
+</noscript>
+</article>
+
+    <footer>
+<p>&copy; Hui Yiqun 2017</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-89649249-1', 'auto');
+  ga('send', 'pageview');
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Notepad ",
+  "url" : "../../..",
+  "image": "https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120",
+  "description": ""
+}
+</script>
+</body>
+</html>

@@ -84,6 +84,38 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <article>
   <header>
+    <h2><a href="../2017/01/14/a-very-light-http-uploader.html#a-very-light-http-uploader">一个非常轻量级的HTTP上传工具</a></h2>
+    <p>
+          Posted on Sat 14 January 2017 in <a href="../category/ops.html">Ops</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <h1>起因</h1>
+<p>最近项目需要，需要提供一个http的接口，让用户可以通过浏览器上传文件。本来是一件很简单的事情，不需要认证，也不需要支持断点续传，只要能够上传就可以了，
+以为肯定用nginx就能支持。然而一番调研下来发现这一件事情并没有想象中那么简单，不过庆幸的是，最终我还是用nginx+一个简单的Python脚本搞定了这件事情。</p>
+<p>主要参考了<a href="https://coderwall.com/p/swgfvw/nginx-direct-file-upload-without-passing-them-through-backend">这篇博客</a>，
+里面提到的其他解决方案包括一些三方扩展，然而添加扩展需要重新编译打包nginx，不到万不得已我还是不太愿意。</p>
+<p>最后一个解决方案是用<code>nginx_http_core_module</code>里的<a href="https://nginx.org/en/docs/http/ngx_http_core_module.html#client_body_in_file_only">client_body_in_file_only</a>。
+下面的方案就是围绕这个选项实现一个轻量的上传工具。</p>
+<h1>背景</h1>
+<p>根据这篇博客里的说法，如果不设置这个特性，nginx会把用户请求整个存到硬盘，再将这个文件传给后端，后端再根据自己实现的逻辑解析这个文件，得到想要的东西。
+对于上传任务，后端一般会从body中解析出文件，分别存储到硬盘，再放回结果给nginx。</p>
+<p>需要注意到，这里有两个问题：</p>
+<ol>
+<li>我想要的上传器是十分简单的，既不需要验证，也不需要一个请求上传多个文件，因此实际上整个body就是一个文件，如果我把body从文件里读出来，再写到另一个硬盘，
+那么客户端会很奇怪地发现，为什么我发完最后一段数据之后服务器就没响应了？实际上服务器在做一个非常傻的重io操作。</li>
+<li>既然我想实现一个简单的上传器，如果要我去实现一个非常复杂的后端，解析用户请求，考虑异步操作，依赖三方库 …</li></ol>
+      <br>
+      <a class="btn" href="../2017/01/14/a-very-light-http-uploader.html#a-very-light-http-uploader">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
     <h2><a href="../2016/12/31/give-your-nginx-powered-website-a-a-score.html#give-your-nginx-powered-website-a-a-score">让你的nginx网站得到A+</a></h2>
     <p>
           Posted on Sat 31 December 2016 in <a href="../category/ops.html">Ops</a>
@@ -93,19 +125,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </p>
   </header>
   <div>
-      <h1> 起因 </h1>
-<p> 最近用  github  的  <a href="https://education.github.com/pack">student pack</a>  领了  <a href="https://www.namecheap.com/">namecheap</a>  的一年免费域名 ， 并且把博客迁移到了新的域名下 。</p>
-<p> 最初是想直接用  github.io CNAME 一下 ， 然而问题在于就没有  https  了 。 忍了一个月 ， 实在是忍无可忍 ， 自己找了台 VPS 自己跑 。 正好服务器也一直空着 ， 没跑什么东西 。</p>
-<p> 之前折腾了一下 SSL 的相关配置 ， 正好趁机总结一下 。</p>
-<h1> 安装部署 </h1>
-<p> 服务器用的是  archlinux， 安装 nginx 和 certbot 的方式如下 ：</p>
+      <h1>起因</h1>
+<p>最近用 github 的 <a href="https://education.github.com/pack">student pack</a> 领了 <a href="https://www.namecheap.com/">namecheap</a> 的一年免费域名，并且把博客迁移到了新的域名下。</p>
+<p>最初是想直接用 github.io CNAME一下，然而问题在于就没有 https 了。忍了一个月，实在是忍无可忍，自己找了台VPS自己跑。正好服务器也一直空着，没跑什么东西。</p>
+<p>之前折腾了一下SSL的相关配置，正好趁机总结一下。</p>
+<h1>安装部署</h1>
+<p>服务器用的是 archlinux，安装nginx和certbot的方式如下：</p>
 <div class="highlight"><pre><span></span>~&gt; sudo pacman -Syu
 ~&gt; sudo pacman -S nginx-mainline certbot-nginx
 </pre></div>
 
 
-<h1>nginx  配置 </h1>
-<p> 将  nginx  配置的 …</p>
+<h1>nginx 配置</h1>
+<p>将 nginx 配置的 server block 改成如下内容：</p>
+<div class="highlight"><pre><span></span><span class="k">server</span> <span class="p">{</span>
+    <span class="kn">listen</span>      <span class="mi">80</span> <span class="s">default_server</span><span class="p">;</span>
+    <span class="kn">listen</span>      <span class="s">[::]:80 …</span></pre></div>
       <br>
       <a class="btn" href="../2016/12/31/give-your-nginx-powered-website-a-a-score.html#give-your-nginx-powered-website-a-a-score">    Continue reading
 </a>
@@ -123,20 +158,27 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </p>
   </header>
   <div>
-      <h2> 前言 </h2>
-<p> 这其实是很早以前折腾的东西 ， 但是感觉网上的资料不是很清楚 ， 现在补一下 ， 以免以后想不起来 。</p>
-<h2>macvlan  与  macvtap</h2>
-<p> 其实之所以会用 macvtap 来做网络端口复用是因为 libvirt 默认用了它 ， 后来折腾的过程中看了代码 ， 理解了原理 ，
- 才明白它相比于以前的 bridge 方案确实有一些优势 ， 如果虚拟机的流量确实很大 ， 可以用这套方案 ， 来减少物理机的 CPU 和 
- 网卡的压力 。</p>
-<p>macvtap 与 macvlan 实际上是内核里面的两个特性 ， 用于在物理网卡后面接一些虚拟端口 ， 复用物理端口 ， 但是利用了网卡 
- 的一个较新的特性 ， 所以从性能上来说比纯虚拟交换性能更高 ， 属于一种半虚拟化方案 。</p>
-<p>macvlan 实际上和虚拟机并不是紧耦合的 ， 你也可以在自己的机器上开一个 macvlan 做试验 ：</p>
+      <h2>前言</h2>
+<p>这其实是很早以前折腾的东西，但是感觉网上的资料不是很清楚，现在补一下，以免以后想不起来。</p>
+<h2>macvlan 与 macvtap</h2>
+<p>其实之所以会用macvtap来做网络端口复用是因为libvirt默认用了它，后来折腾的过程中看了代码，理解了原理，
+才明白它相比于以前的bridge方案确实有一些优势，如果虚拟机的流量确实很大，可以用这套方案，来减少物理机的CPU和
+网卡的压力。</p>
+<p>macvtap与macvlan实际上是内核里面的两个特性，用于在物理网卡后面接一些虚拟端口，复用物理端口，但是利用了网卡
+的一个较新的特性，所以从性能上来说比纯虚拟交换性能更高，属于一种半虚拟化方案。</p>
+<p>macvlan实际上和虚拟机并不是紧耦合的，你也可以在自己的机器上开一个macvlan做试验：</p>
 <div class="highlight"><pre><span></span>~&gt; sudo ip link add link eno1 type macvlan
 </pre></div>
 
 
-<p><strong> 注意把 eno1 替换成你的物理端口名 …</strong></p>
+<p><strong>注意把eno1替换成你的物理端口名</strong></p>
+<p>好了，你现在有一个macvlan0了，你可以试试</p>
+<div class="highlight"><pre><span></span>~&gt; sudo ip link set macvlan0 up
+~&gt; sudo dhcpcd macvlan0
+</pre></div>
+
+
+<p>如果你的网络里有slaac或dhcp6，那么你应该能顺利地拿到IPv6地址。如果你的网络里有dhcp，那么你应该能顺利地拿到IPv4 …</p>
       <br>
       <a class="btn" href="../2016/11/24/virtualization-with-libvirt-kvm-and-macvtap.html#virtualization-with-libvirt-kvm-and-macvtap">    Continue reading
 </a>
@@ -154,15 +196,25 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </p>
   </header>
   <div>
-      <h1> 起因 </h1>
-<p> 最近做的两个项目都是跑在 CentOS 上的 ， 前者是 CentOS 6， 现在用的是 CentOS 7。 一个让人 
- 非常恼火的问题是 ， 调试或者看日志的时候 ， 如果开了一个 ssh 连接 ， 然后另开个窗口 ， 去 
- 跑个 ansible 或者是改下代码什么的 ， 时间稍微长一点 ， 切回来的时候就会发现 ssh 连接被 
-“ 冻结 ” 了 ： 敲键盘没有回显 ， 同时连接也不会中断 。 最初我以为这是 CentOS 设置的某个安全 
- 特性 ， 避免连接被劫持之类的 。 但是时间长了之后觉得这个特性实在是有点烦 ， 于是我准备 
-disable 这个 “ 特性 ”。</p>
-<h1> 解决 </h1>
-<p> 简单地说 ， 在笔记本上的 ssh 配置 （ 如果是 linux， 在 <code>~/.ssh/config</code>） 上加上如下配置即可 …</p>
+      <h1>起因</h1>
+<p>最近做的两个项目都是跑在CentOS上的，前者是CentOS 6，现在用的是CentOS 7。一个让人
+非常恼火的问题是，调试或者看日志的时候，如果开了一个ssh连接，然后另开个窗口，去
+跑个ansible或者是改下代码什么的，时间稍微长一点，切回来的时候就会发现ssh连接被
+“冻结”了：敲键盘没有回显，同时连接也不会中断。最初我以为这是CentOS设置的某个安全
+特性，避免连接被劫持之类的。但是时间长了之后觉得这个特性实在是有点烦，于是我准备
+disable这个“特性”。</p>
+<h1>解决</h1>
+<p>简单地说，在笔记本上的ssh配置（如果是linux，在<code>~/.ssh/config</code>）上加上如下配置即可</p>
+<div class="highlight"><pre><span></span>Host *
+    TCPKeepAlive yes
+    ServerAliveInterval 15
+    ServerAliveCountMax 3
+</pre></div>
+
+
+<h1>解释</h1>
+<p>就像之前说的，我最初以为是CentOS上有某种玄学安全特性，所以我把服务器上的
+<code>/etc/ssh/sshd_config</code>取到本地看了一遍，然而并没有 …</p>
       <br>
       <a class="btn" href="../2016/10/21/openssh-freeze-inactive-session.html#openssh-freeze-inactive-session">    Continue reading
 </a>
@@ -180,16 +232,22 @@ disable 这个 “ 特性 ”。</p>
     </p>
   </header>
   <div>
-      <h1> 环境 </h1>
-<p> 这套配置我现在运行在了两个地方 ， 一个是我家里的 minipc 上 ， 当软路由用 ， 另一个则是我实验室的 
-PC， 因为实验室的公共 Wifi 效果实在不能让人满意 ， 决定自己在 PC 上插两个 USB 无线网卡当无线路由器用 。</p>
-<p> 环境上用的都是 Archlinux。</p>
-<p> 这是 minipc 上的无线网卡 ：</p>
+      <h1>环境</h1>
+<p>这套配置我现在运行在了两个地方，一个是我家里的minipc上，当软路由用，另一个则是我实验室的
+PC，因为实验室的公共Wifi效果实在不能让人满意，决定自己在PC上插两个USB无线网卡当无线路由器用。</p>
+<p>环境上用的都是Archlinux。</p>
+<p>这是minipc上的无线网卡：</p>
 <div class="highlight"><pre><span></span>~&gt; lsusb
 Bus 002 Device 002: ID 148f:5572 Ralink Technology, Corp. RT5572 Wireless Adapter
 
 ~&gt; lspci
-01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168/8411 PCI Express …</pre></div>
+01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller(rev 06)
+</pre></div>
+
+
+<p>这是实验室PC上的无线网卡：</p>
+<div class="highlight"><pre><span></span>~&gt; lsusb
+Bus 003 Device 002 …</pre></div>
       <br>
       <a class="btn" href="../2016/10/08/syst-networkd-and-hostapd.md.html#syst-networkd-and-hostapd.md">    Continue reading
 </a>
@@ -207,20 +265,25 @@ Bus 002 Device 002: ID 148f:5572 Ralink Technology, Corp. RT5572 Wireless Adapte
     </p>
   </header>
   <div>
-      <h1> 前言 </h1>
-<p> 有一年多没有写东西了 ， 期间还是做了不少事情 ， 但是因为博 (zi) 客 (ji) 有 (te) 点 (bie) 丑 (lan)，
- 什么都没有写 。 很多东西花了很多时间去学和折腾 ， 回头要用到的时候又需要重新去 
- 翻文档 ， 实在是浪费时间 ， 于是决定把博客续上 。</p>
-<p> 之所以会需要装虚拟机 ， 是因为 TUNA 最近又招了不少萌新 ， 萌新们可能需要一台 UNIX 的设备来瞎折腾 ，
- 另外协会内部偶尔需要交换 slide 或者活动视频 ， 大鹰主席又觉得通过 “ 网盘 ” 交换文件实在太羞耻 ，
- 因为我之前折腾过一下 KVM， 因而让我部署一台 Debian 的虚拟机 。</p>
-<p> 本来是一件简单的重复劳动 ， 但是基于以下理由 ：</p>
+      <h1>前言</h1>
+<p>有一年多没有写东西了，期间还是做了不少事情，但是因为博(zi)客(ji)有(te)点(bie)丑(lan)，
+什么都没有写。很多东西花了很多时间去学和折腾，回头要用到的时候又需要重新去
+翻文档，实在是浪费时间，于是决定把博客续上。</p>
+<p>之所以会需要装虚拟机，是因为TUNA最近又招了不少萌新，萌新们可能需要一台UNIX的设备来瞎折腾，
+另外协会内部偶尔需要交换slide或者活动视频，大鹰主席又觉得通过“网盘”交换文件实在太羞耻，
+因为我之前折腾过一下KVM，因而让我部署一台Debian的虚拟机。</p>
+<p>本来是一件简单的重复劳动，但是基于以下理由：</p>
 <ol>
-<li> 萌新可能把机器弄坏或者机器需要搬家 </li>
-<li> 以后会长可能会让我装第二个机器 </li>
-<li><s> 好久没折腾了感觉皮子有点紧 ~~</s></li>
+<li>萌新可能把机器弄坏或者机器需要搬家</li>
+<li>以后会长可能会让我装第二个机器</li>
+<li><s>好久没折腾了感觉皮子有点紧~~</s></li>
 </ol>
-<p> 决定用 ansible 自动安装 。 整个过程花了大概两天左右 ， 其实 ansible 和 libvirt …</p>
+<p>决定用ansible自动安装。整个过程花了大概两天左右，其实ansible和libvirt都还算好，文档挺齐全
+的，而且实现上bug不多，但是preseed的文档少而且比较乱，经常遇到文档和实际情况不符合的情况。</p>
+<h1>环境</h1>
+<p>宿主机是一个Debian jessie，上面跑了各种各样的其他服务，包括且不限于docker、nginx、
+私有的ldap服务等。</p>
+<p>虚拟机依然是一个Debian jessie …</p>
       <br>
       <a class="btn" href="../2016/10/08/auto-install-debian-with-libvirt-and-preseed.html#auto-install-debian-with-libvirt-and-preseed">    Continue reading
 </a>

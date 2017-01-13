@@ -1,29 +1,317 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Notepad</title><link href="https://blog.huiyiqun.me/" rel="alternate"></link><link href="https://blog.huiyiqun.me/feed.xml" rel="self"></link><id>https://blog.huiyiqun.me/</id><updated>2016-12-31T21:10:53+08:00</updated><entry><title>让你的nginx网站得到A+</title><link href="https://blog.huiyiqun.me/2016/12/31/give-your-nginx-powered-website-a-a-score.html" rel="alternate"></link><published>2016-12-31T15:32:49+08:00</published><updated>2016-12-31T21:10:53+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2016-12-31:/2016/12/31/give-your-nginx-powered-website-a-a-score.html</id><summary type="html">&lt;h1&gt; 起因 &lt;/h1&gt;
-&lt;p&gt; 最近用  github  的  &lt;a href="https://education.github.com/pack"&gt;student pack&lt;/a&gt;  领了  &lt;a href="https://www.namecheap.com/"&gt;namecheap&lt;/a&gt;  的一年免费域名 ， 并且把博客迁移到了新的域名下 。&lt;/p&gt;
-&lt;p&gt; 最初是想直接用  github.io CNAME 一下 ， 然而问题在于就没有  https  了 。 忍了一个月 ， 实在是忍无可忍 ， 自己找了台 VPS 自己跑 。 正好服务器也一直空着 ， 没跑什么东西 。&lt;/p&gt;
-&lt;p&gt; 之前折腾了一下 SSL 的相关配置 ， 正好趁机总结一下 。&lt;/p&gt;
-&lt;h1&gt; 安装部署 &lt;/h1&gt;
-&lt;p&gt; 服务器用的是  archlinux， 安装 nginx 和 certbot 的方式如下 ：&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Notepad</title><link href="https://blog.huiyiqun.me/" rel="alternate"></link><link href="https://blog.huiyiqun.me/feed.xml" rel="self"></link><id>https://blog.huiyiqun.me/</id><updated>2017-01-14T01:35:41+08:00</updated><entry><title>一个非常轻量级的HTTP上传工具</title><link href="https://blog.huiyiqun.me/2017/01/14/a-very-light-http-uploader.html" rel="alternate"></link><published>2017-01-14T01:35:41+08:00</published><updated>2017-01-14T01:35:41+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2017-01-14:/2017/01/14/a-very-light-http-uploader.html</id><summary type="html">&lt;h1&gt;起因&lt;/h1&gt;
+&lt;p&gt;最近项目需要，需要提供一个http的接口，让用户可以通过浏览器上传文件。本来是一件很简单的事情，不需要认证，也不需要支持断点续传，只要能够上传就可以了，
+以为肯定用nginx就能支持。然而一番调研下来发现这一件事情并没有想象中那么简单，不过庆幸的是，最终我还是用nginx+一个简单的Python脚本搞定了这件事情。&lt;/p&gt;
+&lt;p&gt;主要参考了&lt;a href="https://coderwall.com/p/swgfvw/nginx-direct-file-upload-without-passing-them-through-backend"&gt;这篇博客&lt;/a&gt;，
+里面提到的其他解决方案包括一些三方扩展，然而添加扩展需要重新编译打包nginx，不到万不得已我还是不太愿意。&lt;/p&gt;
+&lt;p&gt;最后一个解决方案是用&lt;code&gt;nginx_http_core_module&lt;/code&gt;里的&lt;a href="https://nginx.org/en/docs/http/ngx_http_core_module.html#client_body_in_file_only"&gt;client_body_in_file_only&lt;/a&gt;。
+下面的方案就是围绕这个选项实现一个轻量的上传工具。&lt;/p&gt;
+&lt;h1&gt;背景&lt;/h1&gt;
+&lt;p&gt;根据这篇博客里的说法，如果不设置这个特性，nginx会把用户请求整个存到硬盘，再将这个文件传给后端，后端再根据自己实现的逻辑解析这个文件，得到想要的东西。
+对于上传任务，后端一般会从body中解析出文件，分别存储到硬盘，再放回结果给nginx。&lt;/p&gt;
+&lt;p&gt;需要注意到，这里有两个问题：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;我想要的上传器是十分简单的，既不需要验证，也不需要一个请求上传多个文件，因此实际上整个body就是一个文件，如果我把body从文件里读出来，再写到另一个硬盘，
+那么客户端会很奇怪地发现，为什么我发完最后一段数据之后服务器就没响应了？实际上服务器在做一个非常傻的重io操作。&lt;/li&gt;
+&lt;li&gt;既然我想实现一个简单的上传器，如果要我去实现一个非常复杂的后端，解析用户请求，考虑异步操作，依赖三方库 …&lt;/li&gt;&lt;/ol&gt;</summary><content type="html">&lt;h1&gt;起因&lt;/h1&gt;
+&lt;p&gt;最近项目需要，需要提供一个http的接口，让用户可以通过浏览器上传文件。本来是一件很简单的事情，不需要认证，也不需要支持断点续传，只要能够上传就可以了，
+以为肯定用nginx就能支持。然而一番调研下来发现这一件事情并没有想象中那么简单，不过庆幸的是，最终我还是用nginx+一个简单的Python脚本搞定了这件事情。&lt;/p&gt;
+&lt;p&gt;主要参考了&lt;a href="https://coderwall.com/p/swgfvw/nginx-direct-file-upload-without-passing-them-through-backend"&gt;这篇博客&lt;/a&gt;，
+里面提到的其他解决方案包括一些三方扩展，然而添加扩展需要重新编译打包nginx，不到万不得已我还是不太愿意。&lt;/p&gt;
+&lt;p&gt;最后一个解决方案是用&lt;code&gt;nginx_http_core_module&lt;/code&gt;里的&lt;a href="https://nginx.org/en/docs/http/ngx_http_core_module.html#client_body_in_file_only"&gt;client_body_in_file_only&lt;/a&gt;。
+下面的方案就是围绕这个选项实现一个轻量的上传工具。&lt;/p&gt;
+&lt;h1&gt;背景&lt;/h1&gt;
+&lt;p&gt;根据这篇博客里的说法，如果不设置这个特性，nginx会把用户请求整个存到硬盘，再将这个文件传给后端，后端再根据自己实现的逻辑解析这个文件，得到想要的东西。
+对于上传任务，后端一般会从body中解析出文件，分别存储到硬盘，再放回结果给nginx。&lt;/p&gt;
+&lt;p&gt;需要注意到，这里有两个问题：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;我想要的上传器是十分简单的，既不需要验证，也不需要一个请求上传多个文件，因此实际上整个body就是一个文件，如果我把body从文件里读出来，再写到另一个硬盘，
+那么客户端会很奇怪地发现，为什么我发完最后一段数据之后服务器就没响应了？实际上服务器在做一个非常傻的重io操作。&lt;/li&gt;
+&lt;li&gt;既然我想实现一个简单的上传器，如果要我去实现一个非常复杂的后端，解析用户请求，考虑异步操作，依赖三方库，简直不可想象，那么其实nginx的性能优势完全没有发挥出来。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;另外如果你需要认证的话，还有一些其他问题，比如用户验证是在nginx接收完所有用户数据之后才进行的，用户可能会等10分钟上传一个大文件，然后收到一个403，
+想想都觉得头大，由于和我的需求不相关，这里就不讨论这个问题了，大家可以参考上面引用的博客。&lt;/p&gt;
+&lt;h1&gt;解决方案&lt;/h1&gt;
+&lt;h2&gt;后端&lt;/h2&gt;
+&lt;p&gt;首先是对原英文博客的解决方案的一个类似配置，去掉了认证，用&lt;code&gt;if&lt;/code&gt;替换了原来的&lt;code&gt;limit_except&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;location&lt;/span&gt; &lt;span class="s"&gt;/upload/&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kn"&gt;if&lt;/span&gt; &lt;span class="s"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;$request_method&lt;/span&gt; &lt;span class="s"&gt;!=&lt;/span&gt; &lt;span class="s"&gt;POST)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="kn"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;405&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="kn"&gt;client_body_temp_path&lt;/span&gt;      &lt;span class="s"&gt;/srv/nginx/&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;client_body_in_file_only&lt;/span&gt;   &lt;span class="no"&gt;on&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;client_body_buffer_size&lt;/span&gt;    &lt;span class="mi"&gt;128k&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;client_max_body_size&lt;/span&gt;       &lt;span class="s"&gt;2000M&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="kn"&gt;proxy_pass_request_headers&lt;/span&gt; &lt;span class="no"&gt;on&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;proxy_set_body&lt;/span&gt;             &lt;span class="no"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;proxy_redirect&lt;/span&gt;             &lt;span class="no"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;proxy_pass&lt;/span&gt;                 &lt;span class="s"&gt;http://127.0.0.1:8000&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;好，以上配置应该能让nginx把文件存储到/srv/nginx/下了，有两个问题：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;文件名是随机的数字，之后无法分辨用户本来上传的是哪个文件。&lt;/li&gt;
+&lt;li&gt;这个后端怎么办呢？如果去掉proxy_pass，nginx会把这个请求当做GET处理，去找静态文件，但是这样我们就失去了继续处理这个文件的可能性。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;因此我认为合理的解决方案是在nginx把文件存储到临时目录下之后，由一个后端作一下&lt;code&gt;mv&lt;/code&gt;，而&lt;code&gt;mv&lt;/code&gt;这个操作在同一个文件系统下是十分廉价的，基本可以认为开销可以忽略。
+本着简单高(cu)效(bao)的原则，我用&lt;code&gt;Python3&lt;/code&gt;的内置http服务器实现了这样一个后端。这个脚本性能应该不会有多好，但是考虑到正常情况下这个API并发数不会很高，
+我觉得是可以接受的。&lt;/p&gt;
+&lt;p&gt;代码如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;logging&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;os&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;shutil&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;urllib&lt;/span&gt;
+
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;os&lt;/span&gt; &lt;span class="k"&gt;import&lt;/span&gt; &lt;span class="n"&gt;path&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;http.server&lt;/span&gt; &lt;span class="k"&gt;import&lt;/span&gt; &lt;span class="n"&gt;BaseHTTPRequestHandler&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;HTTPServer&lt;/span&gt;
+
+&lt;span class="n"&gt;logger&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;logging&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getLogger&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;file-saver&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;os_tmp_dir&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;environ&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;OS_TMP_DIR&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;/tmp/os/tmp&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Handler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;BaseHTTPRequestHandler&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;do_POST&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="n"&gt;tmp_file&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;headers&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;X-TMP-FILE&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+        &lt;span class="n"&gt;token&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;urllib&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parse&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;unquote&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;headers&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;X-TOKEN&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+        &lt;span class="n"&gt;original_name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;urllib&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parse&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;unquote&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;headers&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;X-ORIGINAL-NAME&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tmp_file&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt;
+                &lt;span class="n"&gt;token&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;/&amp;#39;&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;token&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt;
+                &lt;span class="n"&gt;original_name&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;/&amp;#39;&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;original_name&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+            &lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tmp_file&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;token&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;original_name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;send_response&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;400&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;end_headers&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt;
+        &lt;span class="n"&gt;dest_file&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;join&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;os_tmp_dir&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;token&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;original_name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;rename&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tmp_file&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;dest_file&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;except&lt;/span&gt; &lt;span class="ne"&gt;FileNotFoundError&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;logger&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;Invalid token: &lt;/span&gt;&lt;span class="si"&gt;{}&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;token&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;send_response&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;400&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;end_headers&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt;
+
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;send_response&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;200&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;end_headers&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="n"&gt;httpd&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;HTTPServer&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;127.0.0.1&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;8000&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;Handler&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;httpd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;serve_forever&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;(最近YCM坏了，写得有点奇怪，凑活吧。）&lt;/p&gt;
+&lt;p&gt;我希望文件被存到一个二级目录下，即&lt;code&gt;&amp;lt;root&amp;gt;/&amp;lt;token&amp;gt;/&amp;lt;original_name&amp;gt;&lt;/code&gt;，这里取了个巧，让nginx替我解析路径，这样不用在代码里解析，因此nginx的配置需要改成：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;location&lt;/span&gt; &lt;span class="p"&gt;~&lt;/span&gt; &lt;span class="sr"&gt;^/upload/([^/]+)/([^/]+)$&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+
+    &lt;span class="kn"&gt;set&lt;/span&gt; &lt;span class="nv"&gt;$token&lt;/span&gt; &lt;span class="nv"&gt;$1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;set&lt;/span&gt; &lt;span class="nv"&gt;$original&lt;/span&gt; &lt;span class="nv"&gt;$2&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="kn"&gt;if&lt;/span&gt; &lt;span class="s"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;$request_method&lt;/span&gt; &lt;span class="s"&gt;!=&lt;/span&gt; &lt;span class="s"&gt;POST)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="kn"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;405&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="kn"&gt;client_body_temp_path&lt;/span&gt;      &lt;span class="s"&gt;/srv/nginx/&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;client_body_in_file_only&lt;/span&gt;   &lt;span class="no"&gt;on&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;client_body_buffer_size&lt;/span&gt;    &lt;span class="mi"&gt;128k&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;client_max_body_size&lt;/span&gt;       &lt;span class="s"&gt;2000M&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="kn"&gt;proxy_pass_request_headers&lt;/span&gt; &lt;span class="no"&gt;on&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;proxy_set_header&lt;/span&gt;           &lt;span class="s"&gt;X-TMP-FILE&lt;/span&gt; &lt;span class="nv"&gt;$request_body_file&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;proxy_set_header&lt;/span&gt;           &lt;span class="s"&gt;X-TOKEN&lt;/span&gt; &lt;span class="nv"&gt;$token&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;proxy_set_header&lt;/span&gt;           &lt;span class="s"&gt;X-ORIGINAL-NAME&lt;/span&gt; &lt;span class="nv"&gt;$original&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;proxy_set_body&lt;/span&gt;             &lt;span class="no"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;proxy_redirect&lt;/span&gt;             &lt;span class="no"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;proxy_pass&lt;/span&gt;                 &lt;span class="s"&gt;http://127.0.0.1:8000&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;需要注意nginx配置里的&lt;code&gt;client_body_temp_path&lt;/code&gt;和python脚本里的&lt;code&gt;os_tmp_dir&lt;/code&gt;应该保持在同一个文件系统下，否则跨文件系统复制文件可能失败或性能很低。&lt;/p&gt;
+&lt;p&gt;如果我没有抄错代码，到这里你的上传器就可以用了，你可以：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; curl --data-binary @src.txt http://example.com/upload/this-is-a-path/dest.txt -v
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;测试一下。&lt;/p&gt;
+&lt;p&gt;到了这，上传器的后端已经基本搭好了，不过如果用这个来作为web API在浏览器里调用，基本上会跪，有两个原因：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;nginx不支持&lt;code&gt;OPTIONS&lt;/code&gt;方法，浏览器的安全策略会阻止&lt;code&gt;POST&lt;/code&gt;请求。&lt;/li&gt;
+&lt;li&gt;一般来说这种上传器都是'Software as a Service'吧，那么必须要解决CORS。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;完整的nginx配置如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;location&lt;/span&gt; &lt;span class="p"&gt;~&lt;/span&gt; &lt;span class="sr"&gt;^/upload/([^/]+)/([^/]+)$&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kn"&gt;set&lt;/span&gt; &lt;span class="nv"&gt;$token&lt;/span&gt; &lt;span class="nv"&gt;$1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;set&lt;/span&gt; &lt;span class="nv"&gt;$original&lt;/span&gt; &lt;span class="nv"&gt;$2&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;add_header&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Access-Control-Allow-Methods&amp;#39;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;POST,&lt;/span&gt; &lt;span class="s"&gt;OPTIONS&amp;#39;&lt;/span&gt; &lt;span class="s"&gt;always&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;add_header&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Access-Control-Allow-Origin&amp;#39;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;*&amp;#39;&lt;/span&gt; &lt;span class="s"&gt;always&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;add_header&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Access-Control-Allow-Headers&amp;#39;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type&amp;#39;&lt;/span&gt; &lt;span class="s"&gt;always&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;add_header&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Access-Control-Max-Age&amp;#39;&lt;/span&gt; &lt;span class="mi"&gt;1728000&lt;/span&gt; &lt;span class="s"&gt;always&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;add_header&lt;/span&gt; &lt;span class="s"&gt;X-Frame-Options&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;DENY&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="kn"&gt;if&lt;/span&gt; &lt;span class="s"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;$request_method&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;OPTIONS&amp;#39;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="kn"&gt;add_header&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Content-Type&amp;#39;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;text/plain&lt;/span&gt; &lt;span class="s"&gt;charset=UTF-8&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="kn"&gt;add_header&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Content-Length&amp;#39;&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="kn"&gt;add_header&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Access-Control-Allow-Methods&amp;#39;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;POST,&lt;/span&gt; &lt;span class="s"&gt;OPTIONS&amp;#39;&lt;/span&gt; &lt;span class="s"&gt;always&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="kn"&gt;add_header&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Access-Control-Allow-Origin&amp;#39;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;*&amp;#39;&lt;/span&gt; &lt;span class="s"&gt;always&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="kn"&gt;add_header&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Access-Control-Allow-Headers&amp;#39;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type&amp;#39;&lt;/span&gt; &lt;span class="s"&gt;always&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="kn"&gt;add_header&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Access-Control-Max-Age&amp;#39;&lt;/span&gt; &lt;span class="mi"&gt;1728000&lt;/span&gt; &lt;span class="s"&gt;always&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="kn"&gt;add_header&lt;/span&gt; &lt;span class="s"&gt;X-Frame-Options&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;DENY&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="kn"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;204&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="kn"&gt;if&lt;/span&gt; &lt;span class="s"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;$request_method&lt;/span&gt; &lt;span class="s"&gt;!~&lt;/span&gt; &lt;span class="s"&gt;^(POST|OPTIONS)&lt;/span&gt;$&lt;span class="s"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="kn"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;405&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="kn"&gt;client_body_temp_path&lt;/span&gt;      &lt;span class="s"&gt;/srv/nginx/&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;client_body_in_file_only&lt;/span&gt;   &lt;span class="no"&gt;on&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;client_body_buffer_size&lt;/span&gt;    &lt;span class="mi"&gt;128k&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;client_max_body_size&lt;/span&gt;       &lt;span class="s"&gt;2000M&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="kn"&gt;proxy_pass_request_headers&lt;/span&gt; &lt;span class="no"&gt;on&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="kn"&gt;proxy_set_header&lt;/span&gt;           &lt;span class="s"&gt;X-TMP-FILE&lt;/span&gt; &lt;span class="nv"&gt;$request_body_file&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;proxy_set_header&lt;/span&gt;           &lt;span class="s"&gt;X-TOKEN&lt;/span&gt; &lt;span class="nv"&gt;$token&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;proxy_set_header&lt;/span&gt;           &lt;span class="s"&gt;X-ORIGINAL-NAME&lt;/span&gt; &lt;span class="nv"&gt;$original&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;proxy_set_body&lt;/span&gt;             &lt;span class="no"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;proxy_redirect&lt;/span&gt;             &lt;span class="no"&gt;off&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;proxy_pass&lt;/span&gt;                 &lt;span class="s"&gt;http://127.0.0.1:8000&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;有两点需要注意，如果对nginx配置不熟悉的话：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;add_header&lt;/code&gt; 被重复写多遍的原因是，&lt;code&gt;add_header&lt;/code&gt;继承上层block的条件是本层没有&lt;code&gt;add_header&lt;/code&gt;，因此如果你加了一个&lt;code&gt;add_header&lt;/code&gt;，就需要把上层的所有&lt;code&gt;add_header&lt;/code&gt;全部复制过来。&lt;/li&gt;
+&lt;li&gt;配置中有两个正则匹配，需要在第一次匹配之后把结果存下来，否则第二次匹配的时候会覆盖第一次的结果。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;OK，后端完成了，个人感觉还是很轻而且很容易部署的，改一下nginx配置（如果你已经有一个在运行的nginx实例），再上传一个脚本，用systemd跑起来，确保它不会出错退出即可。&lt;/p&gt;
+&lt;h2&gt;前端&lt;/h2&gt;
+&lt;p&gt;关于前端我不会讲特别细，因为&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;我觉得前端的实现是一个比较case-by-case的东西，我的代码应该不能直接使用。&lt;/li&gt;
+&lt;li&gt;我前端比较弱，就不误人子弟了。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;如果有人想实现类似的效果，可以根据我的经验来实现，少走一些弯路吧。&lt;/p&gt;
+&lt;p&gt;最初我尝试了一下 vue.js 的 cli 工具建立的模板项目，但是我那时候对 webpack 本身就不熟悉，生成的模板看不懂，最终放弃了。
+其实从一个最简单的 &lt;code&gt;webpack.conf.js&lt;/code&gt; 开始写起反而比较容易，因为 &lt;code&gt;webpack.conf.js&lt;/code&gt; 只需要写非常少的东西就能运行，
+之后你需要加什么功能就对应地加上插件和配置，学习曲线很平缓。&lt;/p&gt;
+&lt;p&gt;当前 webpack 比较坑的是 2 还在beta，npm 直接安装会装 1，因此需要 &lt;code&gt;npm install webpack@beta&lt;/code&gt;，另外 2 的文档很不全，搜到的大部分是 1 的，总的来说我觉得 2 还是用起来很舒服的，特别是rule的配置，比 1 科学。如果要查 webpack 2 的配置，权威的位置是&lt;a href="https://webpack.js.org/"&gt;这里&lt;/a&gt;，据我观察其他都是讲 1 的。&lt;/p&gt;
+&lt;p&gt;以下是我现在的 &lt;code&gt;webpack.conf.js&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;const&lt;/span&gt; &lt;span class="nx"&gt;HtmlWebpackPlugin&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;require&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;html-webpack-plugin&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="kr"&gt;const&lt;/span&gt; &lt;span class="nx"&gt;webpack&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;require&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;webpack&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+
+&lt;span class="nx"&gt;module&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;exports&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="nx"&gt;entry&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;whatwg-fetch&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;./src/index.js&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+  &lt;span class="nx"&gt;output&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="nx"&gt;path&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;./dist&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nx"&gt;filename&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;bundle.js&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+  &lt;span class="p"&gt;},&lt;/span&gt;
+  &lt;span class="nx"&gt;resolve&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="nx"&gt;alias&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="s1"&gt;&amp;#39;vue&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;vue/dist/vue.common.js&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="s1"&gt;&amp;#39;bootstrap.css&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;bootstrap/dist/css/bootstrap.css&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="s1"&gt;&amp;#39;bootstrap.js&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;bootstrap/dist/js/bootstrap.js&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="p"&gt;},&lt;/span&gt;
+  &lt;span class="p"&gt;},&lt;/span&gt;
+  &lt;span class="nx"&gt;module&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="nx"&gt;rules&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[{&lt;/span&gt;
+      &lt;span class="nx"&gt;test&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="sr"&gt;/\.(vue|js)$/&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nx"&gt;enforce&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;pre&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nx"&gt;exclude&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="sr"&gt;/node_modules/&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nx"&gt;loader&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;eslint-loader&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="p"&gt;},&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="nx"&gt;test&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="sr"&gt;/\.vue$/&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nx"&gt;loader&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;vue-loader&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="p"&gt;},&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="nx"&gt;test&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="sr"&gt;/\.js$/&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nx"&gt;exclude&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="sr"&gt;/node_modules/&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nx"&gt;loader&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;babel-loader&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="p"&gt;},&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="nx"&gt;test&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="sr"&gt;/\.css$/&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nx"&gt;loader&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;css-loader&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="p"&gt;},&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="nx"&gt;enforce&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;post&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nx"&gt;test&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="sr"&gt;/\.css$/&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nx"&gt;loader&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;style-loader&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="p"&gt;},&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="nx"&gt;enforce&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;post&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nx"&gt;test&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="sr"&gt;/\.(ttf|woff|woff2|eot|svg)/&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nx"&gt;loader&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;file-loader&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nx"&gt;options&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;fonts/[name].[ext]&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="p"&gt;},&lt;/span&gt;
+    &lt;span class="p"&gt;}],&lt;/span&gt;
+  &lt;span class="p"&gt;},&lt;/span&gt;
+  &lt;span class="nx"&gt;plugins&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+    &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="nx"&gt;HtmlWebpackPlugin&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;
+      &lt;span class="nx"&gt;template&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;!pug-loader!index.pug&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="p"&gt;}),&lt;/span&gt;
+    &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="nx"&gt;webpack&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;optimize&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;UglifyJsPlugin&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;
+    &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="nx"&gt;webpack&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;ProvidePlugin&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;
+      &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;jquery&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nx"&gt;jQuery&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;jquery&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="p"&gt;}),&lt;/span&gt;
+  &lt;span class="p"&gt;],&lt;/span&gt;
+  &lt;span class="nx"&gt;devtool&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;#inline-source-map&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+&lt;span class="p"&gt;};&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;流程上大概是，以一个js作为入口，入口处使用vue-router设置整个app的route，逐层引入vue.js的单文件component作为依赖，其他部分主要是为了方便地用上三方库。
+最后用&lt;code&gt;HtmlWebpackPlugin&lt;/code&gt;这个插件来渲染模板，插入我们的js入口，作为浏览器入口。&lt;/p&gt;
+&lt;p&gt;当前有两个route，login和uploadList，uploadList包含多个uploadFile，每个uploadFile负责一个文件的上传。&lt;/p&gt;
+&lt;p&gt;UI上，直接使用了bootstrap，没什么好说的，堪堪够用。&lt;/p&gt;
+&lt;p&gt;上传部分的代码就非常简单了，因为XMLHttpRequest level 2直接提供了上传文件的支持：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;const&lt;/span&gt; &lt;span class="nx"&gt;xhr&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="nb"&gt;window&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;XMLHttpRequest&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;span class="nx"&gt;xhr&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;POST&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+
+&lt;span class="c1"&gt;// xhr.addEventListener...&lt;/span&gt;
+
+&lt;span class="nx"&gt;xhr&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;send&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;file&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里的file就是一个File。&lt;/p&gt;
+&lt;p&gt;另外在写vue.js的时候建议遵循以下原则，算是我的一点小经验：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;向下传数据用 &lt;code&gt;v-bind&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;向上传数据用 &lt;code&gt;$emit&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;共享状态存到父节点，再用上面的方式来更新和传递。&lt;/li&gt;
+&lt;li&gt;谨记使用 vue.js 是为了分离数据逻辑和UI逻辑，别依赖它做多余的事情。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;就会发现 vue.js 越写越顺畅。&lt;/p&gt;
+&lt;h1&gt;总结&lt;/h1&gt;
+&lt;p&gt;折腾这个东西花了我总共两个通宵的时间，虽然很累，但是顺便复习了一下vue.js，而且对webpack有了比较深的理解，感觉收获挺大的。&lt;/p&gt;</content></entry><entry><title>让你的nginx网站得到A+</title><link href="https://blog.huiyiqun.me/2016/12/31/give-your-nginx-powered-website-a-a-score.html" rel="alternate"></link><published>2016-12-31T15:32:49+08:00</published><updated>2016-12-31T21:10:53+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2016-12-31:/2016/12/31/give-your-nginx-powered-website-a-a-score.html</id><summary type="html">&lt;h1&gt;起因&lt;/h1&gt;
+&lt;p&gt;最近用 github 的 &lt;a href="https://education.github.com/pack"&gt;student pack&lt;/a&gt; 领了 &lt;a href="https://www.namecheap.com/"&gt;namecheap&lt;/a&gt; 的一年免费域名，并且把博客迁移到了新的域名下。&lt;/p&gt;
+&lt;p&gt;最初是想直接用 github.io CNAME一下，然而问题在于就没有 https 了。忍了一个月，实在是忍无可忍，自己找了台VPS自己跑。正好服务器也一直空着，没跑什么东西。&lt;/p&gt;
+&lt;p&gt;之前折腾了一下SSL的相关配置，正好趁机总结一下。&lt;/p&gt;
+&lt;h1&gt;安装部署&lt;/h1&gt;
+&lt;p&gt;服务器用的是 archlinux，安装nginx和certbot的方式如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; sudo pacman -Syu
 ~&amp;gt; sudo pacman -S nginx-mainline certbot-nginx
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h1&gt;nginx  配置 &lt;/h1&gt;
-&lt;p&gt; 将  nginx  配置的 …&lt;/p&gt;</summary><content type="html">&lt;h1&gt; 起因 &lt;/h1&gt;
-&lt;p&gt; 最近用  github  的  &lt;a href="https://education.github.com/pack"&gt;student pack&lt;/a&gt;  领了  &lt;a href="https://www.namecheap.com/"&gt;namecheap&lt;/a&gt;  的一年免费域名 ， 并且把博客迁移到了新的域名下 。&lt;/p&gt;
-&lt;p&gt; 最初是想直接用  github.io CNAME 一下 ， 然而问题在于就没有  https  了 。 忍了一个月 ， 实在是忍无可忍 ， 自己找了台 VPS 自己跑 。 正好服务器也一直空着 ， 没跑什么东西 。&lt;/p&gt;
-&lt;p&gt; 之前折腾了一下 SSL 的相关配置 ， 正好趁机总结一下 。&lt;/p&gt;
-&lt;h1&gt; 安装部署 &lt;/h1&gt;
-&lt;p&gt; 服务器用的是  archlinux， 安装 nginx 和 certbot 的方式如下 ：&lt;/p&gt;
+&lt;h1&gt;nginx 配置&lt;/h1&gt;
+&lt;p&gt;将 nginx 配置的 server block 改成如下内容：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kn"&gt;listen&lt;/span&gt;      &lt;span class="mi"&gt;80&lt;/span&gt; &lt;span class="s"&gt;default_server&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="kn"&gt;listen&lt;/span&gt;      &lt;span class="s"&gt;[::]:80 …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;h1&gt;起因&lt;/h1&gt;
+&lt;p&gt;最近用 github 的 &lt;a href="https://education.github.com/pack"&gt;student pack&lt;/a&gt; 领了 &lt;a href="https://www.namecheap.com/"&gt;namecheap&lt;/a&gt; 的一年免费域名，并且把博客迁移到了新的域名下。&lt;/p&gt;
+&lt;p&gt;最初是想直接用 github.io CNAME一下，然而问题在于就没有 https 了。忍了一个月，实在是忍无可忍，自己找了台VPS自己跑。正好服务器也一直空着，没跑什么东西。&lt;/p&gt;
+&lt;p&gt;之前折腾了一下SSL的相关配置，正好趁机总结一下。&lt;/p&gt;
+&lt;h1&gt;安装部署&lt;/h1&gt;
+&lt;p&gt;服务器用的是 archlinux，安装nginx和certbot的方式如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; sudo pacman -Syu
 ~&amp;gt; sudo pacman -S nginx-mainline certbot-nginx
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h1&gt;nginx  配置 &lt;/h1&gt;
-&lt;p&gt; 将  nginx  配置的  server block  改成如下内容 ：&lt;/p&gt;
+&lt;h1&gt;nginx 配置&lt;/h1&gt;
+&lt;p&gt;将 nginx 配置的 server block 改成如下内容：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;server&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
     &lt;span class="kn"&gt;listen&lt;/span&gt;      &lt;span class="mi"&gt;80&lt;/span&gt; &lt;span class="s"&gt;default_server&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
     &lt;span class="kn"&gt;listen&lt;/span&gt;      &lt;span class="s"&gt;[::]:80&lt;/span&gt; &lt;span class="s"&gt;default_server&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
@@ -33,59 +321,65 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 启动  nginx：&lt;/p&gt;
+&lt;p&gt;启动 nginx：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; sudo systemctl enable nginx --now
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 接着签证书 ：&lt;/p&gt;
+&lt;p&gt;接着签证书：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; sudo certbot --nginx
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;certbot 会修改 nginx 配置 ， 因此需要以 root 身份运行 。 另外这个 nginx 插件会读 nginx 配置判断域名 ， 因此在 nginx 配置的 &lt;code&gt;server_name&lt;/code&gt; 处应该填入完整的域名 。
- 接着会有一个交互式的界面确认一些信息 ， 顺序填写就好 。&lt;/p&gt;
-&lt;p&gt; 最后重启 nginx：&lt;/p&gt;
+&lt;p&gt;certbot会修改nginx配置，因此需要以root身份运行。另外这个nginx插件会读nginx配置判断域名，因此在nginx配置的&lt;code&gt;server_name&lt;/code&gt;处应该填入完整的域名。
+接着会有一个交互式的界面确认一些信息，顺序填写就好。&lt;/p&gt;
+&lt;p&gt;最后重启nginx：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; sudo systemctl restart nginx
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h1&gt;nginx  调优 &lt;/h1&gt;
-&lt;p&gt; 这个时候  https  应该已经配置好了 ， 不过强迫症表示在  &lt;a href="https://www.ssllabs.com/ssltest/analyze.html"&gt;ssllabs&lt;/a&gt;  只能拿到 B 不太开心 。&lt;/p&gt;
-&lt;p&gt; 关于如何调优 ， 在 &lt;a href="https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html"&gt; 这里 &lt;/a&gt; 有完整的介绍 ， 下面是我对  nginx  配置作的改动 ：&lt;/p&gt;
+&lt;h1&gt;nginx 调优&lt;/h1&gt;
+&lt;p&gt;这个时候 https 应该已经配置好了，不过强迫症表示在 &lt;a href="https://www.ssllabs.com/ssltest/analyze.html"&gt;ssllabs&lt;/a&gt; 只能拿到B不太开心。&lt;/p&gt;
+&lt;p&gt;关于如何调优，在&lt;a href="https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html"&gt;这里&lt;/a&gt;有完整的介绍，下面是我对 nginx 配置作的改动：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt; 把 &lt;code&gt;listen 443 ssl;&lt;/code&gt; 改成 &lt;code&gt;listen 443 ssl http2;&lt;/code&gt;： 添加  HTTP/2  支持 。&lt;/li&gt;
-&lt;li&gt; 加上  &lt;code&gt;listen [::]:443 ssl http2&lt;/code&gt;：certbot  的  nginx  似乎没有考虑到  IPv6  的支持 ， 所以缺了这一行 。&lt;/li&gt;
-&lt;li&gt; 将 &lt;code&gt;ssl_ciphers&lt;/code&gt; 改成 &lt;code&gt;"EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH"&lt;/code&gt;： 表示不想支持 IE6。&lt;/li&gt;
-&lt;li&gt; 加上 &lt;code&gt;Strict-Transport-Security "max-age=63072000; includeSubdomains; ";&lt;/code&gt; 这一行 ：HSTS（ 如果不想把 http 重定向加到 https 可以不加 ）。&lt;/li&gt;
-&lt;li&gt; 自制一个 dhparam， 加到配置里 。&lt;/li&gt;
+&lt;li&gt;把&lt;code&gt;listen 443 ssl;&lt;/code&gt;改成&lt;code&gt;listen 443 ssl http2;&lt;/code&gt;：添加 HTTP/2 支持。&lt;/li&gt;
+&lt;li&gt;加上 &lt;code&gt;listen [::]:443 ssl http2&lt;/code&gt;：certbot 的 nginx 似乎没有考虑到 IPv6 的支持，所以缺了这一行。&lt;/li&gt;
+&lt;li&gt;将&lt;code&gt;ssl_ciphers&lt;/code&gt;改成&lt;code&gt;"EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH"&lt;/code&gt;：表示不想支持IE6。&lt;/li&gt;
+&lt;li&gt;加上&lt;code&gt;Strict-Transport-Security "max-age=63072000; includeSubdomains; ";&lt;/code&gt;这一行：HSTS（如果不想把http重定向加到https可以不加）。&lt;/li&gt;
+&lt;li&gt;自制一个dhparam，加到配置里。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt; 接着重启  nginx  即可 ， 现在能拿到  A+  了 ， 在 &lt;a href="https://tools.keycdn.com/http2-test"&gt; 这里 &lt;/a&gt; 也能测试到有  http2  支持了 。&lt;/p&gt;</content></entry><entry><title>异步Python学习笔记</title><link href="https://blog.huiyiqun.me/2016/12/08/async-python-note.html" rel="alternate"></link><published>2016-12-08T16:52:11+08:00</published><updated>2016-12-31T21:10:53+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2016-12-08:/2016/12/08/async-python-note.html</id><summary type="html">&lt;h1&gt;About&lt;/h1&gt;
-&lt;p&gt; 一般来说说到 Python 都会说这是一种十分低效的语言 ， 慢等等 ， 然而之前用 Gevent 做了一个 restful， 发现其实性能还不错 。&lt;/p&gt;
-&lt;p&gt; 其实 Python 很慢这一点当然是不错的 ， 不适合直接用来作复杂算法的实现 。 但是当我们需要实现 Web 服务器等软件时 ，
- 性能的瓶颈实际并不在 CPU 上 ， 多数时间我们都在等待 IO， 如果 IO 需要 1s， 这个时候你用 Python 实现一段代码运行需要 0.01s，
- 和你用 C 实现一段代码运行需要 0.0001s 有什么可感知的区别吗 ？&lt;/p&gt;
-&lt;p&gt; 所以最重要的是如何地让用户请求不阻塞 ， 充分地让 IO 跑满 。 最早人们通过多进程来解决这个问题 ， 后来发现进程实在是太笨重 ，
- 转而使用线程来解决这个问题 ， 但是线程切换对于大量短时 io 依然过重 。 所以最后人们转而开始强调并发 ， 不再强调并行 ，
- 也就是所谓的异步 …&lt;/p&gt;</summary><content type="html">&lt;h1&gt;About&lt;/h1&gt;
-&lt;p&gt; 一般来说说到 Python 都会说这是一种十分低效的语言 ， 慢等等 ， 然而之前用 Gevent 做了一个 restful， 发现其实性能还不错 。&lt;/p&gt;
-&lt;p&gt; 其实 Python 很慢这一点当然是不错的 ， 不适合直接用来作复杂算法的实现 。 但是当我们需要实现 Web 服务器等软件时 ，
- 性能的瓶颈实际并不在 CPU 上 ， 多数时间我们都在等待 IO， 如果 IO 需要 1s， 这个时候你用 Python 实现一段代码运行需要 0.01s，
- 和你用 C 实现一段代码运行需要 0.0001s 有什么可感知的区别吗 ？&lt;/p&gt;
-&lt;p&gt; 所以最重要的是如何地让用户请求不阻塞 ， 充分地让 IO 跑满 。 最早人们通过多进程来解决这个问题 ， 后来发现进程实在是太笨重 ，
- 转而使用线程来解决这个问题 ， 但是线程切换对于大量短时 io 依然过重 。 所以最后人们转而开始强调并发 ， 不再强调并行 ，
- 也就是所谓的异步 。  这就是为什么 Python 这样的有 &lt;a href="https://wiki.python.org/moin/GlobalInterpreterLock"&gt;GIL&lt;/a&gt; 存在的 ，
- 串行执行的语言 ， 在 web 开发上依然能有一席之地的原因 。 所以要用 Python 高效的实现服务 ， 良好地异步是必不可少的 。&lt;/p&gt;
-&lt;p&gt;Python 3.4  新加了 &lt;a href="https://docs.python.org/3/library/asyncio.html"&gt;asyncio&lt;/a&gt;， 一直很感兴趣 ， 但是也没时间去深入研究 。&lt;/p&gt;
-&lt;p&gt; 最近在实验室需要做一个 FTP，&lt;a href="https://github.com/giampaolo/pyftpdlib"&gt;pyftpdlib&lt;/a&gt; 是一个十分优秀的 FTP 服务器实现 ，
- 其本身的实现是基于异步的 ， 同时也支持线程和进程模型 。 当然考虑到性能问题 ， 最后肯定需要采用异步模型 。
- 但是在这里我遇到了一个问题 ，pyftpdlib 本身有自己的异步 IO loop， 如果强行上 gevent 的 monkey_patch 有可能导致各种奇怪的 bug？&lt;/p&gt;
-&lt;p&gt; 基于这个考虑 ， 我决定系统地对 Python 的整个异步生态了解一遍 ， 以下是一些笔记 。&lt;/p&gt;
-&lt;p&gt; 因为我用 Python 时间也不算特别长 ， 所以特别久远的异步实现 ， 像 twisted 我就不提了 。
- 下面主要是围绕 asyncio 出现之前比较流行的 gevent 和现在官方实现的 asyncio 进行分析 。&lt;/p&gt;
+&lt;p&gt;接着重启 nginx 即可，现在能拿到 A+ 了，在&lt;a href="https://tools.keycdn.com/http2-test"&gt;这里&lt;/a&gt;也能测试到有 http2 支持了。&lt;/p&gt;</content></entry><entry><title>异步Python学习笔记</title><link href="https://blog.huiyiqun.me/2016/12/08/async-python-note.html" rel="alternate"></link><published>2016-12-08T16:52:11+08:00</published><updated>2016-12-31T21:10:53+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2016-12-08:/2016/12/08/async-python-note.html</id><summary type="html">&lt;h1&gt;About&lt;/h1&gt;
+&lt;p&gt;一般来说说到Python都会说这是一种十分低效的语言，慢等等，然而之前用Gevent做了一个restful，发现其实性能还不错。&lt;/p&gt;
+&lt;p&gt;其实Python很慢这一点当然是不错的，不适合直接用来作复杂算法的实现。但是当我们需要实现Web服务器等软件时，
+性能的瓶颈实际并不在CPU上，多数时间我们都在等待IO，如果IO需要1s，这个时候你用Python实现一段代码运行需要0.01s，
+和你用C实现一段代码运行需要0.0001s有什么可感知的区别吗？&lt;/p&gt;
+&lt;p&gt;所以最重要的是如何地让用户请求不阻塞，充分地让IO跑满。最早人们通过多进程来解决这个问题，后来发现进程实在是太笨重，
+转而使用线程来解决这个问题，但是线程切换对于大量短时io依然过重。所以最后人们转而开始强调并发，不再强调并行，
+也就是所谓的异步。 这就是为什么Python这样的有&lt;a href="https://wiki.python.org/moin/GlobalInterpreterLock"&gt;GIL&lt;/a&gt;存在的，
+串行执行的语言，在web开发上依然能有一席之地的原因。所以要用Python高效的实现服务，良好地异步是必不可少的。&lt;/p&gt;
+&lt;p&gt;Python 3.4 新加了&lt;a href="https://docs.python.org/3/library/asyncio.html"&gt;asyncio&lt;/a&gt;，一直很感兴趣，但是也没时间去深入研究。&lt;/p&gt;
+&lt;p&gt;最近在实验室需要做一个FTP，&lt;a href="https://github.com/giampaolo/pyftpdlib"&gt;pyftpdlib&lt;/a&gt;是一个十分优秀的FTP服务器实现，
+其本身的实现是基于异步的，同时也支持线程和进程模型。当然考虑到性能问题，最后肯定需要采用异步模型。
+但是在这里我遇到了一个问题，pyftpdlib本身有自己的异步IO loop，如果强行上gevent的monkey_patch有可能导致各种奇怪的bug？&lt;/p&gt;
+&lt;p&gt;基于这个考虑 …&lt;/p&gt;</summary><content type="html">&lt;h1&gt;About&lt;/h1&gt;
+&lt;p&gt;一般来说说到Python都会说这是一种十分低效的语言，慢等等，然而之前用Gevent做了一个restful，发现其实性能还不错。&lt;/p&gt;
+&lt;p&gt;其实Python很慢这一点当然是不错的，不适合直接用来作复杂算法的实现。但是当我们需要实现Web服务器等软件时，
+性能的瓶颈实际并不在CPU上，多数时间我们都在等待IO，如果IO需要1s，这个时候你用Python实现一段代码运行需要0.01s，
+和你用C实现一段代码运行需要0.0001s有什么可感知的区别吗？&lt;/p&gt;
+&lt;p&gt;所以最重要的是如何地让用户请求不阻塞，充分地让IO跑满。最早人们通过多进程来解决这个问题，后来发现进程实在是太笨重，
+转而使用线程来解决这个问题，但是线程切换对于大量短时io依然过重。所以最后人们转而开始强调并发，不再强调并行，
+也就是所谓的异步。 这就是为什么Python这样的有&lt;a href="https://wiki.python.org/moin/GlobalInterpreterLock"&gt;GIL&lt;/a&gt;存在的，
+串行执行的语言，在web开发上依然能有一席之地的原因。所以要用Python高效的实现服务，良好地异步是必不可少的。&lt;/p&gt;
+&lt;p&gt;Python 3.4 新加了&lt;a href="https://docs.python.org/3/library/asyncio.html"&gt;asyncio&lt;/a&gt;，一直很感兴趣，但是也没时间去深入研究。&lt;/p&gt;
+&lt;p&gt;最近在实验室需要做一个FTP，&lt;a href="https://github.com/giampaolo/pyftpdlib"&gt;pyftpdlib&lt;/a&gt;是一个十分优秀的FTP服务器实现，
+其本身的实现是基于异步的，同时也支持线程和进程模型。当然考虑到性能问题，最后肯定需要采用异步模型。
+但是在这里我遇到了一个问题，pyftpdlib本身有自己的异步IO loop，如果强行上gevent的monkey_patch有可能导致各种奇怪的bug？&lt;/p&gt;
+&lt;p&gt;基于这个考虑，我决定系统地对Python的整个异步生态了解一遍，以下是一些笔记。&lt;/p&gt;
+&lt;p&gt;因为我用Python时间也不算特别长，所以特别久远的异步实现，像twisted我就不提了。
+下面主要是围绕asyncio出现之前比较流行的gevent和现在官方实现的asyncio进行分析。&lt;/p&gt;
 &lt;h1&gt;greenlet&lt;/h1&gt;
-&lt;p&gt;&lt;a href="https://greenlet.readthedocs.io/en/latest/"&gt;greenlet&lt;/a&gt; 是 Gevent 的依赖之一 ， 它实现了一种叫 "tasklet" 的微线程 。&lt;/p&gt;
-&lt;p&gt; 官网上的两个例子很适合理解 ， 我就摘抄到这里了 ：&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://greenlet.readthedocs.io/en/latest/"&gt;greenlet&lt;/a&gt;是Gevent的依赖之一，它实现了一种叫"tasklet"的微线程。&lt;/p&gt;
+&lt;p&gt;官网上的两个例子很适合理解，我就摘抄到这里了：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;greenlet&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;greenlet&lt;/span&gt;
 
 &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;test1&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
@@ -104,24 +398,24 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 这个例子很简单 ， 首先定义了两个函数作为 &lt;code&gt;greenlet&lt;/code&gt; 的入口 ， 在外部定义两个 &lt;code&gt;greenlet&lt;/code&gt;， 然后 &lt;code&gt;switch&lt;/code&gt; 到 &lt;code&gt;gr1&lt;/code&gt;，
- 这个时候 &lt;code&gt;gr1&lt;/code&gt; 会 &lt;code&gt;switch&lt;/code&gt; 到 &lt;code&gt;gr2&lt;/code&gt;， 然后 &lt;code&gt;gr2&lt;/code&gt; 重新 &lt;code&gt;switch&lt;/code&gt; 到 &lt;code&gt;gr1&lt;/code&gt;，&lt;code&gt;gr1&lt;/code&gt; 结束退出 ， 整个程序结束退出 。
- 程序运行的输出如下 ：&lt;/p&gt;
+&lt;p&gt;这个例子很简单，首先定义了两个函数作为&lt;code&gt;greenlet&lt;/code&gt;的入口，在外部定义两个&lt;code&gt;greenlet&lt;/code&gt;，然后&lt;code&gt;switch&lt;/code&gt;到&lt;code&gt;gr1&lt;/code&gt;，
+这个时候&lt;code&gt;gr1&lt;/code&gt;会&lt;code&gt;switch&lt;/code&gt;到&lt;code&gt;gr2&lt;/code&gt;，然后&lt;code&gt;gr2&lt;/code&gt;重新&lt;code&gt;switch&lt;/code&gt;到&lt;code&gt;gr1&lt;/code&gt;，&lt;code&gt;gr1&lt;/code&gt;结束退出，整个程序结束退出。
+程序运行的输出如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;12
 56
 34
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 我们可以看到 ：&lt;/p&gt;
+&lt;p&gt;我们可以看到：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt; 程序依然是串行执行的 ， 并没有任何并行存在 。&lt;/li&gt;
-&lt;li&gt; 我们成功的在两个函数的串行执行之间进行了切换 ， 也就是所谓的协程 。&lt;/li&gt;
-&lt;li&gt; 在 API 的结构上 ， 很像线程 ， 但是没有线程的隐式切换 。&lt;/li&gt;
+&lt;li&gt;程序依然是串行执行的，并没有任何并行存在。&lt;/li&gt;
+&lt;li&gt;我们成功的在两个函数的串行执行之间进行了切换，也就是所谓的协程。&lt;/li&gt;
+&lt;li&gt;在API的结构上，很像线程，但是没有线程的隐式切换。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt; 主意到 ，78 并没有被输出 ， 因为 &lt;code&gt;gr2.switch&lt;/code&gt; 只被调用了一次 ， 因此 &lt;code&gt;switch&lt;/code&gt; 出 &lt;code&gt;gr2&lt;/code&gt; 之后就不会再进去了 。&lt;/p&gt;
-&lt;p&gt; 如果在程序的最后加上 &lt;code&gt;gr2.switch()&lt;/code&gt;， 就能看到 78 输出了 .&lt;/p&gt;
-&lt;p&gt;Greenlet 的另一个例子更有实用价值一些 ， 假设你写了一个 console 程序 ：&lt;/p&gt;
+&lt;p&gt;主意到，78并没有被输出，因为&lt;code&gt;gr2.switch&lt;/code&gt;只被调用了一次，因此&lt;code&gt;switch&lt;/code&gt;出&lt;code&gt;gr2&lt;/code&gt;之后就不会再进去了。&lt;/p&gt;
+&lt;p&gt;如果在程序的最后加上&lt;code&gt;gr2.switch()&lt;/code&gt;，就能看到78输出了.&lt;/p&gt;
+&lt;p&gt;Greenlet的另一个例子更有实用价值一些，假设你写了一个console程序：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;process_commands&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
     &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
         &lt;span class="n"&gt;line&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;&amp;#39;&lt;/span&gt;
@@ -135,10 +429,10 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 你想把它变成一个 GUI 程序 ， 然而 GUI 框架一般是基于事件的 ， 所以应该如何从 &lt;code&gt;read_next_char&lt;/code&gt; 里读到下一个字符 ，
- 同时又不阻塞执行呢 ？ 一般我们采用多线程 ， 让 UI 线程和上面的线程进行线程间同步 。 但是写过多线程的同学应该都知道 ，
- 锁的数量多了之后很容易把程序弄得一团糟 。&lt;/p&gt;
-&lt;p&gt; 一个解决方法是使用 greenlet：&lt;/p&gt;
+&lt;p&gt;你想把它变成一个GUI程序，然而GUI框架一般是基于事件的，所以应该如何从&lt;code&gt;read_next_char&lt;/code&gt;里读到下一个字符，
+同时又不阻塞执行呢？一般我们采用多线程，让UI线程和上面的线程进行线程间同步。但是写过多线程的同学应该都知道，
+锁的数量多了之后很容易把程序弄得一团糟。&lt;/p&gt;
+&lt;p&gt;一个解决方法是使用greenlet：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;event_keydown&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
          &lt;span class="c1"&gt;# jump into g_processor, sending it the key&lt;/span&gt;
     &lt;span class="n"&gt;g_processor&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;switch&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
@@ -157,12 +451,12 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 代码整个和多线程很类似 ， 但是由于 greenlet 采用了显式的 context 切换 ， 所以完全没有必要存在锁 。&lt;/p&gt;
-&lt;p&gt; 需要注意到的是上面用到了 gevent 的 parent。parent 默认会指向创建这个 greenlet 的 greenlet，
- 上面的 &lt;code&gt;g_processor&lt;/code&gt; 是在最外层定义的 ， 那么它的 parent 应该是谁呢 ？&lt;/p&gt;
-&lt;p&gt; 在 greenlet 的语境里 ， 认为程序开始运行时在主 greenlet 里 （ 类似于主线程和主进程的概念 ）， 所以在最外层创建的 greenlet，
- 其 parent 就是主 greenlet(main)。&lt;/p&gt;
-&lt;p&gt;parent 除了用于方便索引外 ， 另一个意义在于当 greenlet 退出时会自动 switch 到它的 parent。 比如 ：&lt;/p&gt;
+&lt;p&gt;代码整个和多线程很类似，但是由于greenlet采用了显式的context切换，所以完全没有必要存在锁。&lt;/p&gt;
+&lt;p&gt;需要注意到的是上面用到了gevent的parent。parent默认会指向创建这个greenlet的greenlet，
+上面的&lt;code&gt;g_processor&lt;/code&gt;是在最外层定义的，那么它的parent应该是谁呢？&lt;/p&gt;
+&lt;p&gt;在greenlet的语境里，认为程序开始运行时在主greenlet里（类似于主线程和主进程的概念），所以在最外层创建的greenlet，
+其parent就是主greenlet(main)。&lt;/p&gt;
+&lt;p&gt;parent除了用于方便索引外，另一个意义在于当greenlet退出时会自动switch到它的parent。比如：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;greenlet&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;greenlet&lt;/span&gt;
 
 &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;test1&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
@@ -182,7 +476,7 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;code&gt;gr2&lt;/code&gt; 退出之后自动 switch 到其 parent， 也就是 main， 因此 main 中的 &lt;code&gt;gr1.switch&lt;/code&gt; 返回了 test2 的返回值 ， 整个输出如下 ：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;gr2&lt;/code&gt;退出之后自动switch到其parent，也就是main，因此main中的&lt;code&gt;gr1.switch&lt;/code&gt;返回了test2的返回值，整个输出如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;12
 56
 78
@@ -191,84 +485,91 @@
 
 
 &lt;h1&gt;libev&lt;/h1&gt;
-&lt;p&gt;&lt;a href="http://software.schmorp.de/pkg/libev.html"&gt;libev&lt;/a&gt; 是 gevent 的另一个依赖 。 最初的时候 gevent 使用的是 libevent，
- 后来换成了 libev。&lt;/p&gt;
-&lt;p&gt;libevent 和 libev 从功能上来看差距不大 ， 主要是对操作系统层面的一些系统提供统一的封装 。 在 linux 上 ，
- 它们都使用了 epoll 作为底层的基础 。 在 &lt;a href="http://stackoverflow.com/a/13999821"&gt; 设计理念 &lt;/a&gt; 上 ，libev 更倾向于 UNIX 哲学 ，
- 而 libevent 则提供了完整的事件驱动编程框架 。&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://www.ibm.com/developerworks/aix/library/au-libev/"&gt; 这里 &lt;/a&gt; 有一些 libev 和 libevent 的例子 ， 基本上就是 ：&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://software.schmorp.de/pkg/libev.html"&gt;libev&lt;/a&gt;是gevent的另一个依赖。最初的时候gevent使用的是libevent，
+后来换成了libev。&lt;/p&gt;
+&lt;p&gt;libevent和libev从功能上来看差距不大，主要是对操作系统层面的一些系统提供统一的封装。在linux上，
+它们都使用了epoll作为底层的基础。在&lt;a href="http://stackoverflow.com/a/13999821"&gt;设计理念&lt;/a&gt;上，libev更倾向于UNIX哲学，
+而libevent则提供了完整的事件驱动编程框架。&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://www.ibm.com/developerworks/aix/library/au-libev/"&gt;这里&lt;/a&gt;有一些libev和libevent的例子，基本上就是：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt; 注册回调函数 。&lt;/li&gt;
-&lt;li&gt; 启动主循环 ， 监测事件 。&lt;/li&gt;
+&lt;li&gt;注册回调函数。&lt;/li&gt;
+&lt;li&gt;启动主循环，监测事件。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h1&gt;gevent&lt;/h1&gt;
-&lt;p&gt;&lt;a href="http://www.gevent.org/"&gt;gevent&lt;/a&gt; 基于了上面介绍的 greenlet 和 libev。&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://www.gevent.org/"&gt;gevent&lt;/a&gt;基于了上面介绍的greenlet和libev。&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt; 将 Python 标准库中的一部分阻塞调用重写为异步调用 ， 并保持 API 一致 ， 以便运行时直接替换 (monkey_patch)。&lt;/li&gt;
-&lt;li&gt; 实现了 TCP/UDP/HTTP/WSGI 服务器 。&lt;/li&gt;
-&lt;li&gt; 加强了 DNS 查询的性能 。&lt;/li&gt;
+&lt;li&gt;将Python标准库中的一部分阻塞调用重写为异步调用，并保持API一致，以便运行时直接替换(monkey_patch)。&lt;/li&gt;
+&lt;li&gt;实现了TCP/UDP/HTTP/WSGI服务器。&lt;/li&gt;
+&lt;li&gt;加强了DNS查询的性能。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt; 它的运行过程大概是 ：&lt;/p&gt;
+&lt;p&gt;它的运行过程大概是：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;main greenlet&lt;/li&gt;
-&lt;li&gt; 任意 gevent API 被调用 &lt;/li&gt;
-&lt;li&gt; 查找 Hub greenlet； 若不存在 ， 则创建一个 &lt;/li&gt;
-&lt;li&gt;Hub greenlet 调用 libev 监听事件 ， 进行调度 &lt;/li&gt;
+&lt;li&gt;任意gevent API被调用&lt;/li&gt;
+&lt;li&gt;查找Hub greenlet；若不存在，则创建一个&lt;/li&gt;
+&lt;li&gt;Hub greenlet调用libev监听事件，进行调度&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt; 一般来说 ， 在程序开头执行如下代码 ：&lt;/p&gt;
+&lt;p&gt;一般来说，在程序开头执行如下代码：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;gevent&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;monkey&lt;/span&gt;
 &lt;span class="n"&gt;monkey&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;patch_all&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 你的程序就已经运行在 gevent 之下了 ， 之后你就可以像使用线程和进程一样使用 Greenlet 了 。&lt;/p&gt;
-&lt;p&gt; 或者对于服务器而言 ， 你可以基于 gevent 提供的服务器实现具体的逻辑 ， 接着简单地 start 等待事件 （ 比如用户链接 ）
- 来调用你的回调就好了 。&lt;/p&gt;
-&lt;p&gt;gevent 用 Greenlet 来替代线程和进程作为调度单位 ， 一方面缓解了线程和进程在较高的并发场景下开销大 ， 切换速度慢 
- 等问题 。 另一方面用 Greenlet 来代替线程 + 锁实现协程 ， 更加的高效 。&lt;/p&gt;
-&lt;p&gt; 但是 Gevent 的问题在于实际上只有一个线程在执行 ， 所以如果你的某个 Greenlet 长时间占用 CPU， 那么 Hub 没法进入 CPU 进行调度 ，
- 那么用户请求就被阻塞了 。 不过这个对于习惯了事件驱动编程的 Javascript、QT 的同学应该都不是问题 。&lt;/p&gt;
-&lt;p&gt; 总的来说 ，gevent 在非并行的 Python 上实现了原本不支持的异步编程 ， 对于实现高并发服务器来说十分友好 。&lt;/p&gt;
-&lt;p&gt; 从架构角色的角度来说 ， 我觉得可以这么说 ，gevent 在 Python 层面上基于 libev 实现了 libevent 的角色 。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;asyncio 的内容晚些再补 &lt;/strong&gt;&lt;/p&gt;</content></entry><entry><title>基于libvirt kvm macvtap的虚拟化解决方案</title><link href="https://blog.huiyiqun.me/2016/11/24/virtualization-with-libvirt-kvm-and-macvtap.html" rel="alternate"></link><published>2016-11-24T12:13:28+08:00</published><updated>2016-12-31T21:10:53+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2016-11-24:/2016/11/24/virtualization-with-libvirt-kvm-and-macvtap.html</id><summary type="html">&lt;h2&gt; 前言 &lt;/h2&gt;
-&lt;p&gt; 这其实是很早以前折腾的东西 ， 但是感觉网上的资料不是很清楚 ， 现在补一下 ， 以免以后想不起来 。&lt;/p&gt;
-&lt;h2&gt;macvlan  与  macvtap&lt;/h2&gt;
-&lt;p&gt; 其实之所以会用 macvtap 来做网络端口复用是因为 libvirt 默认用了它 ， 后来折腾的过程中看了代码 ， 理解了原理 ，
- 才明白它相比于以前的 bridge 方案确实有一些优势 ， 如果虚拟机的流量确实很大 ， 可以用这套方案 ， 来减少物理机的 CPU 和 
- 网卡的压力 。&lt;/p&gt;
-&lt;p&gt;macvtap 与 macvlan 实际上是内核里面的两个特性 ， 用于在物理网卡后面接一些虚拟端口 ， 复用物理端口 ， 但是利用了网卡 
- 的一个较新的特性 ， 所以从性能上来说比纯虚拟交换性能更高 ， 属于一种半虚拟化方案 。&lt;/p&gt;
-&lt;p&gt;macvlan 实际上和虚拟机并不是紧耦合的 ， 你也可以在自己的机器上开一个 macvlan 做试验 ：&lt;/p&gt;
+&lt;p&gt;你的程序就已经运行在gevent之下了，之后你就可以像使用线程和进程一样使用Greenlet了。&lt;/p&gt;
+&lt;p&gt;或者对于服务器而言，你可以基于gevent提供的服务器实现具体的逻辑，接着简单地start等待事件（比如用户链接）
+来调用你的回调就好了。&lt;/p&gt;
+&lt;p&gt;gevent用Greenlet来替代线程和进程作为调度单位，一方面缓解了线程和进程在较高的并发场景下开销大，切换速度慢
+等问题。另一方面用Greenlet来代替线程+锁实现协程，更加的高效。&lt;/p&gt;
+&lt;p&gt;但是Gevent的问题在于实际上只有一个线程在执行，所以如果你的某个Greenlet长时间占用CPU，那么Hub没法进入CPU进行调度，
+那么用户请求就被阻塞了。不过这个对于习惯了事件驱动编程的Javascript、QT的同学应该都不是问题。&lt;/p&gt;
+&lt;p&gt;总的来说，gevent在非并行的Python上实现了原本不支持的异步编程，对于实现高并发服务器来说十分友好。&lt;/p&gt;
+&lt;p&gt;从架构角色的角度来说，我觉得可以这么说，gevent在Python层面上基于libev实现了libevent的角色。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;asyncio的内容晚些再补&lt;/strong&gt;&lt;/p&gt;</content></entry><entry><title>基于libvirt kvm macvtap的虚拟化解决方案</title><link href="https://blog.huiyiqun.me/2016/11/24/virtualization-with-libvirt-kvm-and-macvtap.html" rel="alternate"></link><published>2016-11-24T12:13:28+08:00</published><updated>2016-12-31T21:10:53+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2016-11-24:/2016/11/24/virtualization-with-libvirt-kvm-and-macvtap.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;这其实是很早以前折腾的东西，但是感觉网上的资料不是很清楚，现在补一下，以免以后想不起来。&lt;/p&gt;
+&lt;h2&gt;macvlan 与 macvtap&lt;/h2&gt;
+&lt;p&gt;其实之所以会用macvtap来做网络端口复用是因为libvirt默认用了它，后来折腾的过程中看了代码，理解了原理，
+才明白它相比于以前的bridge方案确实有一些优势，如果虚拟机的流量确实很大，可以用这套方案，来减少物理机的CPU和
+网卡的压力。&lt;/p&gt;
+&lt;p&gt;macvtap与macvlan实际上是内核里面的两个特性，用于在物理网卡后面接一些虚拟端口，复用物理端口，但是利用了网卡
+的一个较新的特性，所以从性能上来说比纯虚拟交换性能更高，属于一种半虚拟化方案。&lt;/p&gt;
+&lt;p&gt;macvlan实际上和虚拟机并不是紧耦合的，你也可以在自己的机器上开一个macvlan做试验：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; sudo ip link add link eno1 type macvlan
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;strong&gt; 注意把 eno1 替换成你的物理端口名 …&lt;/strong&gt;&lt;/p&gt;</summary><content type="html">&lt;h2&gt; 前言 &lt;/h2&gt;
-&lt;p&gt; 这其实是很早以前折腾的东西 ， 但是感觉网上的资料不是很清楚 ， 现在补一下 ， 以免以后想不起来 。&lt;/p&gt;
-&lt;h2&gt;macvlan  与  macvtap&lt;/h2&gt;
-&lt;p&gt; 其实之所以会用 macvtap 来做网络端口复用是因为 libvirt 默认用了它 ， 后来折腾的过程中看了代码 ， 理解了原理 ，
- 才明白它相比于以前的 bridge 方案确实有一些优势 ， 如果虚拟机的流量确实很大 ， 可以用这套方案 ， 来减少物理机的 CPU 和 
- 网卡的压力 。&lt;/p&gt;
-&lt;p&gt;macvtap 与 macvlan 实际上是内核里面的两个特性 ， 用于在物理网卡后面接一些虚拟端口 ， 复用物理端口 ， 但是利用了网卡 
- 的一个较新的特性 ， 所以从性能上来说比纯虚拟交换性能更高 ， 属于一种半虚拟化方案 。&lt;/p&gt;
-&lt;p&gt;macvlan 实际上和虚拟机并不是紧耦合的 ， 你也可以在自己的机器上开一个 macvlan 做试验 ：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; sudo ip link add link eno1 type macvlan
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;&lt;strong&gt; 注意把 eno1 替换成你的物理端口名 &lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt; 好了 ， 你现在有一个 macvlan0 了 ， 你可以试试 &lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注意把eno1替换成你的物理端口名&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;好了，你现在有一个macvlan0了，你可以试试&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; sudo ip link set macvlan0 up
 ~&amp;gt; sudo dhcpcd macvlan0
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 如果你的网络里有 slaac 或 dhcp6， 那么你应该能顺利地拿到 IPv6 地址 。 如果你的网络里有 dhcp， 那么你应该能顺利地拿到 IPv4
- 地址 。&lt;/p&gt;
-&lt;p&gt; 你应该会注意到 ，macvlan 端口的 mac 地址与物理端口的 mac 地址是不同的 。&lt;/p&gt;
-&lt;p&gt;macvtap 实际上是在 macvlan 创建的虚拟端口后面接了一个字符设备 ， 方便某些场景 （ 比如虚拟机 ）。&lt;/p&gt;
-&lt;h3&gt;macvlan 实现 &lt;/h3&gt;
-&lt;p&gt; 以下是 macvlan 的实现中用到的数据结构 ：&lt;/p&gt;
+&lt;p&gt;如果你的网络里有slaac或dhcp6，那么你应该能顺利地拿到IPv6地址。如果你的网络里有dhcp，那么你应该能顺利地拿到IPv4 …&lt;/p&gt;</summary><content type="html">&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;这其实是很早以前折腾的东西，但是感觉网上的资料不是很清楚，现在补一下，以免以后想不起来。&lt;/p&gt;
+&lt;h2&gt;macvlan 与 macvtap&lt;/h2&gt;
+&lt;p&gt;其实之所以会用macvtap来做网络端口复用是因为libvirt默认用了它，后来折腾的过程中看了代码，理解了原理，
+才明白它相比于以前的bridge方案确实有一些优势，如果虚拟机的流量确实很大，可以用这套方案，来减少物理机的CPU和
+网卡的压力。&lt;/p&gt;
+&lt;p&gt;macvtap与macvlan实际上是内核里面的两个特性，用于在物理网卡后面接一些虚拟端口，复用物理端口，但是利用了网卡
+的一个较新的特性，所以从性能上来说比纯虚拟交换性能更高，属于一种半虚拟化方案。&lt;/p&gt;
+&lt;p&gt;macvlan实际上和虚拟机并不是紧耦合的，你也可以在自己的机器上开一个macvlan做试验：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; sudo ip link add link eno1 type macvlan
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;注意把eno1替换成你的物理端口名&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;好了，你现在有一个macvlan0了，你可以试试&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; sudo ip link set macvlan0 up
+~&amp;gt; sudo dhcpcd macvlan0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;如果你的网络里有slaac或dhcp6，那么你应该能顺利地拿到IPv6地址。如果你的网络里有dhcp，那么你应该能顺利地拿到IPv4
+地址。&lt;/p&gt;
+&lt;p&gt;你应该会注意到，macvlan端口的mac地址与物理端口的mac地址是不同的。&lt;/p&gt;
+&lt;p&gt;macvtap实际上是在macvlan创建的虚拟端口后面接了一个字符设备，方便某些场景（比如虚拟机）。&lt;/p&gt;
+&lt;h3&gt;macvlan实现&lt;/h3&gt;
+&lt;p&gt;以下是macvlan的实现中用到的数据结构：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt; +------------------------------------------------------------------------------------------------+
  |                                                                                                |
  |                         +------------------------------------------------------------------+   |
@@ -296,109 +597,111 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 对于每一个物理设备 phy_device， 在第一个 macvlan 设备创建的时候 ， 会创建一个 port，
- 它会注册一个 rx_handler 来处理 phy_device 收到的 frame， 再将其分发给 macvlan 设备 。&lt;/p&gt;
-&lt;p&gt; 如果 macvlan 工作在 passthru 模式上 ， 那么 port 上只允许 attach 一个 macvlan_device， 否则会维护一个 vlans 列表 ，
- 每一个成员对应该物理设备下的一个 macvlan 设备 。&lt;/p&gt;
-&lt;p&gt; 如果你对于网卡驱动开发比较熟悉的话 ， 这里的 macvlan_device 就是网卡设备所对应的数据结构了 。
- 它的 priv_data 里存了一些指针 ， 用于访问 phy_device 和 port。&lt;/p&gt;
-&lt;p&gt; 为什么说 macvlan 用到了物理网卡的特性呢 ？ 我们都知道 ， 除非在网卡上设置了 promisc、allmulti 等 flag，
- 否则网卡只会把符合 mac 地址的包传到总线上 ， 操作系统不会收到其他包 ， 因此内核不需要花费大量的 CPU 时间来处理中断 ，
- 把不相关的包 drop 掉 。 而新的网卡不仅支持根据其本身的 mac 地址来过滤包 ， 还支持操作系统主动向其添加白名单 ，
- 让指定的包通过网卡的过滤 ， 送到操作系统 。&lt;/p&gt;
-&lt;p&gt;macvlan 实际上就是利用了这个特性 ， 主动把 macvlan 设备上的过滤列表添加到物理设备的过滤列表里 ，
- 依然利用物理网卡来过滤不相关的包 ， 同时又放行了 macvlan 设备所需要的包 。 一般来说现在的网卡都支持这个特性 ，
- 如果不支持这个特性 ，macvlan 基本上就没什么优势了 （ 这是我认为的 ， 首先我没有这样的设备 ， 其次我没有读过 bridge 的代码 ，
- 因此不一定准确 ）。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;NOTE: ldd3 里对于网卡接口的描述已经过时了 ， 特别是多播部分的 set_multicast_list 这个接口 ， 实际已经改名字了 。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;macvlan 设备是支持串联的 ， 你可以在 macvlan 设备上挂载 macvlan 设备 。 在内核模块里 ，
- 它会把新的 macvlan 设备直接挂到物理设备的 port 上 ， 因此性能上不会有损失 。&lt;/em&gt;&lt;/p&gt;
-&lt;h2&gt; 虚拟化方案 &lt;/h2&gt;
-&lt;p&gt;libvirt  和  KVM  都是比较成熟的方案 ， 这里就不赘述了 。 下面说一下三者配合的时候遇到的一些问题 。&lt;/p&gt;
-&lt;h3&gt; 虚拟机里收不到多播包 &lt;/h3&gt;
-&lt;p&gt; 上面 macvlan 的介绍里已经提过了 ，macvlan 设备的过滤列表是会同步到物理设备上的 ， 所以问题在于虚拟机里的网卡上的过滤 
- 列表如何同步到物理机上的 macvlan 设备 。&lt;/p&gt;
-&lt;p&gt;libvirt 的这个 
-&lt;a href="https://libvirt.org/git/?p=libvirt.git;a=commit;h=d70cc1fa7219b347a301e132bb927f41958b372d"&gt;commit&lt;/a&gt; 里添加了 
- 相应的支持 ， 原理上是通过监听 qemu 的 NIC_RX_FILTER_CHANGED 事件 ， 进行同步 。&lt;/p&gt;
-&lt;p&gt; 与此同时 ， 在这个 
-&lt;a href="https://libvirt.org/git/?p=libvirt.git;a=commit;h=07450cd42951d5007ab28d8e522f65d948181674"&gt;commit&lt;/a&gt; 里设置了 
- 一个开关 ， 只有 trustGuestRxFilters 被设置为 yes 时上面的机制才会工作 。&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://libvirt.org/formatdomain.html#elementsNICS"&gt; 这里 &lt;/a&gt; 对于 trustGuestRxFilters 有一些介绍 ， 简而言之 ， 为了让 
- 虚拟机收到多播包 ， 你需要 ：&lt;/p&gt;
+&lt;p&gt;对于每一个物理设备phy_device，在第一个macvlan设备创建的时候，会创建一个port，
+它会注册一个rx_handler来处理phy_device收到的frame，再将其分发给macvlan设备。&lt;/p&gt;
+&lt;p&gt;如果macvlan工作在passthru模式上，那么port上只允许attach一个macvlan_device，否则会维护一个vlans列表，
+每一个成员对应该物理设备下的一个macvlan设备。&lt;/p&gt;
+&lt;p&gt;如果你对于网卡驱动开发比较熟悉的话，这里的macvlan_device就是网卡设备所对应的数据结构了。
+它的priv_data里存了一些指针，用于访问phy_device和port。&lt;/p&gt;
+&lt;p&gt;为什么说macvlan用到了物理网卡的特性呢？我们都知道，除非在网卡上设置了promisc、allmulti等flag，
+否则网卡只会把符合mac地址的包传到总线上，操作系统不会收到其他包，因此内核不需要花费大量的CPU时间来处理中断，
+把不相关的包drop掉。而新的网卡不仅支持根据其本身的mac地址来过滤包，还支持操作系统主动向其添加白名单，
+让指定的包通过网卡的过滤，送到操作系统。&lt;/p&gt;
+&lt;p&gt;macvlan实际上就是利用了这个特性，主动把macvlan设备上的过滤列表添加到物理设备的过滤列表里，
+依然利用物理网卡来过滤不相关的包，同时又放行了macvlan设备所需要的包。一般来说现在的网卡都支持这个特性，
+如果不支持这个特性，macvlan基本上就没什么优势了（这是我认为的，首先我没有这样的设备，其次我没有读过bridge的代码，
+因此不一定准确）。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;NOTE: ldd3里对于网卡接口的描述已经过时了，特别是多播部分的set_multicast_list这个接口，实际已经改名字了。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;macvlan设备是支持串联的，你可以在macvlan设备上挂载macvlan设备。在内核模块里，
+它会把新的macvlan设备直接挂到物理设备的port上，因此性能上不会有损失。&lt;/em&gt;&lt;/p&gt;
+&lt;h2&gt;虚拟化方案&lt;/h2&gt;
+&lt;p&gt;libvirt 和 KVM 都是比较成熟的方案，这里就不赘述了。下面说一下三者配合的时候遇到的一些问题。&lt;/p&gt;
+&lt;h3&gt;虚拟机里收不到多播包&lt;/h3&gt;
+&lt;p&gt;上面macvlan的介绍里已经提过了，macvlan设备的过滤列表是会同步到物理设备上的，所以问题在于虚拟机里的网卡上的过滤
+列表如何同步到物理机上的macvlan设备。&lt;/p&gt;
+&lt;p&gt;libvirt的这个
+&lt;a href="https://libvirt.org/git/?p=libvirt.git;a=commit;h=d70cc1fa7219b347a301e132bb927f41958b372d"&gt;commit&lt;/a&gt;里添加了
+相应的支持，原理上是通过监听qemu的NIC_RX_FILTER_CHANGED事件，进行同步。&lt;/p&gt;
+&lt;p&gt;与此同时，在这个
+&lt;a href="https://libvirt.org/git/?p=libvirt.git;a=commit;h=07450cd42951d5007ab28d8e522f65d948181674"&gt;commit&lt;/a&gt;里设置了
+一个开关，只有trustGuestRxFilters被设置为yes时上面的机制才会工作。&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://libvirt.org/formatdomain.html#elementsNICS"&gt;这里&lt;/a&gt;对于trustGuestRxFilters有一些介绍，简而言之，为了让
+虚拟机收到多播包，你需要：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;libvirt 版本大于 1.2.10&lt;/li&gt;
+&lt;li&gt;libvirt版本大于1.2.10&lt;/li&gt;
 &lt;li&gt;trustGuestRxFilters=yes&lt;/li&gt;
-&lt;li&gt; 虚拟机的网卡 model 用 virtio（ 其他 model 不支持 ）&lt;/li&gt;
+&lt;li&gt;虚拟机的网卡model用virtio（其他model不支持）&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt; 如果你的环境不支持上面的需求 ， 可以简单地 workaround 一下 ： 在物理机上设置 macvtap 网卡的 allmulticast flag：&lt;/p&gt;
+&lt;p&gt;如果你的环境不支持上面的需求，可以简单地workaround一下：在物理机上设置macvtap网卡的allmulticast flag：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; ip link set macvtap0 allmulticast on
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;&lt;strong&gt; 把 macvtap0 替换成你的 macvtap 端口 &lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt; 这样虚拟机就可以收到所有多播的包了 。 但是一方面对性能有影响 ， 另一方面存在一些安全隐患 。&lt;/p&gt;
-&lt;p&gt; 最新版本的 macvlan 实现会在自己被打开 allmutlicast 时自动打开物理网卡的 allmulticast，
- 如果你打开 macvtap 设备的 allmulti 之后依然收不到多播的包 ， 可能是内核不够新 ，
- 可以尝试手动开一下物理网卡的 allmulticast。&lt;/p&gt;
-&lt;h3&gt; 虚拟机之间及物理机与虚拟机的通信 &lt;/h3&gt;
-&lt;p&gt;macvlan 有 bridge、VEPA、private、passthru 4 种工作模式 ， 其中 private 和 passthru 我没用过 ，
- 这里主要讲另外两种 。&lt;/p&gt;
-&lt;p&gt;VEPA(Virtual Edge Port Aggregator) 是默认的工作模式 ， 它的初衷是希望由物理的交换机来进行所有包交换 ，
- 这样可以在交换机上统一配置 DHCP filtering 之类的策略 。&lt;/p&gt;
-&lt;p&gt; 因此这个模式下的 macvlan 会把所有的包都扔到外部端口上去 ， 期待交换机进行包交换 ，
- 把目的地址为本机机器的包再传回来 。 很多交换机考虑安全原因 （ 防止包打环 ） 是不支持这样的行为的 ，
- 但是一些较新的交换机上有这样一个特性 ， 叫 hairpin、VEPA 或者 802.1Qbg。&lt;/p&gt;
-&lt;p&gt;bridge 模式则考虑到某些情况下需要更高效的 macvlan 之间的通信 ， 因此会在内存中进行包交换 ， 提高速度 。&lt;/p&gt;
-&lt;p&gt; 但是无论哪种模式 ， 在没有外部交换机的支持的情况下 ， 都是不可能支持物理端口到 macvlan 端口的包交换的 。
- 上面的原理部分已经提到了 ，macvlan 的 port 是在物理端口注册了一个 rx_handler，
- 它只会对物理端口收到的包进行处理 ， 而物理端口发出去的包 macvlan 是不会看到的 。&lt;/p&gt;
-&lt;p&gt;private 模式我没有细看 ， 但应该是 drop 掉了目的端口为其他 macvlan 端口的包 。&lt;/p&gt;
-&lt;p&gt; 综上 ， 结论如下 ：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;把macvtap0替换成你的macvtap端口&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这样虚拟机就可以收到所有多播的包了。但是一方面对性能有影响，另一方面存在一些安全隐患。&lt;/p&gt;
+&lt;p&gt;最新版本的macvlan实现会在自己被打开allmutlicast时自动打开物理网卡的allmulticast，
+如果你打开macvtap设备的allmulti之后依然收不到多播的包，可能是内核不够新，
+可以尝试手动开一下物理网卡的allmulticast。&lt;/p&gt;
+&lt;h3&gt;虚拟机之间及物理机与虚拟机的通信&lt;/h3&gt;
+&lt;p&gt;macvlan有bridge、VEPA、private、passthru 4种工作模式，其中private和passthru我没用过，
+这里主要讲另外两种。&lt;/p&gt;
+&lt;p&gt;VEPA(Virtual Edge Port Aggregator)是默认的工作模式，它的初衷是希望由物理的交换机来进行所有包交换，
+这样可以在交换机上统一配置DHCP filtering之类的策略。&lt;/p&gt;
+&lt;p&gt;因此这个模式下的macvlan会把所有的包都扔到外部端口上去，期待交换机进行包交换，
+把目的地址为本机机器的包再传回来。很多交换机考虑安全原因（防止包打环）是不支持这样的行为的，
+但是一些较新的交换机上有这样一个特性，叫hairpin、VEPA或者802.1Qbg。&lt;/p&gt;
+&lt;p&gt;bridge模式则考虑到某些情况下需要更高效的macvlan之间的通信，因此会在内存中进行包交换，提高速度。&lt;/p&gt;
+&lt;p&gt;但是无论哪种模式，在没有外部交换机的支持的情况下，都是不可能支持物理端口到macvlan端口的包交换的。
+上面的原理部分已经提到了，macvlan的port是在物理端口注册了一个rx_handler，
+它只会对物理端口收到的包进行处理，而物理端口发出去的包macvlan是不会看到的。&lt;/p&gt;
+&lt;p&gt;private模式我没有细看，但应该是drop掉了目的端口为其他macvlan端口的包。&lt;/p&gt;
+&lt;p&gt;综上，结论如下：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt; 对于有交换机支持的网络中 ， 使用 VEPA 模式和 bridge 模式都可以实现物理机与虚拟机之间的所有通信 。&lt;/li&gt;
-&lt;li&gt; 在无交换机支持的网络中 ，&lt;ul&gt;
-&lt;li&gt; 使用 VEPA 模式 ， 虚拟机之间及物理机与虚拟机之间不能进行任何形式的通信 ；&lt;/li&gt;
-&lt;li&gt; 使用 bridge 模式 ， 虚拟机之间可以正常通信 ， 虚拟机与物理机不能正常通信 。&lt;/li&gt;
+&lt;li&gt;对于有交换机支持的网络中，使用VEPA模式和bridge模式都可以实现物理机与虚拟机之间的所有通信。&lt;/li&gt;
+&lt;li&gt;在无交换机支持的网络中，&lt;ul&gt;
+&lt;li&gt;使用VEPA模式，虚拟机之间及物理机与虚拟机之间不能进行任何形式的通信；&lt;/li&gt;
+&lt;li&gt;使用bridge模式，虚拟机之间可以正常通信，虚拟机与物理机不能正常通信。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3&gt;IPv6 DAD 出错 &lt;/h3&gt;
-&lt;p&gt;DAD(Duplicate Address Detection) 的相关过程在 &lt;a href="https://tools.ietf.org/html/rfc2462#section-5.4"&gt;rfc2462&lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt;IPv6 的 DAD 工作方式是向特定的多播组发送 Neighbor Solicitation， 在一段时间内看是否收到 Neighbor Solicitation 或者 
-Neighbor Advertisement， 如果收到了 ， 认为出现了地址冲突 ， 这个地址就不会被使用 。&lt;/p&gt;
-&lt;p&gt; 我们实际遇到的情况是 ， 虚拟机的发送的 Neighbor Solicitation 会立刻被自己收到 ， 因此地址始终都处于冲突状态 。&lt;/p&gt;
-&lt;p&gt; 这里其实比较奇怪 ， 因为刚刚看 
-&lt;a href="https://github.com/torvalds/linux/blob/e76d21c40bd6c67fd4e2c1540d77e113df962b4d/drivers/net/macvlan.c#L295"&gt; 代码 &lt;/a&gt;
- 的时候发现 ，macvlan 是不会把 macvlan 端口发出来的包又送回到原端口的 ，
- 有可能是因为当时调试的时候开了 allmulticast 或者 promisc，
-&lt;strong&gt; 进一步确认需要再看一下代码 &lt;/strong&gt;。&lt;/p&gt;</content></entry><entry><title>多媒体学习小记</title><link href="https://blog.huiyiqun.me/2016/10/31/notes-about-media-streams.html" rel="alternate"></link><published>2016-10-31T16:59:04+08:00</published><updated>2016-12-31T21:10:53+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2016-10-31:/2016/10/31/notes-about-media-streams.html</id><summary type="html">&lt;h2&gt; 起因 &lt;/h2&gt;
-&lt;p&gt; 实验室最近想要对视频站点的重编码和重采样进行逆向分析 ， 保证水印信息能够在这个过程中存活 。 本来我觉得这是一个很容易的工作 ，
- 毕竟我们有 ffprobe 可以直接用 ， 感觉 ffprobe 再 diff 一下就可以了 。 然而问题在于 ， 之前虽然上过流媒体课 ， 也折腾过 nginx-rtmp-module，
- 但是对于视频流的很多更细节的实现 ， 所以借着这个机会 ， 想更深入地对多媒体的编码存储进行一下更深入 
- 地学习 。&lt;/p&gt;
-&lt;h2&gt; 概念 &lt;/h2&gt;
+&lt;h3&gt;IPv6 DAD出错&lt;/h3&gt;
+&lt;p&gt;DAD(Duplicate Address Detection)的相关过程在&lt;a href="https://tools.ietf.org/html/rfc2462#section-5.4"&gt;rfc2462&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;IPv6的DAD工作方式是向特定的多播组发送Neighbor Solicitation，在一段时间内看是否收到Neighbor Solicitation或者
+Neighbor Advertisement，如果收到了，认为出现了地址冲突，这个地址就不会被使用。&lt;/p&gt;
+&lt;p&gt;我们实际遇到的情况是，虚拟机的发送的Neighbor Solicitation会立刻被自己收到，因此地址始终都处于冲突状态。&lt;/p&gt;
+&lt;p&gt;这里其实比较奇怪，因为刚刚看
+&lt;a href="https://github.com/torvalds/linux/blob/e76d21c40bd6c67fd4e2c1540d77e113df962b4d/drivers/net/macvlan.c#L295"&gt;代码&lt;/a&gt;
+的时候发现，macvlan是不会把macvlan端口发出来的包又送回到原端口的，
+有可能是因为当时调试的时候开了allmulticast或者promisc，
+&lt;strong&gt;进一步确认需要再看一下代码&lt;/strong&gt;。&lt;/p&gt;</content></entry><entry><title>多媒体学习小记</title><link href="https://blog.huiyiqun.me/2016/10/31/notes-about-media-streams.html" rel="alternate"></link><published>2016-10-31T16:59:04+08:00</published><updated>2016-12-31T21:10:53+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2016-10-31:/2016/10/31/notes-about-media-streams.html</id><summary type="html">&lt;h2&gt;起因&lt;/h2&gt;
+&lt;p&gt;实验室最近想要对视频站点的重编码和重采样进行逆向分析，保证水印信息能够在这个过程中存活。本来我觉得这是一个很容易的工作，
+毕竟我们有ffprobe可以直接用，感觉ffprobe再diff一下就可以了。然而问题在于，之前虽然上过流媒体课，也折腾过nginx-rtmp-module，
+但是对于视频流的很多更细节的实现，所以借着这个机会，想更深入地对多媒体的编码存储进行一下更深入
+地学习。&lt;/p&gt;
+&lt;h2&gt;概念&lt;/h2&gt;
 &lt;h3&gt;Aspect Ratio&lt;/h3&gt;
-&lt;p&gt; 在 ffprobe 的输出里一般会看到 display_aspect_ratio 和 sample_aspect_ratio， 而且数字上比较奇怪 。&lt;/p&gt;
-&lt;p&gt;&lt;a href="http://forum.videohelp.com/threads/323530-please-explain-SAR-DAR-PAR"&gt; 这里 &lt;/a&gt; 有一个浅显简单的解释 ， 简单说来就是 ：&lt;/p&gt;
+&lt;p&gt;在ffprobe的输出里一般会看到display_aspect_ratio和sample_aspect_ratio，而且数字上比较奇怪。&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://forum.videohelp.com/threads/323530-please-explain-SAR-DAR-PAR"&gt;这里&lt;/a&gt;有一个浅显简单的解释，简单说来就是：&lt;/p&gt;
 &lt;div class="math"&gt;$$ Frame Aspect Ratio = Storage Aspect Ratio $$&lt;/div&gt;
 &lt;div class="math"&gt;$$ Sample Aspect Ratio = Pixel Aspect Ratio $$&lt;/div&gt;
-&lt;p&gt; 画面上实际显示的高宽比是 Display Aspect Ratio， 计算公式如下 …&lt;/p&gt;</summary><content type="html">&lt;h2&gt; 起因 &lt;/h2&gt;
-&lt;p&gt; 实验室最近想要对视频站点的重编码和重采样进行逆向分析 ， 保证水印信息能够在这个过程中存活 。 本来我觉得这是一个很容易的工作 ，
- 毕竟我们有 ffprobe 可以直接用 ， 感觉 ffprobe 再 diff 一下就可以了 。 然而问题在于 ， 之前虽然上过流媒体课 ， 也折腾过 nginx-rtmp-module，
- 但是对于视频流的很多更细节的实现 ， 所以借着这个机会 ， 想更深入地对多媒体的编码存储进行一下更深入 
- 地学习 。&lt;/p&gt;
-&lt;h2&gt; 概念 &lt;/h2&gt;
+&lt;p&gt;画面上实际显示的高宽比是Display Aspect Ratio，计算公式如下：&lt;/p&gt;
+&lt;div class="math"&gt;$$ Display Aspect Ratio = Frame Aspect Ratio \times Sample Aspect Ratio $$&lt;/div&gt;
+&lt;h3&gt;tbr tbn tbc …&lt;/h3&gt;</summary><content type="html">&lt;h2&gt;起因&lt;/h2&gt;
+&lt;p&gt;实验室最近想要对视频站点的重编码和重采样进行逆向分析，保证水印信息能够在这个过程中存活。本来我觉得这是一个很容易的工作，
+毕竟我们有ffprobe可以直接用，感觉ffprobe再diff一下就可以了。然而问题在于，之前虽然上过流媒体课，也折腾过nginx-rtmp-module，
+但是对于视频流的很多更细节的实现，所以借着这个机会，想更深入地对多媒体的编码存储进行一下更深入
+地学习。&lt;/p&gt;
+&lt;h2&gt;概念&lt;/h2&gt;
 &lt;h3&gt;Aspect Ratio&lt;/h3&gt;
-&lt;p&gt; 在 ffprobe 的输出里一般会看到 display_aspect_ratio 和 sample_aspect_ratio， 而且数字上比较奇怪 。&lt;/p&gt;
-&lt;p&gt;&lt;a href="http://forum.videohelp.com/threads/323530-please-explain-SAR-DAR-PAR"&gt; 这里 &lt;/a&gt; 有一个浅显简单的解释 ， 简单说来就是 ：&lt;/p&gt;
+&lt;p&gt;在ffprobe的输出里一般会看到display_aspect_ratio和sample_aspect_ratio，而且数字上比较奇怪。&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://forum.videohelp.com/threads/323530-please-explain-SAR-DAR-PAR"&gt;这里&lt;/a&gt;有一个浅显简单的解释，简单说来就是：&lt;/p&gt;
 &lt;div class="math"&gt;$$ Frame Aspect Ratio = Storage Aspect Ratio $$&lt;/div&gt;
 &lt;div class="math"&gt;$$ Sample Aspect Ratio = Pixel Aspect Ratio $$&lt;/div&gt;
-&lt;p&gt; 画面上实际显示的高宽比是 Display Aspect Ratio， 计算公式如下 ：&lt;/p&gt;
+&lt;p&gt;画面上实际显示的高宽比是Display Aspect Ratio，计算公式如下：&lt;/p&gt;
 &lt;div class="math"&gt;$$ Display Aspect Ratio = Frame Aspect Ratio \times Sample Aspect Ratio $$&lt;/div&gt;
 &lt;h3&gt;tbr tbn tbc&lt;/h3&gt;
-&lt;p&gt; 关于这三个参数 ，&lt;a href="http://ffmpeg-users.933282.n4.nabble.com/What-does-the-output-of-ffmpeg-mean-tbr-tbn-tbc-etc-td941538.html"&gt; 邮件列表 &lt;/a&gt; 里有讨论 ，
- 但是实际讲的比较模糊 ， 所以我决定还是直接看 &lt;a href="https://github.com/FFmpeg/FFmpeg/blob/0c0da45f0fc0626d12796f017918800f735512c8/libavformat/dump.c#L496"&gt; 代码 &lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;关于这三个参数，&lt;a href="http://ffmpeg-users.933282.n4.nabble.com/What-does-the-output-of-ffmpeg-mean-tbr-tbn-tbc-etc-td941538.html"&gt;邮件列表&lt;/a&gt;里有讨论，
+但是实际讲的比较模糊，所以我决定还是直接看&lt;a href="https://github.com/FFmpeg/FFmpeg/blob/0c0da45f0fc0626d12796f017918800f735512c8/libavformat/dump.c#L496"&gt;代码&lt;/a&gt;。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;fps&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;st&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;avg_frame_rate&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;den&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;st&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;avg_frame_rate&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;num&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;tbr&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;st&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;r_frame_rate&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;den&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;st&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;r_frame_rate&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;num&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;tbn&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;st&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;time_base&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;den&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;st&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;time_base&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;num&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
@@ -418,36 +721,36 @@ Neighbor Advertisement， 如果收到了 ， 认为出现了地址冲突 ， �
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 这里用到了四个有理数 ，libav 里有理数的定义在 &lt;a href="https://github.com/FFmpeg/FFmpeg/blob/415f907ce8dcca87c9e7cfdc954b92df399d3d80/libavutil/rational.h"&gt; 这 &lt;/a&gt;，
- 其中 den 为分母 ，num 为分子 ， 这里的 &lt;code&gt;fps&lt;/code&gt;、&lt;code&gt;tbr&lt;/code&gt;、&lt;code&gt;tbn&lt;/code&gt;、&lt;code&gt;tbc&lt;/code&gt; 四个变量分别代指对应的数据是否为合法的值 （ 分子分母都不为 0）。&lt;/p&gt;
-&lt;p&gt; 所以实际的输出是来自于下面的 print，
- 其中 &lt;code&gt;print_fps&lt;/code&gt; 的定义在 &lt;a href="https://github.com/FFmpeg/FFmpeg/blob/0c0da45f0fc0626d12796f017918800f735512c8/libavformat/dump.c#L120"&gt; 这 &lt;/a&gt;，
-&lt;code&gt;av_q2d&lt;/code&gt; 的定义在 &lt;a href="https://github.com/FFmpeg/FFmpeg/blob/415f907ce8dcca87c9e7cfdc954b92df399d3d80/libavutil/rational.h#L104"&gt; 这 &lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;av_q2d&lt;/code&gt; 实际是简单地把有理数转为双精度浮点数 。&lt;code&gt;print_fps&lt;/code&gt; 就更简单了 ， 就是一个不带回车的 print， 后面那么复杂的判断主要是为了在数据间加上逗号 。&lt;/p&gt;
-&lt;p&gt; 所以关键在于 &lt;code&gt;st-&amp;gt;avg_frame_rate&lt;/code&gt;、&lt;code&gt;st-&amp;gt;r_frame_rate&lt;/code&gt;、&lt;code&gt;st-&amp;gt;time_base&lt;/code&gt; 及 &lt;code&gt;st-&amp;gt;codec-&amp;gt;time_base&lt;/code&gt; 这四个变量的含义 ，
- 它们的描述在 &lt;a href="https://ffmpeg.org/doxygen/3.1/structAVStream.html#a946e1e9b89eeeae4cab8a833b482c1ad"&gt; 文档 &lt;/a&gt; 里都有 。
- 由于暂时没有深读代码 ， 我也没有自信翻译这些文档 ， 还是直接看英文原文吧 。&lt;/p&gt;
+&lt;p&gt;这里用到了四个有理数，libav里有理数的定义在&lt;a href="https://github.com/FFmpeg/FFmpeg/blob/415f907ce8dcca87c9e7cfdc954b92df399d3d80/libavutil/rational.h"&gt;这&lt;/a&gt;，
+其中den为分母，num为分子，这里的&lt;code&gt;fps&lt;/code&gt;、&lt;code&gt;tbr&lt;/code&gt;、&lt;code&gt;tbn&lt;/code&gt;、&lt;code&gt;tbc&lt;/code&gt;四个变量分别代指对应的数据是否为合法的值（分子分母都不为0）。&lt;/p&gt;
+&lt;p&gt;所以实际的输出是来自于下面的print，
+其中&lt;code&gt;print_fps&lt;/code&gt;的定义在&lt;a href="https://github.com/FFmpeg/FFmpeg/blob/0c0da45f0fc0626d12796f017918800f735512c8/libavformat/dump.c#L120"&gt;这&lt;/a&gt;，
+&lt;code&gt;av_q2d&lt;/code&gt;的定义在&lt;a href="https://github.com/FFmpeg/FFmpeg/blob/415f907ce8dcca87c9e7cfdc954b92df399d3d80/libavutil/rational.h#L104"&gt;这&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;av_q2d&lt;/code&gt;实际是简单地把有理数转为双精度浮点数。&lt;code&gt;print_fps&lt;/code&gt;就更简单了，就是一个不带回车的print，后面那么复杂的判断主要是为了在数据间加上逗号。&lt;/p&gt;
+&lt;p&gt;所以关键在于&lt;code&gt;st-&amp;gt;avg_frame_rate&lt;/code&gt;、&lt;code&gt;st-&amp;gt;r_frame_rate&lt;/code&gt;、&lt;code&gt;st-&amp;gt;time_base&lt;/code&gt;及&lt;code&gt;st-&amp;gt;codec-&amp;gt;time_base&lt;/code&gt;这四个变量的含义，
+它们的描述在&lt;a href="https://ffmpeg.org/doxygen/3.1/structAVStream.html#a946e1e9b89eeeae4cab8a833b482c1ad"&gt;文档&lt;/a&gt;里都有。
+由于暂时没有深读代码，我也没有自信翻译这些文档，还是直接看英文原文吧。&lt;/p&gt;
 &lt;h3&gt;interlaced/progressive&lt;/h3&gt;
-&lt;p&gt; 视频的分辨率里常常有 p 和 i 的区别 ， 比如 1080p 和 1080i 等 。 这里的 p 和 i 就是指 progressive 和 interlaced。 这两个概念其实十分简单 。&lt;/p&gt;
-&lt;p&gt; 以前的视频信号主要是模拟信号 ， 并且受到接收端的限制 ， 传输过程中是不作压缩的 ， 所以带宽严重限制了传输过程中的码率 。
- 因此 ， 有人就想出了利用视觉停留等现象 ， 降低传输码率的方法 ， 这就是 interlaced。 也就是对于相邻两帧 ， 分别只取奇数行和偶数行 ，
- 将两帧合并为一帧 ， 这样传输过程中的码率就降低到了原来的一半 。&lt;strong&gt; 需要注意的是 ， 这种扫描方式通常是和硬件实现结合在一起的 。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt; 然而 ， 随着现在数字电视及互联网的普及 ， 接收端越来越智能 ， 可以胜任越来越复杂的解码工作 ， 因此编码端可以使用更复杂高效的方式对视频进行编码 ，
- 人们发现相比于 interlaced 的方式 ， 每一帧都取完整的一帧 ， 编码出来的码率反而更低 ( 为什么 ？ 因为引入了一些额外的高频分量 )。 这种取完整帧的方式就是 progressive。&lt;/p&gt;
-&lt;p&gt; 所以一般来说 ， 现在更流行的分辨率通常是以 p 结尾 ， 以 i 结尾的分辨率已经很少了 。 但是由于历史遗留问题和实现的原因 （i 比 p 硬件上更容易实现 ），
- 很多视频设备输出的视频依然是 interlaced 的 。&lt;/p&gt;
-&lt;p&gt; 另外 ， 需要注意到的是 ，interlaced 的视频 ， 其奇数行和偶数行的内容分别为两个 field， 这个概念在编码的过程中也会遇到 。&lt;/p&gt;
+&lt;p&gt;视频的分辨率里常常有p和i的区别，比如1080p和1080i等。这里的p和i就是指progressive和interlaced。这两个概念其实十分简单。&lt;/p&gt;
+&lt;p&gt;以前的视频信号主要是模拟信号，并且受到接收端的限制，传输过程中是不作压缩的，所以带宽严重限制了传输过程中的码率。
+因此，有人就想出了利用视觉停留等现象，降低传输码率的方法，这就是interlaced。也就是对于相邻两帧，分别只取奇数行和偶数行，
+将两帧合并为一帧，这样传输过程中的码率就降低到了原来的一半。&lt;strong&gt;需要注意的是，这种扫描方式通常是和硬件实现结合在一起的。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;然而，随着现在数字电视及互联网的普及，接收端越来越智能，可以胜任越来越复杂的解码工作，因此编码端可以使用更复杂高效的方式对视频进行编码，
+人们发现相比于interlaced的方式，每一帧都取完整的一帧，编码出来的码率反而更低(为什么？因为引入了一些额外的高频分量)。这种取完整帧的方式就是progressive。&lt;/p&gt;
+&lt;p&gt;所以一般来说，现在更流行的分辨率通常是以p结尾，以i结尾的分辨率已经很少了。但是由于历史遗留问题和实现的原因（i比p硬件上更容易实现），
+很多视频设备输出的视频依然是interlaced的。&lt;/p&gt;
+&lt;p&gt;另外，需要注意到的是，interlaced的视频，其奇数行和偶数行的内容分别为两个field，这个概念在编码的过程中也会遇到。&lt;/p&gt;
 &lt;h2&gt;cheatsheet&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt; 从视频中取出每一帧 &lt;/li&gt;
+&lt;li&gt;从视频中取出每一帧&lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; ffmpeg -i &amp;lt;input&amp;gt; frame_%d.bmp
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;h2&gt;abbreviations&lt;/h2&gt;
-&lt;p&gt; 其实从来零开始学习视频编码有个非常蛋疼的问题是缩写通常看不懂 。
- 因此摘抄了一些缩写 ， 用于检索 。&lt;/p&gt;
+&lt;p&gt;其实从来零开始学习视频编码有个非常蛋疼的问题是缩写通常看不懂。
+因此摘抄了一些缩写，用于检索。&lt;/p&gt;
 &lt;table&gt;
 &lt;thead&gt;
 &lt;tr&gt;
@@ -618,31 +921,39 @@ Neighbor Advertisement， 如果收到了 ， 认为出现了地址冲突 ， �
         "}";
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
-&lt;/script&gt;</content></entry><entry><title>用nginx-rtmp-module直播写代码</title><link href="https://blog.huiyiqun.me/2016/10/28/livestream-your-desktop-with-nginx-rtmp-module.html" rel="alternate"></link><published>2016-10-28T17:10:21+08:00</published><updated>2016-12-31T21:10:53+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2016-10-28:/2016/10/28/livestream-your-desktop-with-nginx-rtmp-module.html</id><summary type="html">&lt;h1&gt; 前言 &lt;/h1&gt;
-&lt;p&gt; 前段时间用 nginx-rtmp-module 搭了一个直播系统 ， 测试的时候用来直播了一下桌面 ， 感觉评价还不错 ， 应邀写个简单的教程 。&lt;/p&gt;
-&lt;h1&gt; 服务器 &lt;/h1&gt;
-&lt;h2&gt; 安装 &lt;/h2&gt;
-&lt;p&gt; 服务器端我用的是 &lt;a href="https://github.com/arut/nginx-rtmp-module"&gt;nginx-rtmp-module&lt;/a&gt;， 操作系统用的是 CentOS 7， 部署其实很简单 ，
- 它主页上就有 &lt;a href="https://github.com/arut/nginx-rtmp-module#build"&gt; 教程 &lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt; 当然为了系统比较干净 ， 推荐还是简单打个包 ，CentOS 的话我推荐从 &lt;a href="https://nginx.org/packages/centos/7/SRPMS/"&gt;nginx 的官方源 &lt;/a&gt; 下载 
- 源码包 ， 在 configure 的参数上加一条 &lt;code&gt;--add-module=/path/to/nginx-rtmp-module&lt;/code&gt; 即可 。&lt;/p&gt;
-&lt;p&gt; 如果是 archlinux 的话可以考虑用 &lt;a href="https://aur.archlinux.org/packages/nginx-rtmp"&gt;aur 的里的包 &lt;/a&gt;。&lt;/p&gt;
-&lt;h2&gt; 基本配置 &lt;/h2&gt;
-&lt;p&gt;nginx 的基本配置可以参考如下 :&lt;/p&gt;
+&lt;/script&gt;</content></entry><entry><title>用nginx-rtmp-module直播写代码</title><link href="https://blog.huiyiqun.me/2016/10/28/livestream-your-desktop-with-nginx-rtmp-module.html" rel="alternate"></link><published>2016-10-28T17:10:21+08:00</published><updated>2016-12-31T21:10:53+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2016-10-28:/2016/10/28/livestream-your-desktop-with-nginx-rtmp-module.html</id><summary type="html">&lt;h1&gt;前言&lt;/h1&gt;
+&lt;p&gt;前段时间用nginx-rtmp-module搭了一个直播系统，测试的时候用来直播了一下桌面，感觉评价还不错，应邀写个简单的教程。&lt;/p&gt;
+&lt;h1&gt;服务器&lt;/h1&gt;
+&lt;h2&gt;安装&lt;/h2&gt;
+&lt;p&gt;服务器端我用的是&lt;a href="https://github.com/arut/nginx-rtmp-module"&gt;nginx-rtmp-module&lt;/a&gt;，操作系统用的是CentOS 7，部署其实很简单，
+它主页上就有&lt;a href="https://github.com/arut/nginx-rtmp-module#build"&gt;教程&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;当然为了系统比较干净，推荐还是简单打个包，CentOS的话我推荐从&lt;a href="https://nginx.org/packages/centos/7/SRPMS/"&gt;nginx的官方源&lt;/a&gt;下载
+源码包，在configure的参数上加一条&lt;code&gt;--add-module=/path/to/nginx-rtmp-module&lt;/code&gt;即可。&lt;/p&gt;
+&lt;p&gt;如果是archlinux的话可以考虑用&lt;a href="https://aur.archlinux.org/packages/nginx-rtmp"&gt;aur的里的包&lt;/a&gt;。&lt;/p&gt;
+&lt;h2&gt;基本配置&lt;/h2&gt;
+&lt;p&gt;nginx的基本配置可以参考如下:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;user&lt;/span&gt;  &lt;span class="s"&gt;nginx&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 &lt;span class="k"&gt;worker_processes&lt;/span&gt;  &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
-&lt;span class="k"&gt;error_log&lt;/span&gt;  &lt;span class="s"&gt;/var/log/nginx/error …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;h1&gt; 前言 &lt;/h1&gt;
-&lt;p&gt; 前段时间用 nginx-rtmp-module 搭了一个直播系统 ， 测试的时候用来直播了一下桌面 ， 感觉评价还不错 ， 应邀写个简单的教程 。&lt;/p&gt;
-&lt;h1&gt; 服务器 &lt;/h1&gt;
-&lt;h2&gt; 安装 &lt;/h2&gt;
-&lt;p&gt; 服务器端我用的是 &lt;a href="https://github.com/arut/nginx-rtmp-module"&gt;nginx-rtmp-module&lt;/a&gt;， 操作系统用的是 CentOS 7， 部署其实很简单 ，
- 它主页上就有 &lt;a href="https://github.com/arut/nginx-rtmp-module#build"&gt; 教程 &lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt; 当然为了系统比较干净 ， 推荐还是简单打个包 ，CentOS 的话我推荐从 &lt;a href="https://nginx.org/packages/centos/7/SRPMS/"&gt;nginx 的官方源 &lt;/a&gt; 下载 
- 源码包 ， 在 configure 的参数上加一条 &lt;code&gt;--add-module=/path/to/nginx-rtmp-module&lt;/code&gt; 即可 。&lt;/p&gt;
-&lt;p&gt; 如果是 archlinux 的话可以考虑用 &lt;a href="https://aur.archlinux.org/packages/nginx-rtmp"&gt;aur 的里的包 &lt;/a&gt;。&lt;/p&gt;
-&lt;h2&gt; 基本配置 &lt;/h2&gt;
-&lt;p&gt;nginx 的基本配置可以参考如下 :&lt;/p&gt;
+&lt;span class="k"&gt;error_log&lt;/span&gt;  &lt;span class="s"&gt;/var/log/nginx/error.log&lt;/span&gt; &lt;span class="s"&gt;warn&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="k"&gt;pid&lt;/span&gt;        &lt;span class="s"&gt;/var/run/nginx.pid&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+
+&lt;span class="k"&gt;events&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kn"&gt;worker_connections&lt;/span&gt;  &lt;span class="mi"&gt;1024&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="k"&gt;rtmp …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;h1&gt;前言&lt;/h1&gt;
+&lt;p&gt;前段时间用nginx-rtmp-module搭了一个直播系统，测试的时候用来直播了一下桌面，感觉评价还不错，应邀写个简单的教程。&lt;/p&gt;
+&lt;h1&gt;服务器&lt;/h1&gt;
+&lt;h2&gt;安装&lt;/h2&gt;
+&lt;p&gt;服务器端我用的是&lt;a href="https://github.com/arut/nginx-rtmp-module"&gt;nginx-rtmp-module&lt;/a&gt;，操作系统用的是CentOS 7，部署其实很简单，
+它主页上就有&lt;a href="https://github.com/arut/nginx-rtmp-module#build"&gt;教程&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;当然为了系统比较干净，推荐还是简单打个包，CentOS的话我推荐从&lt;a href="https://nginx.org/packages/centos/7/SRPMS/"&gt;nginx的官方源&lt;/a&gt;下载
+源码包，在configure的参数上加一条&lt;code&gt;--add-module=/path/to/nginx-rtmp-module&lt;/code&gt;即可。&lt;/p&gt;
+&lt;p&gt;如果是archlinux的话可以考虑用&lt;a href="https://aur.archlinux.org/packages/nginx-rtmp"&gt;aur的里的包&lt;/a&gt;。&lt;/p&gt;
+&lt;h2&gt;基本配置&lt;/h2&gt;
+&lt;p&gt;nginx的基本配置可以参考如下:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;user&lt;/span&gt;  &lt;span class="s"&gt;nginx&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 &lt;span class="k"&gt;worker_processes&lt;/span&gt;  &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
@@ -668,22 +979,22 @@ Neighbor Advertisement， 如果收到了 ， 认为出现了地址冲突 ， �
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 如果单纯想用 rtmp 作推流和播放的话 ， 以上的配置就足够了 ，pull 可以让 nginx-rtmp-module 自动从其他地址拖流在本地播放 ，
- 如果不需要可以去掉 。&lt;/p&gt;
-&lt;p&gt; 如果服务器有 SELinux 的话 ， 可以考虑关掉 ， 主要是因为 1935 这个端口号 。&lt;/p&gt;
-&lt;h2&gt; 认证与动态拉流 &lt;/h2&gt;
-&lt;p&gt; 这里有两个问题 ， 第一是任何一个知道这个 url 的用户都可以向这个地址推流 ， 第二是拉流的地址是固定好的 ， 如果你临时起意 
- 想从某个地址拉流 ， 那么你必须修改这个配置文件并且重启 nginx（ 注意 reload 是无效的 ， 因为 rtmp 是一个有状态的长连接 ，
-reload 并不能让 nginx 切到新的配置 ， 这个算是 nginx-rtmp-module 的 bug 吧 ）。&lt;/p&gt;
-&lt;p&gt;nginx-rtmp-module 提供了一个方案是 &lt;a href="https://github.com/arut/nginx-rtmp-module/wiki/Directives#notify"&gt;notify&lt;/a&gt;，
- 也就是采用回调的方式对用户的身份进行验证 ， 同时也允许你动态定义从什么地址动态拉流 。&lt;/p&gt;
-&lt;p&gt; 简单说来就是 ， 每当有一个播放或推流请求时 ，nginx-rtmp-module 都会向你指定的地址发送一个 http 请求 ， 并带上一些参数 ，
- 如请求类型 （connect, play, publish 等 ）， 请求地址 ，url（ 会带上 rtmp 的参数 ）。 针对服务器返回的值 ，nginx-rtmp-module
- 会采用不同的行为 。2xx 会正常放行 ，3xx 会从另一个地址拖流 ， 其他返回值则使这个请求被中断 。 接下来就完全由的你想象来决定 
- 你的 rtmp 服务器有什么样的访问控制了 。&lt;/p&gt;
-&lt;p&gt; 另外在连接断开的时候也有类似的 &lt;a href="https://github.com/arut/nginx-rtmp-module/wiki/Directives#on_play_done"&gt; 回调请求 &lt;/a&gt;，
- 但是服务器的返回值不会对 nginx-rtmp-module 的行为造成影响 。 可以用来记录在线人数 ， 播放时长等 。&lt;/p&gt;
-&lt;p&gt; 相关的配置如下 ：&lt;/p&gt;
+&lt;p&gt;如果单纯想用rtmp作推流和播放的话，以上的配置就足够了，pull可以让nginx-rtmp-module自动从其他地址拖流在本地播放，
+如果不需要可以去掉。&lt;/p&gt;
+&lt;p&gt;如果服务器有SELinux的话，可以考虑关掉，主要是因为1935这个端口号。&lt;/p&gt;
+&lt;h2&gt;认证与动态拉流&lt;/h2&gt;
+&lt;p&gt;这里有两个问题，第一是任何一个知道这个url的用户都可以向这个地址推流，第二是拉流的地址是固定好的，如果你临时起意
+想从某个地址拉流，那么你必须修改这个配置文件并且重启nginx（注意reload是无效的，因为rtmp是一个有状态的长连接，
+reload并不能让nginx切到新的配置，这个算是nginx-rtmp-module的bug吧）。&lt;/p&gt;
+&lt;p&gt;nginx-rtmp-module提供了一个方案是&lt;a href="https://github.com/arut/nginx-rtmp-module/wiki/Directives#notify"&gt;notify&lt;/a&gt;，
+也就是采用回调的方式对用户的身份进行验证，同时也允许你动态定义从什么地址动态拉流。&lt;/p&gt;
+&lt;p&gt;简单说来就是，每当有一个播放或推流请求时，nginx-rtmp-module都会向你指定的地址发送一个http请求，并带上一些参数，
+如请求类型（connect, play, publish等），请求地址，url（会带上rtmp的参数）。针对服务器返回的值，nginx-rtmp-module
+会采用不同的行为。2xx会正常放行，3xx会从另一个地址拖流，其他返回值则使这个请求被中断。接下来就完全由的你想象来决定
+你的rtmp服务器有什么样的访问控制了。&lt;/p&gt;
+&lt;p&gt;另外在连接断开的时候也有类似的&lt;a href="https://github.com/arut/nginx-rtmp-module/wiki/Directives#on_play_done"&gt;回调请求&lt;/a&gt;，
+但是服务器的返回值不会对nginx-rtmp-module的行为造成影响。可以用来记录在线人数，播放时长等。&lt;/p&gt;
+&lt;p&gt;相关的配置如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;...&lt;/span&gt;
 
 &lt;span class="s"&gt;rtmp&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
@@ -735,15 +1046,15 @@ reload 并不能让 nginx 切到新的配置 ， 这个算是 nginx-rtmp-module 
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 需要注意的是 ，nginx-rtmp-module 的所有回调都不支持 https， 所以如果想用 https 在远端作控制需要用 http 在本地中转一次 。&lt;/p&gt;
-&lt;h1&gt;Dash 与 HLS&lt;/h1&gt;
-&lt;p&gt;rtmp 虽然是一种老牌的流媒体协议 ， 但是它存在一些固有的问题 。 比如对现有的 CDN 基础设施不友好 ， 相对于 HTTP 更复杂 ，
- 有状态 。 现在的流媒体也有倾向于采用 HTTP 协议来进行流媒体传输的趋势 。 但是 HTTP 协议存在延时大的问题 ， 算是各有利弊 。&lt;/p&gt;
-&lt;p&gt;nginx-rtmp-module 内置了对 hls 和 dash 的支持 。 其中 hls 我用了一段时间 ， 感觉还好 ，dash 没用过 ， 我就不评价了 。&lt;/p&gt;
-&lt;p&gt; 其实 hls 的支持也很简单 ， 就是简单地进行了切片 。 如果需要转码 、 多码率等功能 ， 需要自己用 push 和 
-&lt;a href="https://github.com/arut/nginx-rtmp-module/wiki/Directives#exec_push"&gt;exec_push&lt;/a&gt; 拼一下 ， 我之前试的时候效果并 
- 不好 ， 所以不太推荐 ， 当然也可能是我之前机器不太好 （ 因为 ffmpeg 可能会吃掉所有 CPU， 机器好不好影响挺大的 ）。&lt;/p&gt;
-&lt;p&gt;hls 的配置如下 &lt;/p&gt;
+&lt;p&gt;需要注意的是，nginx-rtmp-module的所有回调都不支持https，所以如果想用https在远端作控制需要用http在本地中转一次。&lt;/p&gt;
+&lt;h1&gt;Dash与HLS&lt;/h1&gt;
+&lt;p&gt;rtmp虽然是一种老牌的流媒体协议，但是它存在一些固有的问题。比如对现有的CDN基础设施不友好，相对于HTTP更复杂，
+有状态。现在的流媒体也有倾向于采用HTTP协议来进行流媒体传输的趋势。但是HTTP协议存在延时大的问题，算是各有利弊。&lt;/p&gt;
+&lt;p&gt;nginx-rtmp-module内置了对hls和dash的支持。其中hls我用了一段时间，感觉还好，dash没用过，我就不评价了。&lt;/p&gt;
+&lt;p&gt;其实hls的支持也很简单，就是简单地进行了切片。如果需要转码、多码率等功能，需要自己用push和
+&lt;a href="https://github.com/arut/nginx-rtmp-module/wiki/Directives#exec_push"&gt;exec_push&lt;/a&gt;拼一下，我之前试的时候效果并
+不好，所以不太推荐，当然也可能是我之前机器不太好（因为ffmpeg可能会吃掉所有CPU，机器好不好影响挺大的）。&lt;/p&gt;
+&lt;p&gt;hls的配置如下&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;...&lt;/span&gt;
 
 &lt;span class="s"&gt;rtmp&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
@@ -799,11 +1110,11 @@ reload 并不能让 nginx 切到新的配置 ， 这个算是 nginx-rtmp-module 
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 简单说 ，nginx-rtmp-module 会帮你把 hls 切好 ， 你需要自己用 http 服务器把它服务出去 。&lt;/p&gt;
-&lt;h2&gt; 状态监视 &lt;/h2&gt;
-&lt;p&gt; 之前说了可以用 notify 实现在线人数监视 ， 不过这个也不那么可靠 （ 毕竟 HTTP 请求失败了 nginx-rtmp-module 不会重试 ）， 另外 
- 相对也挺复杂的 。 其实 nginx-rtmp-module 内置了一个状态信息 。&lt;/p&gt;
-&lt;p&gt; 配置如下 ：&lt;/p&gt;
+&lt;p&gt;简单说，nginx-rtmp-module会帮你把hls切好，你需要自己用http服务器把它服务出去。&lt;/p&gt;
+&lt;h2&gt;状态监视&lt;/h2&gt;
+&lt;p&gt;之前说了可以用notify实现在线人数监视，不过这个也不那么可靠（毕竟HTTP请求失败了nginx-rtmp-module不会重试），另外
+相对也挺复杂的。其实nginx-rtmp-module内置了一个状态信息。&lt;/p&gt;
+&lt;p&gt;配置如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;...&lt;/span&gt;
 
 &lt;span class="s"&gt;http&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
@@ -826,60 +1137,52 @@ reload 并不能让 nginx 切到新的配置 ， 这个算是 nginx-rtmp-module 
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 简单地在 nginx 的 http 配置里加上 rtmp_stat 就可以了 ， 会返回一个 xml 文件 ， 如果你想在浏览器里比较舒服地看这个 xml 文件 ，
- 可以从 &lt;a href="https://github.com/arut/nginx-rtmp-module/blob/master/stat.xsl"&gt; 这里 &lt;/a&gt; 下载 xsl 文件放到服务器上 ， 并且加上 
- 后面的配置 。 最后如果不想被围观 ， 可以加上 acl。（ 如果你已经写了一个回调 http 服务器的话 ， 也可以用 
-&lt;a href="https://nginx.org/en/docs/http/ngx_http_auth_request_module.html"&gt; 这个模块 &lt;/a&gt;， 效果拔群 。&lt;/p&gt;
+&lt;p&gt;简单地在nginx的http配置里加上rtmp_stat就可以了，会返回一个xml文件，如果你想在浏览器里比较舒服地看这个xml文件，
+可以从&lt;a href="https://github.com/arut/nginx-rtmp-module/blob/master/stat.xsl"&gt;这里&lt;/a&gt;下载xsl文件放到服务器上，并且加上
+后面的配置。最后如果不想被围观，可以加上acl。（如果你已经写了一个回调http服务器的话，也可以用
+&lt;a href="https://nginx.org/en/docs/http/ngx_http_auth_request_module.html"&gt;这个模块&lt;/a&gt;，效果拔群。&lt;/p&gt;
 &lt;h2&gt;Alternative&lt;/h2&gt;
-&lt;p&gt; 我在接触直播之后用的第一 rtmp 服务器就是 nginx-rtmp-module， 感觉用起来还不错 ， 就一直用下来的 。 前天讨论的时候感谢 
-@typcn  童鞋指出了 ，nginx-rtmp-module 的一些问题 ：&lt;/p&gt;
+&lt;p&gt;我在接触直播之后用的第一rtmp服务器就是nginx-rtmp-module，感觉用起来还不错，就一直用下来的。前天讨论的时候感谢
+@typcn 童鞋指出了，nginx-rtmp-module的一些问题：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt; 没有修  pts， 只是简单复制 ， 兼容性差 &lt;/li&gt;
-&lt;li&gt; 没有 GOP 重传 ， 用户加入之后拿到的第一帧不是关键帧 ， 导致用户开始播放后 ， 会有数秒的黑屏 ， 直到收到下一个 IDR 帧 &lt;/li&gt;
+&lt;li&gt;没有修 pts，只是简单复制，兼容性差&lt;/li&gt;
+&lt;li&gt;没有GOP重传，用户加入之后拿到的第一帧不是关键帧，导致用户开始播放后，会有数秒的黑屏，直到收到下一个IDR帧&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt; 他的原话是 &lt;/p&gt;
+&lt;p&gt;他的原话是&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;nginx-rtmp  是最差的  rtmp  服务器 ：&lt;/p&gt;
+&lt;p&gt;nginx-rtmp 是最差的 rtmp 服务器：&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt; 他指出的 2 我已经验证过了 。 即使如此 ， 我觉得 nginx-rtmp 也有一些可圈可点之处 ：&lt;/p&gt;
+&lt;p&gt;他指出的2我已经验证过了。即使如此，我觉得nginx-rtmp也有一些可圈可点之处：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt; 在直播的过程中 ， 不可避免的还是会用到 http 服务 （ 认证 、HLS、 状态 ），nginx 作为久经考验的 http 服务器 ， 还是值得信赖的 。
- 既然会用上 nginx， 能 all-in-one 的话还是不错的 ， 而且配置也能放在一起 ， 比较方便维护 。&lt;/li&gt;
-&lt;li&gt; 文档质量很高 。nginx-rtmp-module 的 &lt;a href="https://github.com/arut/nginx-rtmp-module/wiki/Directives"&gt;reference&lt;/a&gt; 非常 
- 清晰 ， 结构清楚 。&lt;/li&gt;
+&lt;li&gt;在直播的过程中，不可避免的还是会用到http服务（认证、HLS、状态），nginx作为久经考验的http服务器，还是值得信赖的。
+既然会用上nginx，能all-in-one的话还是不错的，而且配置也能放在一起，比较方便维护。&lt;/li&gt;
+&lt;li&gt;文档质量很高。nginx-rtmp-module的&lt;a href="https://github.com/arut/nginx-rtmp-module/wiki/Directives"&gt;reference&lt;/a&gt;非常
+清晰，结构清楚。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;@typcn  和  @youngcow  老师相对于  nginx-rtmp-module  都更推荐  srs。 感兴趣的可以去尝试 。&lt;/p&gt;
-&lt;h1&gt; 客户端 &lt;/h1&gt;
-&lt;p&gt; 现在我们已经有一个能正常运转的 rtmp 服务器了 ， 接下来需要的是是从本地把桌面的视频和音频通过 rtmp 发到服务器上 。&lt;/p&gt;
-&lt;p&gt; 这是我在 Linux 下用的命令 ：&lt;/p&gt;
+&lt;p&gt;@typcn 和 @youngcow 老师相对于 nginx-rtmp-module 都更推荐 srs。感兴趣的可以去尝试。&lt;/p&gt;
+&lt;h1&gt;客户端&lt;/h1&gt;
+&lt;p&gt;现在我们已经有一个能正常运转的rtmp服务器了，接下来需要的是是从本地把桌面的视频和音频通过rtmp发到服务器上。&lt;/p&gt;
+&lt;p&gt;这是我在Linux下用的命令：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="x"&gt;~&amp;gt; ffmpeg -video_size 1920x1080 -framerate 25 -f x11grab -i :0.0+0,0 -f pulse -ac 2 -i default -f flv -codec:v libx264 -preset slow -crf 22 -x264opts keyint=100:min-keyint=20:scenecut=-1 -codec:a aac &amp;quot;rtmp://&lt;/span&gt;&lt;span class="cp"&gt;{{&lt;/span&gt;&lt;span class="nv"&gt;server_ip&lt;/span&gt;&lt;span class="cp"&gt;}}&lt;/span&gt;&lt;span class="x"&gt;/live/tuna&amp;quot;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;ol&gt;
-&lt;li&gt;&lt;code&gt;-video_size 1920x1080 -framerate 25 -f x11grab -i :0.0+0,0&lt;/code&gt; 从我的 X 服务器屏幕上抓了 1920x1080 的视频 。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;-f pulse -ac 2 -i default&lt;/code&gt; 从我的 pulseaudio 服务器把音频抓了出来 。 理论上从 alsa 抓也可以 ， 但是我没有成功 。arch 下如果要从 pulseaudio 抓音频的话 ， 只需要装 pulseaudio 这个包 ， 重启一下机器 ， 然后装 pavucontrol， 运行上面的命令之后在 pavucontrol 的 record 这个 tab 下就会看到我们的流 ， 选择一个合适声卡就可以了 。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;-codec:v libx264 -preset slow -crt 22 -codec:a aac&lt;/code&gt; 编码成 h264 和 aac。 这是 nginx-rtmp-module 官方支持的编码 。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;-x264opts keyint=100:min-keyint=20:scenecut=-1&lt;/code&gt; 是为了避免  @typcn  提出的问题 2， 也就是故意在视频中插入较多的关键   帧 ， 减少黑屏的出现 ， 相应的也会增高码率 。&lt;/li&gt;
-&lt;li&gt; 最后是 rtmp 的 url， 因为我们用了 rtmp 的默认端口 ， 可以不用写端口号 ，live 是 application 的名字 ，tuna 则是 channel 的名字 。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-video_size 1920x1080 -framerate 25 -f x11grab -i :0.0+0,0&lt;/code&gt;从我的X服务器屏幕上抓了1920x1080的视频。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-f pulse -ac 2 -i default&lt;/code&gt;从我的pulseaudio服务器把音频抓了出来。理论上从alsa抓也可以，但是我没有成功。arch下如果要从pulseaudio抓音频的话，只需要装pulseaudio这个包，重启一下机器，然后装pavucontrol，运行上面的命令之后在pavucontrol的record这个tab下就会看到我们的流，选择一个合适声卡就可以了。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-codec:v libx264 -preset slow -crt 22 -codec:a aac&lt;/code&gt;编码成h264和aac。这是nginx-rtmp-module官方支持的编码。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-x264opts keyint=100:min-keyint=20:scenecut=-1&lt;/code&gt;是为了避免 @typcn 提出的问题2，也就是故意在视频中插入较多的关键 帧，减少黑屏的出现，相应的也会增高码率。&lt;/li&gt;
+&lt;li&gt;最后是rtmp的url，因为我们用了rtmp的默认端口，可以不用写端口号，live是application的名字，tuna则是channel的名字。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt; 其他操作系统的用户可以参照 &lt;a href="https://trac.ffmpeg.org/wiki/Capture/Desktop"&gt; 这里 &lt;/a&gt;。&lt;/p&gt;</content></entry><entry><title>不活跃的openssh连接被“冻结”的问题</title><link href="https://blog.huiyiqun.me/2016/10/21/openssh-freeze-inactive-session.html" rel="alternate"></link><published>2016-10-21T18:49:53+08:00</published><updated>2016-12-31T21:10:53+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2016-10-21:/2016/10/21/openssh-freeze-inactive-session.html</id><summary type="html">&lt;h1&gt; 起因 &lt;/h1&gt;
-&lt;p&gt; 最近做的两个项目都是跑在 CentOS 上的 ， 前者是 CentOS 6， 现在用的是 CentOS 7。 一个让人 
- 非常恼火的问题是 ， 调试或者看日志的时候 ， 如果开了一个 ssh 连接 ， 然后另开个窗口 ， 去 
- 跑个 ansible 或者是改下代码什么的 ， 时间稍微长一点 ， 切回来的时候就会发现 ssh 连接被 
-“ 冻结 ” 了 ： 敲键盘没有回显 ， 同时连接也不会中断 。 最初我以为这是 CentOS 设置的某个安全 
- 特性 ， 避免连接被劫持之类的 。 但是时间长了之后觉得这个特性实在是有点烦 ， 于是我准备 
-disable 这个 “ 特性 ”。&lt;/p&gt;
-&lt;h1&gt; 解决 &lt;/h1&gt;
-&lt;p&gt; 简单地说 ， 在笔记本上的 ssh 配置 （ 如果是 linux， 在 &lt;code&gt;~/.ssh/config&lt;/code&gt;） 上加上如下配置即可 …&lt;/p&gt;</summary><content type="html">&lt;h1&gt; 起因 &lt;/h1&gt;
-&lt;p&gt; 最近做的两个项目都是跑在 CentOS 上的 ， 前者是 CentOS 6， 现在用的是 CentOS 7。 一个让人 
- 非常恼火的问题是 ， 调试或者看日志的时候 ， 如果开了一个 ssh 连接 ， 然后另开个窗口 ， 去 
- 跑个 ansible 或者是改下代码什么的 ， 时间稍微长一点 ， 切回来的时候就会发现 ssh 连接被 
-“ 冻结 ” 了 ： 敲键盘没有回显 ， 同时连接也不会中断 。 最初我以为这是 CentOS 设置的某个安全 
- 特性 ， 避免连接被劫持之类的 。 但是时间长了之后觉得这个特性实在是有点烦 ， 于是我准备 
-disable 这个 “ 特性 ”。&lt;/p&gt;
-&lt;h1&gt; 解决 &lt;/h1&gt;
-&lt;p&gt; 简单地说 ， 在笔记本上的 ssh 配置 （ 如果是 linux， 在 &lt;code&gt;~/.ssh/config&lt;/code&gt;） 上加上如下配置即可 &lt;/p&gt;
+&lt;p&gt;其他操作系统的用户可以参照&lt;a href="https://trac.ffmpeg.org/wiki/Capture/Desktop"&gt;这里&lt;/a&gt;。&lt;/p&gt;</content></entry><entry><title>不活跃的openssh连接被“冻结”的问题</title><link href="https://blog.huiyiqun.me/2016/10/21/openssh-freeze-inactive-session.html" rel="alternate"></link><published>2016-10-21T18:49:53+08:00</published><updated>2016-12-31T21:10:53+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2016-10-21:/2016/10/21/openssh-freeze-inactive-session.html</id><summary type="html">&lt;h1&gt;起因&lt;/h1&gt;
+&lt;p&gt;最近做的两个项目都是跑在CentOS上的，前者是CentOS 6，现在用的是CentOS 7。一个让人
+非常恼火的问题是，调试或者看日志的时候，如果开了一个ssh连接，然后另开个窗口，去
+跑个ansible或者是改下代码什么的，时间稍微长一点，切回来的时候就会发现ssh连接被
+“冻结”了：敲键盘没有回显，同时连接也不会中断。最初我以为这是CentOS设置的某个安全
+特性，避免连接被劫持之类的。但是时间长了之后觉得这个特性实在是有点烦，于是我准备
+disable这个“特性”。&lt;/p&gt;
+&lt;h1&gt;解决&lt;/h1&gt;
+&lt;p&gt;简单地说，在笔记本上的ssh配置（如果是linux，在&lt;code&gt;~/.ssh/config&lt;/code&gt;）上加上如下配置即可&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Host *
     TCPKeepAlive yes
     ServerAliveInterval 15
@@ -887,24 +1190,42 @@ disable 这个 “ 特性 ”。&lt;/p&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h1&gt; 解释 &lt;/h1&gt;
-&lt;p&gt; 就像之前说的 ， 我最初以为是 CentOS 上有某种玄学安全特性 ， 所以我把服务器上的 
-&lt;code&gt;/etc/ssh/sshd_config&lt;/code&gt; 取到本地看了一遍 ， 然而并没有 ， 接着我又看了一遍 iptables
- 的 filter 表 ， 依然没有找到这样的安全配置 。&lt;/p&gt;
-&lt;p&gt; 那么这个 “ 冻结 ” 究竟发生在哪呢 ？&lt;/p&gt;
-&lt;p&gt; 从 TCP 开始分析 。TCP 以下的 IP 层是不会有问题的 ， 因为只要地址是对的 ， 那么包永远都能送 
- 达 。TCP 层本身是没有超时中断这一概念的 ， 也就是说只要 TCP 里的数据发到对方并且被正常 
-ACK 之后 ，TCP 就认为这个连接是好的 ， 之后如果没有新的数据需要传输 ，TCP 两端同时静默 
- 不管多久 ，TCP 都不会认为这个连接有问题 ， 除非收到了 RST 或 FIN， 那么连接才会被中断 。&lt;/p&gt;
-&lt;p&gt; 然后 TCP 之上就是 ssh 了 ， 既然 TCP 和 ssh 就没有设计超时中断 ， 为什么我的 ssh 连接会中断呢 ？&lt;/p&gt;
-&lt;p&gt; 在 Google 的时候一个回答启发了我 （ 找不到链接了 ）， 虽然两边同时静默不会影响 TCP 的连 
- 接 ， 但是由于现在的网络中常常会有 NAT， 比如家用的无线路由器等 ，NAT 为了保证动态的 
- 端口与端口 / 主机映射关系 ， 会维护一张端口映射表 ， 这张映射表一般会有一个超时时间 ，
- 当一个 TCP 连接长时间处于不活跃状态时 ，NAT 会从这个映射表中删除该表项 ， 之后就不再 
- 知道这个映射关系 ， 接下来的 TCP 数据也不能继续传输了 ， 也就出现了这个 “ 冻结 ” 的状态 。&lt;/p&gt;
-&lt;p&gt; 为了验证 NAT 的存在 ， 可以用 &lt;code&gt;ss&lt;/code&gt; 来验证 ，ssh 到服务器之后 ， 运行 &lt;code&gt;ss -nt&lt;/code&gt;， 再在本地运 
- 行 ， 对比二者的端口和地址 ， 来确定你与服务器之间是否有 NAT。&lt;/p&gt;
-&lt;p&gt;ssh 的 TCPKeepAlive 这个选项的解释如下 ：&lt;/p&gt;
+&lt;h1&gt;解释&lt;/h1&gt;
+&lt;p&gt;就像之前说的，我最初以为是CentOS上有某种玄学安全特性，所以我把服务器上的
+&lt;code&gt;/etc/ssh/sshd_config&lt;/code&gt;取到本地看了一遍，然而并没有 …&lt;/p&gt;</summary><content type="html">&lt;h1&gt;起因&lt;/h1&gt;
+&lt;p&gt;最近做的两个项目都是跑在CentOS上的，前者是CentOS 6，现在用的是CentOS 7。一个让人
+非常恼火的问题是，调试或者看日志的时候，如果开了一个ssh连接，然后另开个窗口，去
+跑个ansible或者是改下代码什么的，时间稍微长一点，切回来的时候就会发现ssh连接被
+“冻结”了：敲键盘没有回显，同时连接也不会中断。最初我以为这是CentOS设置的某个安全
+特性，避免连接被劫持之类的。但是时间长了之后觉得这个特性实在是有点烦，于是我准备
+disable这个“特性”。&lt;/p&gt;
+&lt;h1&gt;解决&lt;/h1&gt;
+&lt;p&gt;简单地说，在笔记本上的ssh配置（如果是linux，在&lt;code&gt;~/.ssh/config&lt;/code&gt;）上加上如下配置即可&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Host *
+    TCPKeepAlive yes
+    ServerAliveInterval 15
+    ServerAliveCountMax 3
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h1&gt;解释&lt;/h1&gt;
+&lt;p&gt;就像之前说的，我最初以为是CentOS上有某种玄学安全特性，所以我把服务器上的
+&lt;code&gt;/etc/ssh/sshd_config&lt;/code&gt;取到本地看了一遍，然而并没有，接着我又看了一遍iptables
+的filter表，依然没有找到这样的安全配置。&lt;/p&gt;
+&lt;p&gt;那么这个“冻结”究竟发生在哪呢？&lt;/p&gt;
+&lt;p&gt;从TCP开始分析。TCP以下的IP层是不会有问题的，因为只要地址是对的，那么包永远都能送
+达。TCP层本身是没有超时中断这一概念的，也就是说只要TCP里的数据发到对方并且被正常
+ACK之后，TCP就认为这个连接是好的，之后如果没有新的数据需要传输，TCP两端同时静默
+不管多久，TCP都不会认为这个连接有问题，除非收到了RST或FIN，那么连接才会被中断。&lt;/p&gt;
+&lt;p&gt;然后TCP之上就是ssh了，既然TCP和ssh就没有设计超时中断，为什么我的ssh连接会中断呢？&lt;/p&gt;
+&lt;p&gt;在Google的时候一个回答启发了我（找不到链接了），虽然两边同时静默不会影响TCP的连
+接，但是由于现在的网络中常常会有NAT，比如家用的无线路由器等，NAT为了保证动态的
+端口与端口/主机映射关系，会维护一张端口映射表，这张映射表一般会有一个超时时间，
+当一个TCP连接长时间处于不活跃状态时，NAT会从这个映射表中删除该表项，之后就不再
+知道这个映射关系，接下来的TCP数据也不能继续传输了，也就出现了这个“冻结”的状态。&lt;/p&gt;
+&lt;p&gt;为了验证NAT的存在，可以用&lt;code&gt;ss&lt;/code&gt;来验证，ssh到服务器之后，运行&lt;code&gt;ss -nt&lt;/code&gt;，再在本地运
+行，对比二者的端口和地址，来确定你与服务器之间是否有NAT。&lt;/p&gt;
+&lt;p&gt;ssh的TCPKeepAlive这个选项的解释如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;     TCPKeepAlive
              Specifies whether the system should send TCP keepalive messages to
              the other side.  If they are sent, death of the connection or crash
@@ -920,31 +1241,22 @@ ACK 之后 ，TCP 就认为这个连接是好的 ， 之后如果没有新的数
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 简单说 ， 它的本意是为了保证即使在静默的情况下 ， 也能发现对端主机或者网络出现了问 
- 题 ， 实现方式在 &lt;a href="http://tldp.org/HOWTO/TCP-Keepalive-HOWTO/overview.html"&gt; 这里 &lt;/a&gt;
- 有详细解释 ， 这是一种比较通用的做法 。&lt;/p&gt;
-&lt;p&gt; 然而它的一个副作用是 ， 即使 ssh 隧道中没有流量 ， 在 tcp 中依然有 “ 空的数据流 ” 流过 ， 因此 
-NAT 的端口映射表也不会因为超时而被删除 ，“ 冻结 ” 的情况也被消除了 。&lt;/p&gt;
-&lt;p&gt; 文档里面也提到了 ，TCPKeepAlive 会导致网络临时出问题时连接会中断 ， 让人觉得很烦 ，
- 针对这种情况 ， 可以把 ServerAliveCountMax 和 ServerAliveInterval 的数值调大 ， 一般来 
- 说 ，ServerAliveInterval 只要低于 NAT 映射表的超时时间即可 ，ServerAliveCountMax 则 
- 可以直接改成一个非常大的值 ， 连接中断也不会触发了 。&lt;/p&gt;
-&lt;p&gt; 我的配置中把这三个选项写到了客户端这边 ， 实际上 OpenSSH 的服务器端也有类似的选项 ，
- 可以实现类似的效果 ， 但是需要在每台服务器上都写上 ， 这样太过麻烦 ， 因此选择了写 
- 到客户端 。&lt;/p&gt;</content></entry><entry><title>archlinux上用systemd-networkd与hostapd配置无线ap</title><link href="https://blog.huiyiqun.me/2016/10/08/syst-networkd-and-hostapd.md.html" rel="alternate"></link><published>2016-10-08T18:32:06+08:00</published><updated>2016-12-31T21:10:53+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2016-10-08:/2016/10/08/syst-networkd-and-hostapd.md.html</id><summary type="html">&lt;h1&gt; 环境 &lt;/h1&gt;
-&lt;p&gt; 这套配置我现在运行在了两个地方 ， 一个是我家里的 minipc 上 ， 当软路由用 ， 另一个则是我实验室的 
-PC， 因为实验室的公共 Wifi 效果实在不能让人满意 ， 决定自己在 PC 上插两个 USB 无线网卡当无线路由器用 。&lt;/p&gt;
-&lt;p&gt; 环境上用的都是 Archlinux。&lt;/p&gt;
-&lt;p&gt; 这是 minipc 上的无线网卡 ：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; lsusb
-Bus 002 Device 002: ID 148f:5572 Ralink Technology, Corp. RT5572 Wireless Adapter
-
-~&amp;gt; lspci
-01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168/8411 PCI Express …&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;h1&gt; 环境 &lt;/h1&gt;
-&lt;p&gt; 这套配置我现在运行在了两个地方 ， 一个是我家里的 minipc 上 ， 当软路由用 ， 另一个则是我实验室的 
-PC， 因为实验室的公共 Wifi 效果实在不能让人满意 ， 决定自己在 PC 上插两个 USB 无线网卡当无线路由器用 。&lt;/p&gt;
-&lt;p&gt; 环境上用的都是 Archlinux。&lt;/p&gt;
-&lt;p&gt; 这是 minipc 上的无线网卡 ：&lt;/p&gt;
+&lt;p&gt;简单说，它的本意是为了保证即使在静默的情况下，也能发现对端主机或者网络出现了问
+题，实现方式在&lt;a href="http://tldp.org/HOWTO/TCP-Keepalive-HOWTO/overview.html"&gt;这里&lt;/a&gt;
+有详细解释，这是一种比较通用的做法。&lt;/p&gt;
+&lt;p&gt;然而它的一个副作用是，即使ssh隧道中没有流量，在tcp中依然有“空的数据流”流过，因此
+NAT的端口映射表也不会因为超时而被删除，“冻结”的情况也被消除了。&lt;/p&gt;
+&lt;p&gt;文档里面也提到了，TCPKeepAlive会导致网络临时出问题时连接会中断，让人觉得很烦，
+针对这种情况，可以把ServerAliveCountMax和ServerAliveInterval的数值调大，一般来
+说，ServerAliveInterval只要低于NAT映射表的超时时间即可，ServerAliveCountMax则
+可以直接改成一个非常大的值，连接中断也不会触发了。&lt;/p&gt;
+&lt;p&gt;我的配置中把这三个选项写到了客户端这边，实际上OpenSSH的服务器端也有类似的选项，
+可以实现类似的效果，但是需要在每台服务器上都写上，这样太过麻烦，因此选择了写
+到客户端。&lt;/p&gt;</content></entry><entry><title>archlinux上用systemd-networkd与hostapd配置无线ap</title><link href="https://blog.huiyiqun.me/2016/10/08/syst-networkd-and-hostapd.md.html" rel="alternate"></link><published>2016-10-08T18:32:06+08:00</published><updated>2016-12-31T21:10:53+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2016-10-08:/2016/10/08/syst-networkd-and-hostapd.md.html</id><summary type="html">&lt;h1&gt;环境&lt;/h1&gt;
+&lt;p&gt;这套配置我现在运行在了两个地方，一个是我家里的minipc上，当软路由用，另一个则是我实验室的
+PC，因为实验室的公共Wifi效果实在不能让人满意，决定自己在PC上插两个USB无线网卡当无线路由器用。&lt;/p&gt;
+&lt;p&gt;环境上用的都是Archlinux。&lt;/p&gt;
+&lt;p&gt;这是minipc上的无线网卡：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; lsusb
 Bus 002 Device 002: ID 148f:5572 Ralink Technology, Corp. RT5572 Wireless Adapter
 
@@ -953,16 +1265,31 @@ Bus 002 Device 002: ID 148f:5572 Ralink Technology, Corp. RT5572 Wireless Adapte
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 这是实验室 PC 上的无线网卡 ：&lt;/p&gt;
+&lt;p&gt;这是实验室PC上的无线网卡：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; lsusb
+Bus 003 Device 002 …&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;h1&gt;环境&lt;/h1&gt;
+&lt;p&gt;这套配置我现在运行在了两个地方，一个是我家里的minipc上，当软路由用，另一个则是我实验室的
+PC，因为实验室的公共Wifi效果实在不能让人满意，决定自己在PC上插两个USB无线网卡当无线路由器用。&lt;/p&gt;
+&lt;p&gt;环境上用的都是Archlinux。&lt;/p&gt;
+&lt;p&gt;这是minipc上的无线网卡：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; lsusb
+Bus 002 Device 002: ID 148f:5572 Ralink Technology, Corp. RT5572 Wireless Adapter
+
+~&amp;gt; lspci
+01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller(rev 06)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这是实验室PC上的无线网卡：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; lsusb
 Bus 003 Device 002: ID 0bda:8178 Realtek Semiconductor Corp. RTL8192CU 802.11n WLAN Adapter
 Bus 003 Device 003: ID 148f:5572 Ralink Technology, Corp. RT5572 Wireless Adapter
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 比较推荐 Ralink 的这个 &lt;a href="https://gist.github.com/huiyiqun/9c9b00631768bc5b31971235462eba62"&gt; 网卡 &lt;/a&gt;， 京东上 49 块 ，
- 驱动在主线内核里 ， 支持 2.4Ghz/5Ghz， 稳定性也不错 。&lt;/p&gt;
-&lt;p&gt; 软件版本上 ：&lt;/p&gt;
+&lt;p&gt;比较推荐Ralink的这个&lt;a href="https://gist.github.com/huiyiqun/9c9b00631768bc5b31971235462eba62"&gt;网卡&lt;/a&gt;，京东上49块，
+驱动在主线内核里，支持2.4Ghz/5Ghz，稳定性也不错。&lt;/p&gt;
+&lt;p&gt;软件版本上：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; systemctl --version
 systemd 231
 +PAM -AUDIT -SELINUX -IMA -APPARMOR +SMACK -SYSVINIT +UTMP +LIBCRYPTSETUP +GCRYPT +GNUTLS +ACL +XZ +LZ4 +SECCOMP +BLKID +ELFUTILS +KMOD +IDN
@@ -976,19 +1303,19 @@ Copyright (c) 2002-2016, Jouni Malinen &amp;lt;j@w1.fi&amp;gt; and contributors
 
 
 &lt;h1&gt;Hostapd&lt;/h1&gt;
-&lt;p&gt; 如果提到 hostapd， 大概会有人觉得 &lt;code&gt;create_ap&lt;/code&gt; 会更好用一些 。 我承认 ， 你抱着笔记本回家过年 ， 年夜饭 
- 桌上有人需要临时用一下 ap，&lt;code&gt;create_ap&lt;/code&gt; 确实是一个十分有效的工具 ， 但是如果是自己实验室或寝室的 
- 长期使用的 ap，&lt;code&gt;create_ap&lt;/code&gt; 显得有点笨重 ， 它把 dns、dhcp 以及路由的配置都糅合进去了 。 对于复杂的网络 
- 配置 ， 我认为并不比 hostapd 简单 。&lt;/p&gt;
-&lt;p&gt;hostapd 的配置其实比较简单 ， 顺着默认的配置文件读一遍就基本知道该怎么配了 ， 我也没有配多个 ssid 的需求 ，
- 配置起来就更简单了 。&lt;/p&gt;
-&lt;p&gt; 折腾的地方主要在 systemd 配置 。hostapd 自己提供了一个 service 文件 ， 但是它有两个问题 ：&lt;/p&gt;
+&lt;p&gt;如果提到hostapd，大概会有人觉得&lt;code&gt;create_ap&lt;/code&gt;会更好用一些。我承认，你抱着笔记本回家过年，年夜饭
+桌上有人需要临时用一下ap，&lt;code&gt;create_ap&lt;/code&gt;确实是一个十分有效的工具，但是如果是自己实验室或寝室的
+长期使用的ap，&lt;code&gt;create_ap&lt;/code&gt;显得有点笨重，它把dns、dhcp以及路由的配置都糅合进去了。对于复杂的网络
+配置，我认为并不比hostapd简单。&lt;/p&gt;
+&lt;p&gt;hostapd的配置其实比较简单，顺着默认的配置文件读一遍就基本知道该怎么配了，我也没有配多个ssid的需求，
+配置起来就更简单了。&lt;/p&gt;
+&lt;p&gt;折腾的地方主要在systemd配置。hostapd自己提供了一个service文件，但是它有两个问题：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt; 不支持同时运行多个 hostapd 实例 &lt;/li&gt;
-&lt;li&gt;Unit 写着 After network.target， 这样导致了 hostapd 启动的时候网络配置已经结束了 ， 这里有一个坑 ， 后面再说 。
- 实际上 hostapd 不同于其他网络服务 ， 它并不需要网络访问 ， 也不需要听 socket， 只需要网卡初始化即可 。&lt;/li&gt;
+&lt;li&gt;不支持同时运行多个hostapd实例&lt;/li&gt;
+&lt;li&gt;Unit写着After network.target，这样导致了hostapd启动的时候网络配置已经结束了，这里有一个坑，后面再说。
+实际上hostapd不同于其他网络服务，它并不需要网络访问，也不需要听socket，只需要网卡初始化即可。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt; 因此修改之后的 service 应该是 ：&lt;/p&gt;
+&lt;p&gt;因此修改之后的service应该是：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;[Unit]&lt;/span&gt;
 &lt;span class="na"&gt;Description&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;Hostapd IEEE 802.11 AP, IEEE 802.1X/WPA/WPA2/EAP/RADIUS Authenticator&lt;/span&gt;
 &lt;span class="na"&gt;After&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;sys-subsystem-net-devices-%i.device&lt;/span&gt;
@@ -1004,47 +1331,47 @@ Copyright (c) 2002-2016, Jouni Malinen &amp;lt;j@w1.fi&amp;gt; and contributors
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;%i 会替换成对应的 interface 名 ，&lt;code&gt;After=network.target&lt;/code&gt; 改成了 &lt;code&gt;Before=network.target systemd-networkd.service&lt;/code&gt;，
- 这样 systemd-networkd 会等 hostapd 启动之后才会运行 。&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;After=&lt;/code&gt; 保证了 hostapd 运行时网卡已经启动了 。&lt;code&gt;BindsTo=&lt;/code&gt; 则保证网卡被拔掉之后 hostapd 自动关闭 。&lt;/p&gt;
-&lt;p&gt; 之后把 interface 对应的配置文件写到 &lt;code&gt;/etc/hostapd/&amp;lt;interface&amp;gt;.conf&lt;/code&gt;。&lt;/p&gt;
-&lt;p&gt; 禁用系统自带的 service：&lt;/p&gt;
+&lt;p&gt;%i会替换成对应的interface名，&lt;code&gt;After=network.target&lt;/code&gt;改成了&lt;code&gt;Before=network.target systemd-networkd.service&lt;/code&gt;，
+这样systemd-networkd会等hostapd启动之后才会运行。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;After=&lt;/code&gt;保证了hostapd运行时网卡已经启动了。&lt;code&gt;BindsTo=&lt;/code&gt;则保证网卡被拔掉之后hostapd自动关闭。&lt;/p&gt;
+&lt;p&gt;之后把interface对应的配置文件写到&lt;code&gt;/etc/hostapd/&amp;lt;interface&amp;gt;.conf&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;禁用系统自带的service：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; sudo systemctl mask hostapd
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 启用新的 service：&lt;/p&gt;
+&lt;p&gt;启用新的service：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; sudo systemctl enable hostapd@&amp;lt;interface&amp;gt; --now
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 如果 service 运行不出错 ，interface 就已经正常起来了 ， 这个时候你的手机已经能搜到这个 ap 了 ， 但是现在是连不上的 ，
- 因为网卡没有配置 ip， 也没有配置 dhcp。&lt;/p&gt;
-&lt;p&gt; 这些工作都交给 systemd-networkd 了 。&lt;/p&gt;
-&lt;h1&gt; 关于 systemd-networkd&lt;/h1&gt;
-&lt;p&gt;systemd-networkd 用了有一段时间了 ， 不太适合经常变化的网络 ， 但是对于网络状况比较固定 
- 但是网络环境比较复杂的机器还是挺适合的 ， 比如 soft ap。&lt;/p&gt;
-&lt;p&gt;systemd-networkd 一个比较舒服的地方是 ， 你可以简单的把所有的网络配置都写在一个统一的地方 ，
- 而不用写在各种各样的 &lt;code&gt;up.sh&lt;/code&gt; 里 ， 这样也免得弄乱 。&lt;/p&gt;
-&lt;p&gt; 我曾经遇到过一个问题 ， 我的一台跳板机器上配了一个 openvpn， 在 openvpn 的 &lt;code&gt;up.sh&lt;/code&gt; 里配置了一套 
- 玄学路由 ， 后来家昌喵配了另一个 VPN， 需要这套玄学路由 ， 居然把他的 VPN 的 up 脚本直接写到了我的 
-&lt;code&gt;up.sh&lt;/code&gt; 里 ， 最后网络变得一团糟 。&lt;/p&gt;
-&lt;p&gt; 后来跳板机迁移 ， 我在 up.sh 里就写了 &lt;code&gt;ip link xxx up&lt;/code&gt;。 其他的配置都扔到了 systemd.network 里 ， 这样 
- 思路就清晰多了 ， 玄学路由也被拆了出来 。&lt;/p&gt;
-&lt;p&gt; 对于 systemd-networkd 来说 ， 它不在乎你的 interface 来自于 vpn， 有线网卡还是无线网卡 ， 只要 interface
-up 了 ， 它就将配置写进去 。 这样能让我专注于网络拓扑本身 ， 而不是它的接入方式 。&lt;/p&gt;
-&lt;p&gt; 如果仅仅只有一个无线网卡需要配置 ， 那么直接写一个 &lt;code&gt;systemd.network&lt;/code&gt; 配置就可以了 。 但是我的两个 pc
- 都有两个网卡 ， 而且我希望这个两个网卡的 ap 接入的是同一个子网 （ 大多数市面上的无线路由器都是这样的 ），
- 因此需要用网桥把两个 interface 接到一起 。&lt;/p&gt;
-&lt;p&gt;systemd-networkd 在最近的版本里已经支持了网桥 ， 只需要在 &lt;code&gt;/etc/systemd/network/&lt;/code&gt; 下放一个 netdev 文件 ，
- 如 &lt;code&gt;br0.netdev&lt;/code&gt;：&lt;/p&gt;
+&lt;p&gt;如果service运行不出错，interface就已经正常起来了，这个时候你的手机已经能搜到这个ap了，但是现在是连不上的，
+因为网卡没有配置ip，也没有配置dhcp。&lt;/p&gt;
+&lt;p&gt;这些工作都交给systemd-networkd了。&lt;/p&gt;
+&lt;h1&gt;关于systemd-networkd&lt;/h1&gt;
+&lt;p&gt;systemd-networkd用了有一段时间了，不太适合经常变化的网络，但是对于网络状况比较固定
+但是网络环境比较复杂的机器还是挺适合的，比如soft ap。&lt;/p&gt;
+&lt;p&gt;systemd-networkd一个比较舒服的地方是，你可以简单的把所有的网络配置都写在一个统一的地方，
+而不用写在各种各样的&lt;code&gt;up.sh&lt;/code&gt;里，这样也免得弄乱。&lt;/p&gt;
+&lt;p&gt;我曾经遇到过一个问题，我的一台跳板机器上配了一个openvpn，在openvpn的&lt;code&gt;up.sh&lt;/code&gt;里配置了一套
+玄学路由，后来家昌喵配了另一个VPN，需要这套玄学路由，居然把他的VPN的up脚本直接写到了我的
+&lt;code&gt;up.sh&lt;/code&gt;里，最后网络变得一团糟。&lt;/p&gt;
+&lt;p&gt;后来跳板机迁移，我在up.sh里就写了&lt;code&gt;ip link xxx up&lt;/code&gt;。其他的配置都扔到了systemd.network里，这样
+思路就清晰多了，玄学路由也被拆了出来。&lt;/p&gt;
+&lt;p&gt;对于systemd-networkd来说，它不在乎你的interface来自于vpn，有线网卡还是无线网卡，只要interface
+up了，它就将配置写进去。这样能让我专注于网络拓扑本身，而不是它的接入方式。&lt;/p&gt;
+&lt;p&gt;如果仅仅只有一个无线网卡需要配置，那么直接写一个&lt;code&gt;systemd.network&lt;/code&gt;配置就可以了。但是我的两个pc
+都有两个网卡，而且我希望这个两个网卡的ap接入的是同一个子网（大多数市面上的无线路由器都是这样的），
+因此需要用网桥把两个interface接到一起。&lt;/p&gt;
+&lt;p&gt;systemd-networkd在最近的版本里已经支持了网桥，只需要在&lt;code&gt;/etc/systemd/network/&lt;/code&gt;下放一个netdev文件，
+如&lt;code&gt;br0.netdev&lt;/code&gt;：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;[NetDev]&lt;/span&gt;
 &lt;span class="na"&gt;Name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;br0&lt;/span&gt;
 &lt;span class="na"&gt;Kind&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;bridge&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 接着用一个 network 文件 ( 如 ap.network) 来配置 interface 加入到这个网桥里 。&lt;/p&gt;
+&lt;p&gt;接着用一个network文件(如ap.network)来配置interface加入到这个网桥里。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;[Match]&lt;/span&gt;
 &lt;span class="na"&gt;Name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;xxxx&lt;/span&gt;
 &lt;span class="na"&gt;Name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;yyyy&lt;/span&gt;
@@ -1054,14 +1381,14 @@ up 了 ， 它就将配置写进去 。 这样能让我专注于网络拓扑本�
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;Name  是你希望加入到这个网络中的网卡的 interface 名 ， 也可以通过 mac 地址等其他方式来配置 。&lt;/p&gt;
-&lt;p&gt; 在自动启动的过程中 ， 有可能会出现一个问题 ， 就是 systemd-networkd 启动并且配置网桥并且将 interface 加入到 
- 网桥的时候 hostapd 还没起来 ， 这个时候的网卡不能加入到 bridge 里 ，github 上有一个 
-&lt;a href="https://github.com/systemd/systemd/issues/936"&gt;issue&lt;/a&gt;。Before &lt;code&gt;systemd-networkd.service&lt;/code&gt; 解决了这个问题 ，
- 但是我感觉可能导致系统的启动时间变长 ， 因为调度顺序上 ，hostapd 被提前了 ，After &lt;code&gt;network.service&lt;/code&gt; 的服务需要 
- 阻塞等待 hostapd，anyway， 我并没有实际感受到任何区别 。&lt;/p&gt;
-&lt;p&gt; 这样 restart systemd-networkd 之后就发现网卡已经加入到新建的 bridge 里了 。 这个时候直接配置这个 bridge 就可以了 。
- 依然通过一个 network 文件 ( 如 br0.network) 来配置 。&lt;/p&gt;
+&lt;p&gt;Name 是你希望加入到这个网络中的网卡的interface名，也可以通过mac地址等其他方式来配置。&lt;/p&gt;
+&lt;p&gt;在自动启动的过程中，有可能会出现一个问题，就是systemd-networkd启动并且配置网桥并且将interface加入到
+网桥的时候hostapd还没起来，这个时候的网卡不能加入到bridge里，github上有一个
+&lt;a href="https://github.com/systemd/systemd/issues/936"&gt;issue&lt;/a&gt;。Before &lt;code&gt;systemd-networkd.service&lt;/code&gt;解决了这个问题，
+但是我感觉可能导致系统的启动时间变长，因为调度顺序上，hostapd被提前了，After &lt;code&gt;network.service&lt;/code&gt;的服务需要
+阻塞等待hostapd，anyway，我并没有实际感受到任何区别。&lt;/p&gt;
+&lt;p&gt;这样restart systemd-networkd之后就发现网卡已经加入到新建的bridge里了。这个时候直接配置这个bridge就可以了。
+依然通过一个network文件(如br0.network)来配置。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;[Match]&lt;/span&gt;
 &lt;span class="na"&gt;Name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;br0&lt;/span&gt;
 
@@ -1080,64 +1407,69 @@ up 了 ， 它就将配置写进去 。 这样能让我专注于网络拓扑本�
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 配置已经很好懂 ， 我给 dhcp 的地址池留了 100 个地址 ， 方便未来可能会要配静态地址 ，100 个地址对于我的 usb 网卡也差不多到 
- 极限了 。&lt;/p&gt;
-&lt;p&gt;DNS 将连接设备的 DNS 解析器指向给定地址 。&lt;/p&gt;
-&lt;p&gt;EmitRouter 让连接上这个 wifi 的设备把默认路由设置成 ap， 也就是 192.168.233.1，EmitTimeZone 则会向设备广播时区 。&lt;/p&gt;
-&lt;p&gt; 有趣的是 IPForward 和 IPMasquerade 这两个选项 ， 他们会分别替你打开 sysctl 里的 forwarding 以及在 iptables 里加入 SNAT 规则 。
- 其中 IPMasquerade 隐含了 IPForward， 为了 verbose， 我还是都写上了 。 一方面比较省事 ， 最重要的是 ， 这个比脚本可读很多 。&lt;/p&gt;
-&lt;p&gt; 这样 ， 网络部分的配置就完成了 。&lt;/p&gt;
+&lt;p&gt;配置已经很好懂，我给dhcp的地址池留了100个地址，方便未来可能会要配静态地址，100个地址对于我的usb网卡也差不多到
+极限了。&lt;/p&gt;
+&lt;p&gt;DNS将连接设备的DNS解析器指向给定地址。&lt;/p&gt;
+&lt;p&gt;EmitRouter让连接上这个wifi的设备把默认路由设置成ap，也就是192.168.233.1，EmitTimeZone则会向设备广播时区。&lt;/p&gt;
+&lt;p&gt;有趣的是IPForward和IPMasquerade这两个选项，他们会分别替你打开sysctl里的forwarding以及在iptables里加入SNAT规则。
+其中IPMasquerade隐含了IPForward，为了verbose，我还是都写上了。一方面比较省事，最重要的是，这个比脚本可读很多。&lt;/p&gt;
+&lt;p&gt;这样，网络部分的配置就完成了。&lt;/p&gt;
 &lt;h1&gt;DNS&lt;/h1&gt;
-&lt;p&gt; 上面可以看到 ， 我在 PC 上配置了一个 DNS 服务器 ， 用的是 dnsmasq， 配置比较简单 ， 也没出什么奇怪的问题 。 如果需要科学上网 ，
- 可以配合 &lt;a href="https://github.com/felixonmars/dnsmasq-china-list"&gt;dnsmasq-china-list&lt;/a&gt; 以及 VPN 使用 。&lt;/p&gt;
-&lt;p&gt;VPN 怎么配就不讲了 。 顺带一提 ，VPN 的网络配置也是放在 systemd-networkd 里的 。&lt;/p&gt;</content></entry><entry><title>使用libvirt和preseed自动部署运行于KVM上的Debian虚拟机</title><link href="https://blog.huiyiqun.me/2016/10/08/auto-install-debian-with-libvirt-and-preseed.html" rel="alternate"></link><published>2016-10-08T00:16:40+08:00</published><updated>2016-12-31T21:10:53+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2016-10-08:/2016/10/08/auto-install-debian-with-libvirt-and-preseed.html</id><summary type="html">&lt;h1&gt; 前言 &lt;/h1&gt;
-&lt;p&gt; 有一年多没有写东西了 ， 期间还是做了不少事情 ， 但是因为博 (zi) 客 (ji) 有 (te) 点 (bie) 丑 (lan)，
- 什么都没有写 。 很多东西花了很多时间去学和折腾 ， 回头要用到的时候又需要重新去 
- 翻文档 ， 实在是浪费时间 ， 于是决定把博客续上 。&lt;/p&gt;
-&lt;p&gt; 之所以会需要装虚拟机 ， 是因为 TUNA 最近又招了不少萌新 ， 萌新们可能需要一台 UNIX 的设备来瞎折腾 ，
- 另外协会内部偶尔需要交换 slide 或者活动视频 ， 大鹰主席又觉得通过 “ 网盘 ” 交换文件实在太羞耻 ，
- 因为我之前折腾过一下 KVM， 因而让我部署一台 Debian 的虚拟机 。&lt;/p&gt;
-&lt;p&gt; 本来是一件简单的重复劳动 ， 但是基于以下理由 ：&lt;/p&gt;
+&lt;p&gt;上面可以看到，我在PC上配置了一个DNS服务器，用的是dnsmasq，配置比较简单，也没出什么奇怪的问题。如果需要科学上网，
+可以配合&lt;a href="https://github.com/felixonmars/dnsmasq-china-list"&gt;dnsmasq-china-list&lt;/a&gt;以及VPN使用。&lt;/p&gt;
+&lt;p&gt;VPN怎么配就不讲了。顺带一提，VPN的网络配置也是放在systemd-networkd里的。&lt;/p&gt;</content></entry><entry><title>使用libvirt和preseed自动部署运行于KVM上的Debian虚拟机</title><link href="https://blog.huiyiqun.me/2016/10/08/auto-install-debian-with-libvirt-and-preseed.html" rel="alternate"></link><published>2016-10-08T00:16:40+08:00</published><updated>2016-12-31T21:10:53+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2016-10-08:/2016/10/08/auto-install-debian-with-libvirt-and-preseed.html</id><summary type="html">&lt;h1&gt;前言&lt;/h1&gt;
+&lt;p&gt;有一年多没有写东西了，期间还是做了不少事情，但是因为博(zi)客(ji)有(te)点(bie)丑(lan)，
+什么都没有写。很多东西花了很多时间去学和折腾，回头要用到的时候又需要重新去
+翻文档，实在是浪费时间，于是决定把博客续上。&lt;/p&gt;
+&lt;p&gt;之所以会需要装虚拟机，是因为TUNA最近又招了不少萌新，萌新们可能需要一台UNIX的设备来瞎折腾，
+另外协会内部偶尔需要交换slide或者活动视频，大鹰主席又觉得通过“网盘”交换文件实在太羞耻，
+因为我之前折腾过一下KVM，因而让我部署一台Debian的虚拟机。&lt;/p&gt;
+&lt;p&gt;本来是一件简单的重复劳动，但是基于以下理由：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt; 萌新可能把机器弄坏或者机器需要搬家 &lt;/li&gt;
-&lt;li&gt; 以后会长可能会让我装第二个机器 &lt;/li&gt;
-&lt;li&gt;&lt;s&gt; 好久没折腾了感觉皮子有点紧 ~~&lt;/s&gt;&lt;/li&gt;
+&lt;li&gt;萌新可能把机器弄坏或者机器需要搬家&lt;/li&gt;
+&lt;li&gt;以后会长可能会让我装第二个机器&lt;/li&gt;
+&lt;li&gt;&lt;s&gt;好久没折腾了感觉皮子有点紧~~&lt;/s&gt;&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt; 决定用 ansible 自动安装 。 整个过程花了大概两天左右 ， 其实 ansible 和 libvirt …&lt;/p&gt;</summary><content type="html">&lt;h1&gt; 前言 &lt;/h1&gt;
-&lt;p&gt; 有一年多没有写东西了 ， 期间还是做了不少事情 ， 但是因为博 (zi) 客 (ji) 有 (te) 点 (bie) 丑 (lan)，
- 什么都没有写 。 很多东西花了很多时间去学和折腾 ， 回头要用到的时候又需要重新去 
- 翻文档 ， 实在是浪费时间 ， 于是决定把博客续上 。&lt;/p&gt;
-&lt;p&gt; 之所以会需要装虚拟机 ， 是因为 TUNA 最近又招了不少萌新 ， 萌新们可能需要一台 UNIX 的设备来瞎折腾 ，
- 另外协会内部偶尔需要交换 slide 或者活动视频 ， 大鹰主席又觉得通过 “ 网盘 ” 交换文件实在太羞耻 ，
- 因为我之前折腾过一下 KVM， 因而让我部署一台 Debian 的虚拟机 。&lt;/p&gt;
-&lt;p&gt; 本来是一件简单的重复劳动 ， 但是基于以下理由 ：&lt;/p&gt;
+&lt;p&gt;决定用ansible自动安装。整个过程花了大概两天左右，其实ansible和libvirt都还算好，文档挺齐全
+的，而且实现上bug不多，但是preseed的文档少而且比较乱，经常遇到文档和实际情况不符合的情况。&lt;/p&gt;
+&lt;h1&gt;环境&lt;/h1&gt;
+&lt;p&gt;宿主机是一个Debian jessie，上面跑了各种各样的其他服务，包括且不限于docker、nginx、
+私有的ldap服务等。&lt;/p&gt;
+&lt;p&gt;虚拟机依然是一个Debian jessie …&lt;/p&gt;</summary><content type="html">&lt;h1&gt;前言&lt;/h1&gt;
+&lt;p&gt;有一年多没有写东西了，期间还是做了不少事情，但是因为博(zi)客(ji)有(te)点(bie)丑(lan)，
+什么都没有写。很多东西花了很多时间去学和折腾，回头要用到的时候又需要重新去
+翻文档，实在是浪费时间，于是决定把博客续上。&lt;/p&gt;
+&lt;p&gt;之所以会需要装虚拟机，是因为TUNA最近又招了不少萌新，萌新们可能需要一台UNIX的设备来瞎折腾，
+另外协会内部偶尔需要交换slide或者活动视频，大鹰主席又觉得通过“网盘”交换文件实在太羞耻，
+因为我之前折腾过一下KVM，因而让我部署一台Debian的虚拟机。&lt;/p&gt;
+&lt;p&gt;本来是一件简单的重复劳动，但是基于以下理由：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt; 萌新可能把机器弄坏或者机器需要搬家 &lt;/li&gt;
-&lt;li&gt; 以后会长可能会让我装第二个机器 &lt;/li&gt;
-&lt;li&gt;&lt;s&gt; 好久没折腾了感觉皮子有点紧 ~~&lt;/s&gt;&lt;/li&gt;
+&lt;li&gt;萌新可能把机器弄坏或者机器需要搬家&lt;/li&gt;
+&lt;li&gt;以后会长可能会让我装第二个机器&lt;/li&gt;
+&lt;li&gt;&lt;s&gt;好久没折腾了感觉皮子有点紧~~&lt;/s&gt;&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt; 决定用 ansible 自动安装 。 整个过程花了大概两天左右 ， 其实 ansible 和 libvirt 都还算好 ， 文档挺齐全 
- 的 ， 而且实现上 bug 不多 ， 但是 preseed 的文档少而且比较乱 ， 经常遇到文档和实际情况不符合的情况 。&lt;/p&gt;
-&lt;h1&gt; 环境 &lt;/h1&gt;
-&lt;p&gt; 宿主机是一个 Debian jessie， 上面跑了各种各样的其他服务 ， 包括且不限于 docker、nginx、
- 私有的 ldap 服务等 。&lt;/p&gt;
-&lt;p&gt; 虚拟机依然是一个 Debian jessie， 上面需要部署一些基本的服务 ， 比如基于 ldap 的 pam 模块等 ， 方便 
- 用户的登录 。&lt;/p&gt;
-&lt;h1&gt; 宿主机 &lt;/h1&gt;
-&lt;p&gt;qemu 本身的接口本身比较简陋 ， 我一般是用 libvirt 来管理 。&lt;/p&gt;
-&lt;p&gt; 因此通过 apt 安装上 &lt;code&gt;qemu-kvm&lt;/code&gt; 和 &lt;code&gt;libvirt-bin&lt;/code&gt;。
-Debian 上安装好包之后默认服务就启动了 ， 因此不需要主动启动 &lt;code&gt;libvirtd&lt;/code&gt;， 宿主机基本就配置好了 。&lt;/p&gt;
-&lt;h1&gt; 虚拟机 &lt;/h1&gt;
-&lt;p&gt; 此前安装系统都是通过 &lt;code&gt;virt-install&lt;/code&gt; 或者封装得更严实的 &lt;code&gt;virt-manager&lt;/code&gt;。
-&lt;code&gt;virt-manager&lt;/code&gt; 的安装过程基于 GUI， 重复安装很不方便 ；
-&lt;code&gt;virt-install&lt;/code&gt; 相对要方便很多 ， 不过感觉比较玄学 ， 完全不知道它背后做了什么 。&lt;/p&gt;
-&lt;p&gt;github 上能找到的自动安装项目基本都是基于 &lt;code&gt;virt-install&lt;/code&gt; 的 ， 这次我想尝试直接基于 &lt;code&gt;libvirt&lt;/code&gt; 的 
-xml 文件配置来实现更灵活的安装过程控制 。&lt;/p&gt;
+&lt;p&gt;决定用ansible自动安装。整个过程花了大概两天左右，其实ansible和libvirt都还算好，文档挺齐全
+的，而且实现上bug不多，但是preseed的文档少而且比较乱，经常遇到文档和实际情况不符合的情况。&lt;/p&gt;
+&lt;h1&gt;环境&lt;/h1&gt;
+&lt;p&gt;宿主机是一个Debian jessie，上面跑了各种各样的其他服务，包括且不限于docker、nginx、
+私有的ldap服务等。&lt;/p&gt;
+&lt;p&gt;虚拟机依然是一个Debian jessie，上面需要部署一些基本的服务，比如基于ldap的pam模块等，方便
+用户的登录。&lt;/p&gt;
+&lt;h1&gt;宿主机&lt;/h1&gt;
+&lt;p&gt;qemu本身的接口本身比较简陋，我一般是用libvirt来管理。&lt;/p&gt;
+&lt;p&gt;因此通过apt安装上&lt;code&gt;qemu-kvm&lt;/code&gt;和&lt;code&gt;libvirt-bin&lt;/code&gt;。
+Debian上安装好包之后默认服务就启动了，因此不需要主动启动&lt;code&gt;libvirtd&lt;/code&gt;，宿主机基本就配置好了。&lt;/p&gt;
+&lt;h1&gt;虚拟机&lt;/h1&gt;
+&lt;p&gt;此前安装系统都是通过&lt;code&gt;virt-install&lt;/code&gt;或者封装得更严实的&lt;code&gt;virt-manager&lt;/code&gt;。
+&lt;code&gt;virt-manager&lt;/code&gt;的安装过程基于GUI，重复安装很不方便；
+&lt;code&gt;virt-install&lt;/code&gt;相对要方便很多，不过感觉比较玄学，完全不知道它背后做了什么。&lt;/p&gt;
+&lt;p&gt;github上能找到的自动安装项目基本都是基于&lt;code&gt;virt-install&lt;/code&gt;的，这次我想尝试直接基于&lt;code&gt;libvirt&lt;/code&gt;的
+xml文件配置来实现更灵活的安装过程控制。&lt;/p&gt;
 &lt;h2&gt;Network&lt;/h2&gt;
-&lt;p&gt; 因为使用了 ansible， 网络的配置是给定了一个 xml 文件 ， 然后用 &lt;code&gt;virt-net&lt;/code&gt; 模块把这个 xml 传进去 ，
- 网络就定义好了 。&lt;/p&gt;
-&lt;p&gt; 因为会长想要一个 nat 网络 ， 对外只暴露一个 ssh 的端口 ， 因此网络配置上选择了 nat 网络 +DNAT 的方式 。&lt;/p&gt;
-&lt;p&gt; 以下是我使用的 xml。&lt;/p&gt;
+&lt;p&gt;因为使用了ansible，网络的配置是给定了一个xml文件，然后用&lt;code&gt;virt-net&lt;/code&gt;模块把这个xml传进去，
+网络就定义好了。&lt;/p&gt;
+&lt;p&gt;因为会长想要一个nat网络，对外只暴露一个ssh的端口，因此网络配置上选择了nat网络+DNAT的方式。&lt;/p&gt;
+&lt;p&gt;以下是我使用的xml。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;network&amp;gt;&lt;/span&gt;
   &lt;span class="nt"&gt;&amp;lt;name&amp;gt;&lt;/span&gt;nat&lt;span class="nt"&gt;&amp;lt;/name&amp;gt;&lt;/span&gt;
   &lt;span class="nt"&gt;&amp;lt;forward&lt;/span&gt; &lt;span class="na"&gt;mode=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;nat&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
@@ -1151,43 +1483,43 @@ xml 文件配置来实现更灵活的安装过程控制 。&lt;/p&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 需要说的是 dhcp 这个 tag 里的内容 ， 为了将虚拟机的 22 端口暴露到外网 ， 最简单地做法是固定虚拟机 
- 的 ip 地址 。&lt;/p&gt;
-&lt;p&gt; 本来我计划在这个网段中不起 dhcp 服务 ， 直接通过 preseed（ 也就是 Debian 的自动部署工具 ） 来自动 
- 配置一个静态地址 ， 这样看上去是比较合理的 。 但是 preseed 和 anaconda（CentOS 的自动部署工具 ）
- 在工作流程上有一些本质的区别 ：&lt;/p&gt;
+&lt;p&gt;需要说的是dhcp这个tag里的内容，为了将虚拟机的22端口暴露到外网，最简单地做法是固定虚拟机
+的ip地址。&lt;/p&gt;
+&lt;p&gt;本来我计划在这个网段中不起dhcp服务，直接通过preseed（也就是Debian的自动部署工具）来自动
+配置一个静态地址，这样看上去是比较合理的。但是preseed和anaconda（CentOS的自动部署工具）
+在工作流程上有一些本质的区别：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;anaconda 如果配置了用 kickstart（anaconda 的配置 ） 安装 ， 那么 anaconda 在运行之前会先尝试 
- 去下载指定的 kickstart 文件 ， 如果下载失败会出错退出 。 所以如果要通过网络指定 kickstart 需要用 
- 启动参数 （boot parameters）&lt;code&gt;ip&lt;/code&gt; 来配置虚拟机的网络 ， 然后内核把控制权交给  anaconda 之后 ，
-anaconda 才能获取 kickstart 文件进行安装 ， 接着根据 kickstart 的内容来进行安装 。&lt;/p&gt;
+&lt;p&gt;anaconda如果配置了用kickstart（anaconda的配置）安装，那么anaconda在运行之前会先尝试
+去下载指定的kickstart文件，如果下载失败会出错退出。所以如果要通过网络指定kickstart需要用
+启动参数（boot parameters）&lt;code&gt;ip&lt;/code&gt;来配置虚拟机的网络，然后内核把控制权交给 anaconda之后，
+anaconda才能获取kickstart文件进行安装，接着根据kickstart的内容来进行安装。&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;preseed 则完全不同 ， 如果配置了用 preseed 配置安装 ，preseed 会把下载 preseed 配置作为 
- 其工作流程的一步插到网络配置的后面 ， 也就是说当 preseed 拿到配置文件的时候 ， 它已经用默认值 
-（DHCP） 运行完了其所有网络配置 ，preseed 中的网络 、 域名等配置完全不会生效 。&lt;/p&gt;
+&lt;p&gt;preseed则完全不同，如果配置了用preseed配置安装，preseed会把下载preseed配置作为
+其工作流程的一步插到网络配置的后面，也就是说当preseed拿到配置文件的时候，它已经用默认值
+（DHCP）运行完了其所有网络配置，preseed中的网络、域名等配置完全不会生效。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt; 虽然文档中也提到了可以用启动参数的方式指定其网络配置 ， 但是我试了一下 ， 没有生效 。 并且 
- 这个时候我对于 preseed 已经基本失望了 。 所以我决定把复杂的配置放到 libvirt 里 ， 让 preseed
- 里面的配置尽可能少 。&lt;/p&gt;
-&lt;p&gt; 所以这里我配了一个给 guest 分配 “ 静态地址 ” 的 dhcp 服务器 。&lt;/p&gt;
+&lt;p&gt;虽然文档中也提到了可以用启动参数的方式指定其网络配置，但是我试了一下，没有生效。并且
+这个时候我对于preseed已经基本失望了。所以我决定把复杂的配置放到libvirt里，让preseed
+里面的配置尽可能少。&lt;/p&gt;
+&lt;p&gt;所以这里我配了一个给guest分配“静态地址”的dhcp服务器。&lt;/p&gt;
 &lt;h2&gt;Storage&lt;/h2&gt;
-&lt;p&gt; 虚拟机的硬盘相对比较简单 ， 直接用 qemu-img 就好了 。 因为了用了 ansible， 用了 
-&lt;a href="https://github.com/ansible-provisioning/ansible-provisioning/blob/master/library/qemu_img"&gt; 这里 &lt;/a&gt;
- 一个现成的模块 ， 放到 role 的 library 目录下就能正常工作了 。&lt;/p&gt;
-&lt;p&gt;（ 我一般不喜欢造轮子 ， 算优点也算缺点吧 。）&lt;/p&gt;
-&lt;p&gt; 接下来把目录建成 &lt;code&gt;virt-pool&lt;/code&gt; 方便使用 。&lt;/p&gt;
+&lt;p&gt;虚拟机的硬盘相对比较简单，直接用qemu-img就好了。因为了用了ansible，用了
+&lt;a href="https://github.com/ansible-provisioning/ansible-provisioning/blob/master/library/qemu_img"&gt;这里&lt;/a&gt;
+一个现成的模块，放到role的library目录下就能正常工作了。&lt;/p&gt;
+&lt;p&gt;（我一般不喜欢造轮子，算优点也算缺点吧。）&lt;/p&gt;
+&lt;p&gt;接下来把目录建成&lt;code&gt;virt-pool&lt;/code&gt;方便使用。&lt;/p&gt;
 &lt;h2&gt;Installing Domain&lt;/h2&gt;
-&lt;p&gt; 如果在物理机上安装一个新的操作系统 ， 你需要下载一个 ISO， 烧到 dvd 或者 U 盘里 ， 再调整 bios 里的 
- 启动顺序 。&lt;/p&gt;
-&lt;p&gt; 如果需要自动化安装 ， 在进入安装界面之后 ， 可以找到一些快捷键 ， 可以进入一个 prompt 模式 ， 在 
- 里面输入一些参数 （ 一般来说等于修改启动参数 ）， 接着就能一路安装下去 。&lt;/p&gt;
-&lt;p&gt; 在虚拟机里其实也很类似 ， 对于一个虚拟机 ， 虽然安装时和安装后共享一个硬盘 ， 但是启动顺序 、
- 是否有 ISO、 有什么启动参数都完全不一样 。 也就是说安装中和安装后需要定义两个不完全相同的 
+&lt;p&gt;如果在物理机上安装一个新的操作系统，你需要下载一个ISO，烧到dvd或者U盘里，再调整bios里的
+启动顺序。&lt;/p&gt;
+&lt;p&gt;如果需要自动化安装，在进入安装界面之后，可以找到一些快捷键，可以进入一个prompt模式，在
+里面输入一些参数（一般来说等于修改启动参数），接着就能一路安装下去。&lt;/p&gt;
+&lt;p&gt;在虚拟机里其实也很类似，对于一个虚拟机，虽然安装时和安装后共享一个硬盘，但是启动顺序、
+是否有ISO、有什么启动参数都完全不一样。也就是说安装中和安装后需要定义两个不完全相同的
 domain。&lt;/p&gt;
-&lt;p&gt; 以下是我在安装时用的 xml 文件 ：&lt;/p&gt;
+&lt;p&gt;以下是我在安装时用的xml文件：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;domain&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;kvm&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
   &lt;span class="nt"&gt;&amp;lt;name&amp;gt;&lt;/span&gt;shared-guest&lt;span class="nt"&gt;&amp;lt;/name&amp;gt;&lt;/span&gt;
   &lt;span class="nt"&gt;&amp;lt;memory&lt;/span&gt; &lt;span class="na"&gt;unit=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;MB&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;4096&lt;span class="nt"&gt;&amp;lt;/memory&amp;gt;&lt;/span&gt;
@@ -1225,24 +1557,24 @@ domain。&lt;/p&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;os 这个 tag 里的内容定义了 domain 的启动选项 。 这里 boot 这个 tag 应该没有生效 ， 是遗留代码 ， 主要是通过 
-kernel、initrd、cmdline 三个参数实现了 &lt;a href="https://libvirt.org/formatdomain.html#elementsOSKernel"&gt;Direct kernel boot&lt;/a&gt;。
- 以此达到指定启动参数的目的 。&lt;/p&gt;
-&lt;p&gt;kernel 和 initrd 里的文件理论上应该从 iso 里面解出来 ， 在这里 ， 我偷了个懒 ， 直接从 
-&lt;a href="https://mirrors.tuna.tsinghua.edu.cn/debian/dists/jessie/main/installer-amd64/current/images/cdrom/"&gt; 这里 &lt;/a&gt;
- 下载的 。&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;device&lt;/code&gt; 这个 tag 里前两个 &lt;code&gt;disk&lt;/code&gt; 分别是之前建的虚拟硬盘和下载的安装 iso。&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;interface&lt;/code&gt; 则挂载到了之前建的 nat 网络上 ， 注意到 mac 地址需要与之前的 mac 地址对应 。&lt;/p&gt;
-&lt;p&gt; 最后的 &lt;code&gt;serial&lt;/code&gt; 与 &lt;code&gt;console&lt;/code&gt; 和 &lt;code&gt;cmdline&lt;/code&gt; 里的 console=ttyS0 配合 ， 这样可以通过 &lt;code&gt;virsh console&lt;/code&gt;
- 命令将标准 IO 和安装过程接起来 ， 可以交互式的安装 ， 也可以看安装进度 。&lt;/p&gt;
-&lt;p&gt; 关于 cmdline 里的其他参数 ，&lt;code&gt;auto=true priority=critical&lt;/code&gt; 保证了 preseed 自动安装并且不会被一 
- 些低优先级的问题打断 ， 比如询问 hostname 之类的 ， 但是并不能跳过所有问题 ， 比如如果 preseed
- 里面没有设置 root 密码也没有选择跳过建 root 用户 ， 安装过程就会停下来等用户输入 root 密码 。&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;url&lt;/code&gt; 指定了配置文件的 url，preseed 配置完网络之后会从这个地方下载配置文件 。 貌似也支持其他 
- 协议 ， 不过没有试过 。&lt;/p&gt;
-&lt;p&gt; 剩下两个参数应该是没什么用处的 ， 算是遗留代码 。&lt;/p&gt;
-&lt;p&gt; 更多的详细信息可以看 &lt;a href="https://www.debian.org/releases/jessie/amd64/apbs02.html.en"&gt; 这里 &lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt; 当你确定安装不需要任何人工干预之后 ， 可以把 serial 这个 tag 改成如下内容 ：&lt;/p&gt;
+&lt;p&gt;os这个tag里的内容定义了domain的启动选项。这里boot这个tag应该没有生效，是遗留代码，主要是通过
+kernel、initrd、cmdline三个参数实现了&lt;a href="https://libvirt.org/formatdomain.html#elementsOSKernel"&gt;Direct kernel boot&lt;/a&gt;。
+以此达到指定启动参数的目的。&lt;/p&gt;
+&lt;p&gt;kernel和initrd里的文件理论上应该从iso里面解出来，在这里，我偷了个懒，直接从
+&lt;a href="https://mirrors.tuna.tsinghua.edu.cn/debian/dists/jessie/main/installer-amd64/current/images/cdrom/"&gt;这里&lt;/a&gt;
+下载的。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;device&lt;/code&gt;这个tag里前两个&lt;code&gt;disk&lt;/code&gt;分别是之前建的虚拟硬盘和下载的安装iso。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;interface&lt;/code&gt;则挂载到了之前建的nat网络上，注意到mac地址需要与之前的mac地址对应。&lt;/p&gt;
+&lt;p&gt;最后的&lt;code&gt;serial&lt;/code&gt;与&lt;code&gt;console&lt;/code&gt;和&lt;code&gt;cmdline&lt;/code&gt;里的console=ttyS0配合，这样可以通过&lt;code&gt;virsh console&lt;/code&gt;
+命令将标准IO和安装过程接起来，可以交互式的安装，也可以看安装进度。&lt;/p&gt;
+&lt;p&gt;关于cmdline里的其他参数，&lt;code&gt;auto=true priority=critical&lt;/code&gt;保证了preseed自动安装并且不会被一
+些低优先级的问题打断，比如询问hostname之类的，但是并不能跳过所有问题，比如如果preseed
+里面没有设置root密码也没有选择跳过建root用户，安装过程就会停下来等用户输入root密码。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;url&lt;/code&gt;指定了配置文件的url，preseed配置完网络之后会从这个地方下载配置文件。貌似也支持其他
+协议，不过没有试过。&lt;/p&gt;
+&lt;p&gt;剩下两个参数应该是没什么用处的，算是遗留代码。&lt;/p&gt;
+&lt;p&gt;更多的详细信息可以看&lt;a href="https://www.debian.org/releases/jessie/amd64/apbs02.html.en"&gt;这里&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;当你确定安装不需要任何人工干预之后，可以把serial这个tag改成如下内容：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;serial&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;file&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
   &lt;span class="nt"&gt;&amp;lt;source&lt;/span&gt; &lt;span class="na"&gt;path=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/tmp/shared-guest-serial0.log&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
   &lt;span class="nt"&gt;&amp;lt;target&lt;/span&gt; &lt;span class="na"&gt;port=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;0&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
@@ -1250,40 +1582,40 @@ kernel、initrd、cmdline 三个参数实现了 &lt;a href="https://libvirt.org/
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 这样 libvirt 会把虚拟机的 ttyS0 的输出接到物理机的 &lt;code&gt;/tmp/shared-guest-serial0.log&lt;/code&gt; 这个文件 。
- 然后通过 &lt;/p&gt;
+&lt;p&gt;这样libvirt会把虚拟机的ttyS0的输出接到物理机的&lt;code&gt;/tmp/shared-guest-serial0.log&lt;/code&gt;这个文件。
+然后通过&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;~&amp;gt; sudo tail -f /tmp/shared-guest-serial0.log
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 这个命令就可以查看安装进度了 ， 但是不能进行交互了 。&lt;/p&gt;
-&lt;p&gt; 这样有如下两个好处 ：&lt;/p&gt;
+&lt;p&gt;这个命令就可以查看安装进度了，但是不能进行交互了。&lt;/p&gt;
+&lt;p&gt;这样有如下两个好处：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;console 是独占的 ， 而文件本身是共享的 ， 多个人可以同时浏览安装进度 。&lt;/li&gt;
-&lt;li&gt; 方便使用 ansible 的 &lt;code&gt;wait_for&lt;/code&gt; 这个模块来监视安装的进度 。&lt;/li&gt;
+&lt;li&gt;console是独占的，而文件本身是共享的，多个人可以同时浏览安装进度。&lt;/li&gt;
+&lt;li&gt;方便使用ansible的&lt;code&gt;wait_for&lt;/code&gt;这个模块来监视安装的进度。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h2&gt;Preseed&lt;/h2&gt;
-&lt;p&gt; 上面的启动参数里写到了 ， 需要从物理机的 http 服务器上获取 preseed。 我用 &lt;code&gt;daemon&lt;/code&gt; 和 &lt;code&gt;caddy&lt;/code&gt; 配合在 
- 宿主机上起了一个简单的 http 服务器 ， 主要是考虑如何在 ansible 里起简单的 daemon。
- 灵感来源于 &lt;a href="http://stackoverflow.com/a/29822700"&gt;stackoverflow&lt;/a&gt;， 具体的细节就不赘述了 ，
- 感兴趣可以直接去看 github 看这个 repo 的内容 。&lt;/p&gt;
-&lt;p&gt; 关于 Preseed， 我使用了 &lt;a href="https://www.debian.org/releases/jessie/example-preseed.txt"&gt; 这里 &lt;/a&gt;
- 的模板 。&lt;/p&gt;
-&lt;p&gt; 有几个地方需要注意 ：&lt;/p&gt;
+&lt;p&gt;上面的启动参数里写到了，需要从物理机的http服务器上获取preseed。我用&lt;code&gt;daemon&lt;/code&gt;和&lt;code&gt;caddy&lt;/code&gt;配合在
+宿主机上起了一个简单的http服务器，主要是考虑如何在ansible里起简单的daemon。
+灵感来源于&lt;a href="http://stackoverflow.com/a/29822700"&gt;stackoverflow&lt;/a&gt;，具体的细节就不赘述了，
+感兴趣可以直接去看github看这个repo的内容。&lt;/p&gt;
+&lt;p&gt;关于Preseed，我使用了&lt;a href="https://www.debian.org/releases/jessie/example-preseed.txt"&gt;这里&lt;/a&gt;
+的模板。&lt;/p&gt;
+&lt;p&gt;有几个地方需要注意：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt; 网络配置是不会起作用的 ， 不要白费力气了 。&lt;/li&gt;
-&lt;li&gt;&lt;s&gt; 不要设置 &lt;code&gt;apt-setup/security_host&lt;/code&gt;！ 如果你设置 &lt;code&gt;apt-setup/security_host&lt;/code&gt; 为 &lt;code&gt;mirror.example.com&lt;/code&gt;， 那么 apt 会尝试访问 &lt;code&gt;http://mirror.example.com/&lt;/code&gt; 而不是 &lt;code&gt;http://mirror.example.com/debian-security&lt;/code&gt;，google 了一下发现有一个 &lt;code&gt;apt-setup/security_path&lt;/code&gt; 这个参数解决这个问题 ， 但是首先 example 里没有 ， 其次我加上也没有效果 ， 应该是这个版本的 bug。&lt;/s&gt; 根据 @zhsj 提供的信息 ， 可以把 &lt;code&gt;security_path&lt;/code&gt; 放到 &lt;code&gt;security_host&lt;/code&gt; 后面 workaround 这个问题 ， 也就是 &lt;code&gt;apt-setup/security_host=https://mirrors.tuna.tsinghua.edu.cn/debian-security&lt;/code&gt;。&lt;/li&gt;
-&lt;li&gt; 同理也不要设置 &lt;code&gt;apt-setup/non-free&lt;/code&gt; 和 &lt;code&gt;apt-setup/contrib&lt;/code&gt;， 类似的问题 。 不过 mirror settings 没问题 。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;tasksel/first&lt;/code&gt; 这里一定要配置 ， 并且只留下 standard， 否则会给你把 gnome 一起装上 。&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;debian-installer/exit/poweroff&lt;/code&gt; 是没什么用的 ， 最后系统还是会 halt 住 ，&lt;code&gt;virsh status&lt;/code&gt; 里显示的依然是 running。&lt;/li&gt;
+&lt;li&gt;网络配置是不会起作用的，不要白费力气了。&lt;/li&gt;
+&lt;li&gt;&lt;s&gt;不要设置&lt;code&gt;apt-setup/security_host&lt;/code&gt;！如果你设置&lt;code&gt;apt-setup/security_host&lt;/code&gt;为&lt;code&gt;mirror.example.com&lt;/code&gt;，那么apt会尝试访问&lt;code&gt;http://mirror.example.com/&lt;/code&gt;而不是&lt;code&gt;http://mirror.example.com/debian-security&lt;/code&gt;，google了一下发现有一个&lt;code&gt;apt-setup/security_path&lt;/code&gt;这个参数解决这个问题，但是首先example里没有，其次我加上也没有效果，应该是这个版本的bug。&lt;/s&gt;根据@zhsj提供的信息，可以把&lt;code&gt;security_path&lt;/code&gt;放到&lt;code&gt;security_host&lt;/code&gt;后面workaround这个问题，也就是&lt;code&gt;apt-setup/security_host=https://mirrors.tuna.tsinghua.edu.cn/debian-security&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;同理也不要设置&lt;code&gt;apt-setup/non-free&lt;/code&gt;和&lt;code&gt;apt-setup/contrib&lt;/code&gt;，类似的问题。不过mirror settings没问题。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;tasksel/first&lt;/code&gt;这里一定要配置，并且只留下standard，否则会给你把gnome一起装上。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;debian-installer/exit/poweroff&lt;/code&gt;是没什么用的，最后系统还是会halt住，&lt;code&gt;virsh status&lt;/code&gt;里显示的依然是running。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;preseed 太长 ， 也不放在这里了 ， 感兴趣可以去 repo 看 。&lt;/p&gt;
-&lt;p&gt; 关于不能关机的问题 ， 我用 ansible 的 &lt;code&gt;wait_for&lt;/code&gt; 监视了 serial 输出的日志文件 ， 如果看到了最后几个字符就 destroy。&lt;/p&gt;
+&lt;p&gt;preseed太长，也不放在这里了，感兴趣可以去repo看。&lt;/p&gt;
+&lt;p&gt;关于不能关机的问题，我用ansible的&lt;code&gt;wait_for&lt;/code&gt;监视了serial输出的日志文件，如果看到了最后几个字符就destroy。&lt;/p&gt;
 &lt;h2&gt;Installed Domain&lt;/h2&gt;
-&lt;p&gt; 接着整个虚拟机就安装好了 ， 直接 undefine 原来的 domain， 然后重新定义一个 domain 就好 ， 因为 disk
- 不变 ， 所以安装好的系统依然还在 。&lt;/p&gt;
-&lt;p&gt; 就像我们安装物理机时重启时会调整启动顺序 ， 启动参数等等 ， 这里我们需要重新定义 domain。&lt;/p&gt;
-&lt;p&gt; 新定义的 xml 如下 ：&lt;/p&gt;
+&lt;p&gt;接着整个虚拟机就安装好了，直接undefine原来的domain，然后重新定义一个domain就好，因为disk
+不变，所以安装好的系统依然还在。&lt;/p&gt;
+&lt;p&gt;就像我们安装物理机时重启时会调整启动顺序，启动参数等等，这里我们需要重新定义domain。&lt;/p&gt;
+&lt;p&gt;新定义的xml如下：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;domain&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;kvm&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
   &lt;span class="nt"&gt;&amp;lt;name&amp;gt;&lt;/span&gt;shared-guest&lt;span class="nt"&gt;&amp;lt;/name&amp;gt;&lt;/span&gt;
   &lt;span class="nt"&gt;&amp;lt;memory&lt;/span&gt; &lt;span class="na"&gt;unit=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;MB&amp;#39;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;4096&lt;span class="nt"&gt;&amp;lt;/memory&amp;gt;&lt;/span&gt;
@@ -1312,10 +1644,10 @@ kernel、initrd、cmdline 三个参数实现了 &lt;a href="https://libvirt.org/
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 可以看到非常简单 ， 启动列表里面只剩了 hd，iso 也被去掉了 ，serial 的配置还原回了交互式的 ，
- 这样未来网络出问题不能 ssh 登录时可以通过 virsh 的 console 登录去调试 。&lt;/p&gt;
+&lt;p&gt;可以看到非常简单，启动列表里面只剩了hd，iso也被去掉了，serial的配置还原回了交互式的，
+这样未来网络出问题不能ssh登录时可以通过virsh的console登录去调试。&lt;/p&gt;
 &lt;h2&gt;DNAT&lt;/h2&gt;
-&lt;p&gt; 为了从互联网可以直接 ssh 访问虚拟机 ， 需要配一下 iptables， 直接看 ansible 脚本吧 ：&lt;/p&gt;
+&lt;p&gt;为了从互联网可以直接ssh访问虚拟机，需要配一下iptables，直接看ansible脚本吧：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p p-Indicator"&gt;-&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;name&lt;/span&gt;&lt;span class="p p-Indicator"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;set up DNAT for ssh&lt;/span&gt;
   &lt;span class="l l-Scalar l-Scalar-Plain"&gt;iptables&lt;/span&gt;&lt;span class="p p-Indicator"&gt;:&lt;/span&gt;
     &lt;span class="l l-Scalar l-Scalar-Plain"&gt;table&lt;/span&gt;&lt;span class="p p-Indicator"&gt;:&lt;/span&gt; &lt;span class="l l-Scalar l-Scalar-Plain"&gt;nat&lt;/span&gt;
@@ -1341,39 +1673,39 @@ kernel、initrd、cmdline 三个参数实现了 &lt;a href="https://libvirt.org/
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;Debian 是默认不会 drop forward 的包的 ， 但是 libvirt 为 NAT 网络在 iptables 里配了两条 drop 规则 ，
- 所以需要在这两条规则之前加一个 accept 规则 ， 这也是必须要 &lt;code&gt;action: insert&lt;/code&gt; 的原因 ， 不幸的是 
- 这是 ansible 2.2 新加的特性 ， 写文的时候还没有正式发布 ， 所以安装比较麻烦 。
-repo 的 README 里有一个临时的 workaround。&lt;/p&gt;
+&lt;p&gt;Debian是默认不会drop forward的包的，但是libvirt为NAT网络在iptables里配了两条drop规则，
+所以需要在这两条规则之前加一个accept规则，这也是必须要&lt;code&gt;action: insert&lt;/code&gt;的原因，不幸的是
+这是ansible 2.2新加的特性，写文的时候还没有正式发布，所以安装比较麻烦。
+repo的README里有一个临时的workaround。&lt;/p&gt;
 &lt;h2&gt;Post installation&lt;/h2&gt;
-&lt;p&gt; 写 ansible 的时候用了一点小技巧 ， 安装好的虚拟机的 username 和 password 就是 inventory 里 
- 的 &lt;code&gt;ansible_user&lt;/code&gt; 和 &lt;code&gt;ansible_ssh_pass&lt;/code&gt;， 这样在虚拟机安装完之后通过 ansible 可以直接 
- 地访问虚拟机 ， 因此简单地写一些 ansible 脚本 ， 可以完成一些配置 。&lt;/p&gt;
-&lt;p&gt; 关于非网络的配置 ， 在这里做比在 preseed 里做会更加可靠 。&lt;/p&gt;
+&lt;p&gt;写ansible的时候用了一点小技巧，安装好的虚拟机的username和password就是inventory里
+的&lt;code&gt;ansible_user&lt;/code&gt;和&lt;code&gt;ansible_ssh_pass&lt;/code&gt;，这样在虚拟机安装完之后通过ansible可以直接
+地访问虚拟机，因此简单地写一些ansible脚本，可以完成一些配置。&lt;/p&gt;
+&lt;p&gt;关于非网络的配置，在这里做比在preseed里做会更加可靠。&lt;/p&gt;
 &lt;h1&gt;NOTE&lt;/h1&gt;
 &lt;ol&gt;
-&lt;li&gt; 上面提到的 preseed 的坑只适用于 Debian jessie， 可能不适用于其他版本 ， 更不适用于 Ubuntu。&lt;/li&gt;
-&lt;li&gt; 完整项目的 &lt;a href="https://github.com/tuna/playbooks/tree/master/shared-guest"&gt; 链接 &lt;/a&gt;。&lt;/li&gt;
-&lt;/ol&gt;</content></entry><entry><title>在三星Galaxy S4上chroot方式安装Archlinux Arm</title><link href="https://blog.huiyiqun.me/2015/04/05/chroot-to-archlinux-arm-on-galaxy-s4.html" rel="alternate"></link><published>2015-04-05T13:09:23+08:00</published><updated>2016-12-31T19:34:43+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2015-04-05:/2015/04/05/chroot-to-archlinux-arm-on-galaxy-s4.html</id><summary type="html">&lt;h1&gt; 前言 &lt;/h1&gt;
-&lt;p&gt; 入手  Galaxy S4  已经几个月了 ， 我手里这款是  I9508， 也就是移动 3G 定制版 ， 除了制式以外其他 
- 硬件和  I9505（ 也就是  Galaxy S4  国际版 ） 是一样的 。 因此搭了  I9505  的东风 ， 装上了 
+&lt;li&gt;上面提到的preseed的坑只适用于Debian jessie，可能不适用于其他版本，更不适用于Ubuntu。&lt;/li&gt;
+&lt;li&gt;完整项目的&lt;a href="https://github.com/tuna/playbooks/tree/master/shared-guest"&gt;链接&lt;/a&gt;。&lt;/li&gt;
+&lt;/ol&gt;</content></entry><entry><title>在三星Galaxy S4上chroot方式安装Archlinux Arm</title><link href="https://blog.huiyiqun.me/2015/04/05/chroot-to-archlinux-arm-on-galaxy-s4.html" rel="alternate"></link><published>2015-04-05T13:09:23+08:00</published><updated>2016-12-31T19:34:43+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2015-04-05:/2015/04/05/chroot-to-archlinux-arm-on-galaxy-s4.html</id><summary type="html">&lt;h1&gt;前言&lt;/h1&gt;
+&lt;p&gt;入手 Galaxy S4 已经几个月了，我手里这款是 I9508，也就是移动3G定制版，除了制式以外其他
+硬件和 I9505（也就是 Galaxy S4 国际版）是一样的。因此搭了 I9505 的东风，装上了
 &lt;a href="http://forum.xda-developers.com/galaxy-s4/i9505-orig-develop/rom-cyanogenmod-12-t2943934"&gt;cm12&lt;/a&gt;，
- 作者最近还编译了 
+作者最近还编译了
 &lt;a href="http://forum.xda-developers.com/galaxy-s4/i9505-orig-develop/exclusive-antaresone-alucard24-s-t3066696"&gt;cm12.1&lt;/a&gt;，
- 等  Xposed  可以用到  Android 5.1  之后就可以装上了 。&lt;/p&gt;
-&lt;h1&gt; 硬件 &lt;/h1&gt;
-&lt;p&gt; 进入正题 ， 首先看一下硬件的情况 ：&lt;/p&gt;
+等 Xposed 可以用到 Android 5.1 之后就可以装上了。&lt;/p&gt;
+&lt;h1&gt;硬件&lt;/h1&gt;
+&lt;p&gt;进入正题，首先看一下硬件的情况：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;(notebook)$ adb shell df
 Filesystem               Size     Used     Free   Blksize
-/dev                   905.5M    48.0K …&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;h1&gt; 前言 &lt;/h1&gt;
-&lt;p&gt; 入手  Galaxy S4  已经几个月了 ， 我手里这款是  I9508， 也就是移动 3G 定制版 ， 除了制式以外其他 
- 硬件和  I9505（ 也就是  Galaxy S4  国际版 ） 是一样的 。 因此搭了  I9505  的东风 ， 装上了 
+/dev                   905.5M    48.0K   905.5M …&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;h1&gt;前言&lt;/h1&gt;
+&lt;p&gt;入手 Galaxy S4 已经几个月了，我手里这款是 I9508，也就是移动3G定制版，除了制式以外其他
+硬件和 I9505（也就是 Galaxy S4 国际版）是一样的。因此搭了 I9505 的东风，装上了
 &lt;a href="http://forum.xda-developers.com/galaxy-s4/i9505-orig-develop/rom-cyanogenmod-12-t2943934"&gt;cm12&lt;/a&gt;，
- 作者最近还编译了 
+作者最近还编译了
 &lt;a href="http://forum.xda-developers.com/galaxy-s4/i9505-orig-develop/exclusive-antaresone-alucard24-s-t3066696"&gt;cm12.1&lt;/a&gt;，
- 等  Xposed  可以用到  Android 5.1  之后就可以装上了 。&lt;/p&gt;
-&lt;h1&gt; 硬件 &lt;/h1&gt;
-&lt;p&gt; 进入正题 ， 首先看一下硬件的情况 ：&lt;/p&gt;
+等 Xposed 可以用到 Android 5.1 之后就可以装上了。&lt;/p&gt;
+&lt;h1&gt;硬件&lt;/h1&gt;
+&lt;p&gt;进入正题，首先看一下硬件的情况：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;(notebook)$ adb shell df
 Filesystem               Size     Used     Free   Blksize
 /dev                   905.5M    48.0K   905.5M   4096
@@ -1423,16 +1755,16 @@ armv7l
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h1&gt; 准备分区 &lt;/h1&gt;
-&lt;p&gt;&lt;code&gt;/data/&lt;/code&gt;  容量实在是大得不行 ， 我就决定直接把系统装到  &lt;code&gt;/data/&lt;/code&gt;  里了 。&lt;/p&gt;
-&lt;p&gt; 手机当然要  root， 否则 &lt;code&gt;/data/&lt;/code&gt; 目录不可读 。&lt;/p&gt;
+&lt;h1&gt;准备分区&lt;/h1&gt;
+&lt;p&gt;&lt;code&gt;/data/&lt;/code&gt; 容量实在是大得不行，我就决定直接把系统装到 &lt;code&gt;/data/&lt;/code&gt; 里了。&lt;/p&gt;
+&lt;p&gt;手机当然要 root，否则&lt;code&gt;/data/&lt;/code&gt;目录不可读。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;(notebook)$ adb shell
 $ su
 #
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 我给 &lt;code&gt;archlinux&lt;/code&gt; 开了 1G 的空间 ， 可能有点不太够 。&lt;/p&gt;
+&lt;p&gt;我给&lt;code&gt;archlinux&lt;/code&gt;开了1G的空间，可能有点不太够。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# mkdir -p /data/linux
 # busybox dd if=/dev/zero of=/data/linux/archlinux.img bs=1M count=0 seek=1024
 # mkfs.ext2 -F /data/linux/archlinux.img
@@ -1441,32 +1773,32 @@ $ su
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h1&gt; 系统文件 &lt;/h1&gt;
-&lt;p&gt; 这样空间都准备好了 ， 接下来把 &lt;code&gt;Archlinux Arm&lt;/code&gt; 的文件系统下载下来 ， 本来是想直接在 
-&lt;code&gt;Android&lt;/code&gt; 里面用 &lt;code&gt;wget&lt;/code&gt; 下 ， 不过报下面的错 ：&lt;/p&gt;
+&lt;h1&gt;系统文件&lt;/h1&gt;
+&lt;p&gt;这样空间都准备好了，接下来把&lt;code&gt;Archlinux Arm&lt;/code&gt;的文件系统下载下来，本来是想直接在
+&lt;code&gt;Android&lt;/code&gt;里面用&lt;code&gt;wget&lt;/code&gt;下，不过报下面的错：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;error&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;only&lt;/span&gt; &lt;span class="n"&gt;position&lt;/span&gt; &lt;span class="n"&gt;independent&lt;/span&gt; &lt;span class="n"&gt;executables&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;PIE&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;are&lt;/span&gt; &lt;span class="n"&gt;supported&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;Google  了一下 ， 好像是 ndk 的原因 ，&lt;code&gt;busybox&lt;/code&gt; 里的 &lt;code&gt;wget&lt;/code&gt; 也有另外一个问题 ， 貌似不能正确地 
- 把域名解析为 IP 地址 。&lt;/p&gt;
-&lt;p&gt; 因此在我的笔记本里下载文件 ， 再用 adb 传到手机里 。&lt;/p&gt;
-&lt;p&gt; 用的是 &lt;code&gt;Tsinghua TUNA&lt;/code&gt; 的镜像 ， 有 &lt;code&gt;IPv4&lt;/code&gt; 和 &lt;code&gt;IPv6&lt;/code&gt; 的接入 。&lt;/p&gt;
+&lt;p&gt;Google 了一下，好像是ndk的原因，&lt;code&gt;busybox&lt;/code&gt;里的&lt;code&gt;wget&lt;/code&gt;也有另外一个问题，貌似不能正确地
+把域名解析为IP地址。&lt;/p&gt;
+&lt;p&gt;因此在我的笔记本里下载文件，再用adb传到手机里。&lt;/p&gt;
+&lt;p&gt;用的是&lt;code&gt;Tsinghua TUNA&lt;/code&gt;的镜像，有&lt;code&gt;IPv4&lt;/code&gt;和&lt;code&gt;IPv6&lt;/code&gt;的接入。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;(notebook)$ wget http://mirrors.tuna.tsinghua.edu.cn/archlinuxarm/os/ArchLinuxARM-armv7-latest.tar.gz
 (notebook)$ adb push ArchLinux-armv7-latest.tar.gz /sdcard/
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 这里下的是 &lt;code&gt;armv7&lt;/code&gt; 的版本 ，&lt;a href="http://mirrors.tuna.tsinghua.edu.cn/archlinuxarm/os/"&gt; 镜像站 &lt;/a&gt; 里也有别的版本 ，
- 不过别的我也不认识 ， 不知道有什么区别 ， 总之 &lt;code&gt;armv7&lt;/code&gt; 这个版本是可以用 。&lt;/p&gt;
+&lt;p&gt;这里下的是&lt;code&gt;armv7&lt;/code&gt;的版本，&lt;a href="http://mirrors.tuna.tsinghua.edu.cn/archlinuxarm/os/"&gt;镜像站&lt;/a&gt;里也有别的版本，
+不过别的我也不认识，不知道有什么区别，总之&lt;code&gt;armv7&lt;/code&gt;这个版本是可以用。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# cd /data/mnt/archlinux
 # tar xfz /sdcard/ArchLinuxARM-armv7-latest.tar.gz
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 大概是因为 CPU 的原因 ， 速度非常慢 。 在我电脑上解压这个文件大概几十秒 ， 在我手机上用了有快两小时吧 。23333&lt;/p&gt;
+&lt;p&gt;大概是因为CPU的原因，速度非常慢。在我电脑上解压这个文件大概几十秒，在我手机上用了有快两小时吧。23333&lt;/p&gt;
 &lt;h1&gt;chroot&lt;/h1&gt;
-&lt;p&gt; 解压好之后就可以开始正式 &lt;code&gt;chroot&lt;/code&gt; 了 。&lt;/p&gt;
+&lt;p&gt;解压好之后就可以开始正式&lt;code&gt;chroot&lt;/code&gt;了。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# mount -o bind /sys /data/mnt/archlinux/sys
 # mount -o bind /proc /data/mnt/archlinux/proc
 # mount -o bind /dev /data/mnt/archlinux/dev
@@ -1476,32 +1808,32 @@ $ su
 
 
 &lt;h1&gt;fix&lt;/h1&gt;
-&lt;p&gt; 此后就已经在 &lt;code&gt;Archlinux&lt;/code&gt; 里了 ， 不过还要处理几个问题 ：&lt;/p&gt;
+&lt;p&gt;此后就已经在&lt;code&gt;Archlinux&lt;/code&gt;里了，不过还要处理几个问题：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt; 环境变量 &lt;/li&gt;
+&lt;li&gt;环境变量&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt; 此时的 &lt;code&gt;$PATH&lt;/code&gt; 等环境变量还是  Android  里的 ， 导入  Archlinux  的环境变量 &lt;/p&gt;
+&lt;p&gt;此时的&lt;code&gt;$PATH&lt;/code&gt;等环境变量还是 Android 里的，导入 Archlinux 的环境变量&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;. /etc/profile
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;ld&lt;/code&gt; 报错 &lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ld&lt;/code&gt;报错&lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;ERROR&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;ld&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;so&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;object&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;libsigchain.so&amp;#39;&lt;/span&gt; &lt;span class="n"&gt;from&lt;/span&gt; &lt;span class="n"&gt;LD_PRELOAD&lt;/span&gt; &lt;span class="n"&gt;cannot&lt;/span&gt; &lt;span class="n"&gt;be&lt;/span&gt; &lt;span class="n"&gt;preloaded&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;ignored&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt; 好像没什么影响 ， 就是看着很烦 。&lt;/p&gt;
+&lt;p&gt;好像没什么影响，就是看着很烦。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;unset LD_PRELOAD
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;ul&gt;
-&lt;li&gt; 不能访问网络 &lt;/li&gt;
+&lt;li&gt;不能访问网络&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt; 参照 &lt;a href="http://archlinuxarm.org/forum/viewtopic.php?f=9&amp;amp;t=4611"&gt; 这个页面 &lt;/a&gt;， 在 &lt;code&gt;/etc/group&lt;/code&gt;
- 中加入如下内容 ：&lt;/p&gt;
+&lt;p&gt;参照&lt;a href="http://archlinuxarm.org/forum/viewtopic.php?f=9&amp;amp;t=4611"&gt;这个页面&lt;/a&gt;，在&lt;code&gt;/etc/group&lt;/code&gt;
+中加入如下内容：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;inet&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;3003&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;
 &lt;span class="n"&gt;net_raw&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;3004&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="n"&gt;root&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;</content></entry></feed>
