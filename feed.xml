@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Notepad</title><link href="https://blog.huiyiqun.me/" rel="alternate"></link><link href="https://blog.huiyiqun.me/feed.xml" rel="self"></link><id>https://blog.huiyiqun.me/</id><updated>2017-01-14T01:35:41+08:00</updated><entry><title>一个非常轻量级的HTTP上传工具</title><link href="https://blog.huiyiqun.me/2017/01/14/a-very-light-http-uploader.html" rel="alternate"></link><published>2017-01-14T01:35:41+08:00</published><updated>2017-01-14T01:35:41+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2017-01-14:/2017/01/14/a-very-light-http-uploader.html</id><summary type="html">&lt;h1&gt;起因&lt;/h1&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Notepad</title><link href="https://blog.huiyiqun.me/" rel="alternate"></link><link href="https://blog.huiyiqun.me/feed.xml" rel="self"></link><id>https://blog.huiyiqun.me/</id><updated>2017-01-14T13:07:16+08:00</updated><entry><title>一个非常轻量级的HTTP上传工具</title><link href="https://blog.huiyiqun.me/2017/01/14/a-very-light-http-uploader.html" rel="alternate"></link><published>2017-01-14T01:35:41+08:00</published><updated>2017-01-14T13:07:16+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2017-01-14:/2017/01/14/a-very-light-http-uploader.html</id><summary type="html">&lt;h1&gt;起因&lt;/h1&gt;
 &lt;p&gt;最近项目需要，需要提供一个http的接口，让用户可以通过浏览器上传文件。本来是一件很简单的事情，不需要认证，也不需要支持断点续传，只要能够上传就可以了，
 以为肯定用nginx就能支持。然而一番调研下来发现这一件事情并没有想象中那么简单，不过庆幸的是，最终我还是用nginx+一个简单的Python脚本搞定了这件事情。&lt;/p&gt;
 &lt;p&gt;主要参考了&lt;a href="https://coderwall.com/p/swgfvw/nginx-direct-file-upload-without-passing-them-through-backend"&gt;这篇博客&lt;/a&gt;，
@@ -189,12 +189,14 @@
 &lt;/ol&gt;
 &lt;p&gt;OK，后端完成了，个人感觉还是很轻而且很容易部署的，改一下nginx配置（如果你已经有一个在运行的nginx实例），再上传一个脚本，用systemd跑起来，确保它不会出错退出即可。&lt;/p&gt;
 &lt;h2&gt;前端&lt;/h2&gt;
+&lt;p&gt;贴一下效果图：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="https://img.vim-cn.com/4c/c4429b667e525ca92b56870d34e8d2ca02adb1.jpg" title="上传"&gt;&lt;/p&gt;
 &lt;p&gt;关于前端我不会讲特别细，因为&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;我觉得前端的实现是一个比较case-by-case的东西，我的代码应该不能直接使用。&lt;/li&gt;
 &lt;li&gt;我前端比较弱，就不误人子弟了。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;如果有人想实现类似的效果，可以根据我的经验来实现，少走一些弯路吧。&lt;/p&gt;
+&lt;p&gt;如果想实现类似的效果，可以借鉴我的经验。&lt;/p&gt;
 &lt;p&gt;最初我尝试了一下 vue.js 的 cli 工具建立的模板项目，但是我那时候对 webpack 本身就不熟悉，生成的模板看不懂，最终放弃了。
 其实从一个最简单的 &lt;code&gt;webpack.conf.js&lt;/code&gt; 开始写起反而比较容易，因为 &lt;code&gt;webpack.conf.js&lt;/code&gt; 只需要写非常少的东西就能运行，
 之后你需要加什么功能就对应地加上插件和配置，学习曲线很平缓。&lt;/p&gt;
@@ -260,7 +262,7 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;流程上大概是，以一个js作为入口，入口处使用vue-router设置整个app的route，逐层引入vue.js的单文件component作为依赖，其他部分主要是为了方便地用上三方库。
+&lt;p&gt;流程上大概是，以一个js作为入口，入口处使用vue-router设置整个app的route，逐层引入vue.js的单文件component作为依赖。
 最后用&lt;code&gt;HtmlWebpackPlugin&lt;/code&gt;这个插件来渲染模板，插入我们的js入口，作为浏览器入口。&lt;/p&gt;
 &lt;p&gt;当前有两个route，login和uploadList，uploadList包含多个uploadFile，每个uploadFile负责一个文件的上传。&lt;/p&gt;
 &lt;p&gt;UI上，直接使用了bootstrap，没什么好说的，堪堪够用。&lt;/p&gt;
