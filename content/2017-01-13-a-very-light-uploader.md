@@ -199,12 +199,16 @@ OK，后端完成了，个人感觉还是很轻而且很容易部署的，改一
 
 ## 前端
 
+贴一下效果图：
+
+![](https://img.vim-cn.com/4c/c4429b667e525ca92b56870d34e8d2ca02adb1.jpg "上传")
+
 关于前端我不会讲特别细，因为
 
 1. 我觉得前端的实现是一个比较case-by-case的东西，我的代码应该不能直接使用。
 2. 我前端比较弱，就不误人子弟了。
 
-如果有人想实现类似的效果，可以根据我的经验来实现，少走一些弯路吧。
+如果想实现类似的效果，可以借鉴我的经验。
 
 最初我尝试了一下 vue.js 的 cli 工具建立的模板项目，但是我那时候对 webpack 本身就不熟悉，生成的模板看不懂，最终放弃了。
 其实从一个最简单的 `webpack.conf.js` 开始写起反而比较容易，因为 `webpack.conf.js` 只需要写非常少的东西就能运行，
@@ -274,7 +278,7 @@ module.exports = {
 };
 ```
 
-流程上大概是，以一个js作为入口，入口处使用vue-router设置整个app的route，逐层引入vue.js的单文件component作为依赖，其他部分主要是为了方便地用上三方库。
+流程上大概是，以一个js作为入口，入口处使用vue-router设置整个app的route，逐层引入vue.js的单文件component作为依赖。
 最后用`HtmlWebpackPlugin`这个插件来渲染模板，插入我们的js入口，作为浏览器入口。
 
 当前有两个route，login和uploadList，uploadList包含多个uploadFile，每个uploadFile负责一个文件的上传。
