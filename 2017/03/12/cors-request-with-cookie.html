@@ -145,19 +145,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <h1>正文</h1>
 <p>好，上面都是扯淡，看黑板。</p>
 <p>如果你要让自己的CORS里带上cookie，完整的步骤是这样的：</p>
-<ol>
+<ul>
 <li>服务器端需要加一些headers，以nginx为例，建议用如下配置：</li>
-</ol>
+</ul>
 <div class="highlight"><pre><span></span><span class="k">add_header</span> <span class="s">Access-Control-Allow-Origin</span> <span class="nv">$http_origin</span> <span class="s">always</span><span class="p">;</span>
 <span class="k">add_header</span> <span class="s">Access-Control-Allow-Credentials</span> <span class="s">true</span> <span class="s">always</span><span class="p">;</span>
 </pre></div>
 
 
 <p>如果想看实例，建议看<code>httpbin</code>的。</p>
-<ol>
+<ul>
 <li>客户端需要加一些参数，比如如果是<code>xhr</code>需要设<code>xhr.withCredentials</code>为true，如果是<code>fetch</code>需要设<code>credentials</code>为<code>include</code>。</li>
 <li>确保用户的浏览器没有开<code>Block third-party cookies</code>这个选项，或者已经把你的站点加入白名单，这个可以提示用户自己去改。</li>
-</ol>
+</ul>
 <p>这篇博客就这么点，晚安。</p>
   </div>
   <div class="tag-cloud">

@@ -58,19 +58,19 @@
 &lt;h1&gt;正文&lt;/h1&gt;
 &lt;p&gt;好，上面都是扯淡，看黑板。&lt;/p&gt;
 &lt;p&gt;如果你要让自己的CORS里带上cookie，完整的步骤是这样的：&lt;/p&gt;
-&lt;ol&gt;
+&lt;ul&gt;
 &lt;li&gt;服务器端需要加一些headers，以nginx为例，建议用如下配置：&lt;/li&gt;
-&lt;/ol&gt;
+&lt;/ul&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;add_header&lt;/span&gt; &lt;span class="s"&gt;Access-Control-Allow-Origin&lt;/span&gt; &lt;span class="nv"&gt;$http_origin&lt;/span&gt; &lt;span class="s"&gt;always&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 &lt;span class="k"&gt;add_header&lt;/span&gt; &lt;span class="s"&gt;Access-Control-Allow-Credentials&lt;/span&gt; &lt;span class="s"&gt;true&lt;/span&gt; &lt;span class="s"&gt;always&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;如果想看实例，建议看&lt;code&gt;httpbin&lt;/code&gt;的。&lt;/p&gt;
-&lt;ol&gt;
+&lt;ul&gt;
 &lt;li&gt;客户端需要加一些参数，比如如果是&lt;code&gt;xhr&lt;/code&gt;需要设&lt;code&gt;xhr.withCredentials&lt;/code&gt;为true，如果是&lt;code&gt;fetch&lt;/code&gt;需要设&lt;code&gt;credentials&lt;/code&gt;为&lt;code&gt;include&lt;/code&gt;。&lt;/li&gt;
 &lt;li&gt;确保用户的浏览器没有开&lt;code&gt;Block third-party cookies&lt;/code&gt;这个选项，或者已经把你的站点加入白名单，这个可以提示用户自己去改。&lt;/li&gt;
-&lt;/ol&gt;
+&lt;/ul&gt;
 &lt;p&gt;这篇博客就这么点，晚安。&lt;/p&gt;</content></entry><entry><title>一个非常轻量级的HTTP上传工具</title><link href="https://blog.huiyiqun.me/2017/01/13/a-very-light-http-uploader.html" rel="alternate"></link><published>2017-01-13T13:32:07+08:00</published><updated>2017-01-13T13:32:07+08:00</updated><author><name>Hui Yiqun</name></author><id>tag:blog.huiyiqun.me,2017-01-13:/2017/01/13/a-very-light-http-uploader.html</id><summary type="html">&lt;h1&gt;起因&lt;/h1&gt;
 &lt;p&gt;最近项目需要，需要提供一个http的接口，让用户可以通过浏览器上传文件。本来是一件很简单的事情，不需要认证，也不需要支持断点续传，只要能够上传就可以了，
 以为肯定用nginx就能支持。然而一番调研下来发现这一件事情并没有想象中那么简单，不过庆幸的是，最终我还是用nginx+一个简单的Python脚本搞定了这件事情。&lt;/p&gt;
