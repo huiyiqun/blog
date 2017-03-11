@@ -83,7 +83,7 @@ Category: Frontend
 
 如果你要让自己的CORS里带上cookie，完整的步骤是这样的：
 
-1. 服务器端需要加一些headers，以nginx为例，建议用如下配置：
+* 服务器端需要加一些headers，以nginx为例，建议用如下配置：
 
 ```nginx
 add_header Access-Control-Allow-Origin $http_origin always;
@@ -92,7 +92,7 @@ add_header Access-Control-Allow-Credentials true always;
 
 如果想看实例，建议看`httpbin`的。
 
-2. 客户端需要加一些参数，比如如果是`xhr`需要设`xhr.withCredentials`为true，如果是`fetch`需要设`credentials`为`include`。
-3. 确保用户的浏览器没有开`Block third-party cookies`这个选项，或者已经把你的站点加入白名单，这个可以提示用户自己去改。
+* 客户端需要加一些参数，比如如果是`xhr`需要设`xhr.withCredentials`为true，如果是`fetch`需要设`credentials`为`include`。
+* 确保用户的浏览器没有开`Block third-party cookies`这个选项，或者已经把你的站点加入白名单，这个可以提示用户自己去改。
 
 这篇博客就这么点，晚安。
