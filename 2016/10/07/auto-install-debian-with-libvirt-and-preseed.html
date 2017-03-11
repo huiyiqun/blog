@@ -35,10 +35,10 @@
 <meta property="og:title" content="使用libvirt和preseed自动部署运行于KVM上的Debian虚拟机"/>
 <meta property="og:description" content="前言 有一年多没有写东西了，期间还是做了不少事情，但是因为博(zi)客(ji)有(te)点(bie)丑(lan)， 什么都没有写。很多东西花了很多时间去学和折腾，回头要用到的时候又需要重新去 翻文档，实在是浪费时间，于是决定把博客续上。 之所以会需要装虚拟机，是因为TUNA最近又招了不少萌新，萌新们可能需要一台UNIX的设备来瞎折腾， 另外协会内部偶尔需要交换slide或者活动视频，大鹰主席又觉得通过“网盘”交换文件实在太羞耻， 因为我之前折腾过一下KVM，因而让我部署一台Debian的虚拟机。 本来是一件简单的重复劳动，但是基于以下理由： 萌新可能把机器弄坏或者机器需要搬家 以后会长可能会让我装第二个机器 好久没折腾了感觉皮子有点紧~~ 决定用ansible自动安装。整个过程花了大概两天左右，其实ansible和libvirt都还算好，文档挺齐全 的，而且实现上bug不多，但是preseed的文档少而且比较乱，经常遇到文档和实际情况不符合的情况。 环境 宿主机是一个Debian jessie，上面跑了各种各样的其他服务，包括且不限于docker、nginx、 私有的ldap服务等。 虚拟机依然是一个Debian jessie …"/>
 <meta property="og:locale" content="zh_CN"/>
-<meta property="og:url" content="../../../2016/10/08/auto-install-debian-with-libvirt-and-preseed.html"/>
+<meta property="og:url" content="../../../2016/10/07/auto-install-debian-with-libvirt-and-preseed.html"/>
 <meta property="og:type" content="article"/>
-<meta property="article:published_time" content="2016-10-08 00:16:40+08:00"/>
-<meta property="article:modified_time" content="2016-12-31 21:10:53+08:00"/>
+<meta property="article:published_time" content="2016-10-07 15:40:30+08:00"/>
+<meta property="article:modified_time" content=""/>
 <meta property="article:author" content="../../../author/hui-yiqun.html">
 <meta property="article:section" content="Ops"/>
 <meta property="og:image" content="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120">
@@ -88,7 +88,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <header>
     <h1 id="auto-install-debian-with-libvirt-and-preseed">使用libvirt和preseed自动部署运行于KVM上的Debian虚拟机</h1>
     <p>
-          Posted on Sat 08 October 2016 in <a href="../../../category/ops.html">Ops</a>
+          Posted on Fri 07 October 2016 in <a href="../../../category/ops.html">Ops</a>
 
 
     </p>

@@ -4,10 +4,10 @@
 <head>
   <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
 
-    <link rel="stylesheet" type="text/css" href="./theme/stylesheet/style.min.css">
+    <link rel="stylesheet" type="text/css" href="../theme/stylesheet/style.min.css">
 
-  <link rel="stylesheet" type="text/css" href="./theme/pygments/default.min.css">
-  <link rel="stylesheet" type="text/css" href="./theme/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="../theme/pygments/default.min.css">
+  <link rel="stylesheet" type="text/css" href="../theme/font-awesome/css/font-awesome.min.css">
 
 
     <link href="https://blog.huiyiqun.me/feed.xml" type="application/atom+xml" rel="alternate" title="Notepad Atom">
@@ -35,10 +35,10 @@
 <meta property="og:title" content="Notepad"/>
 <meta property="og:description" content=""/>
 <meta property="og:locale" content="zh_CN"/>
-<meta property="og:url" content="."/>
+<meta property="og:url" content=".."/>
 <meta property="og:image" content="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120">
 
-  <title>Notepad &ndash;     Archives
+  <title>Notepad &ndash;     Category Frontend
 </title>
 
 </head>
@@ -53,10 +53,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-NW57T8B');</script>
 <!-- End Google Tag Manager -->  <aside>
     <div>
-      <a href=".">
+      <a href="..">
         <img src="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120" alt="Notepad" title="Notepad">
       </a>
-      <h1><a href=".">Notepad</a></h1>
+      <h1><a href="..">Notepad</a></h1>
 
 <p>The Power of Writing</p>
       <nav>
@@ -80,38 +80,39 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <main>
 
 
-<article class="single">
+
+
+<article>
   <header>
-    <h1>    Archives
-</h1>
+    <h2><a href="../2017/03/12/cors-request-with-cookie.html#cors-request-with-cookie">带cookie的CORS</a></h2>
+    <p>
+          Posted on Sun 12 March 2017 in <a href="../category/frontend.html">Frontend</a>
+
+
+
+    </p>
   </header>
   <div>
-    <dl>
-      <dt>Sun 12 March 2017</dt>
-      <dd><a href="./2017/03/12/cors-request-with-cookie.html">带cookie的CORS</a></dd>
-      <dt>Fri 13 January 2017</dt>
-      <dd><a href="./2017/01/13/a-very-light-http-uploader.html">一个非常轻量级的HTTP上传工具</a></dd>
-      <dt>Sat 31 December 2016</dt>
-      <dd><a href="./2016/12/31/give-your-nginx-powered-website-a-a-score.html">让你的nginx网站得到A+</a></dd>
-      <dt>Thu 08 December 2016</dt>
-      <dd><a href="./2016/12/08/async-python-note.html">异步Python学习笔记</a></dd>
-      <dt>Thu 24 November 2016</dt>
-      <dd><a href="./2016/11/24/virtualization-with-libvirt-kvm-and-macvtap.html">基于libvirt kvm macvtap的虚拟化解决方案</a></dd>
-      <dt>Mon 31 October 2016</dt>
-      <dd><a href="./2016/10/31/notes-about-media-streams.html">多媒体学习小记</a></dd>
-      <dt>Fri 28 October 2016</dt>
-      <dd><a href="./2016/10/28/livestream-your-desktop-with-nginx-rtmp-module.html">用nginx-rtmp-module直播写代码</a></dd>
-      <dt>Fri 21 October 2016</dt>
-      <dd><a href="./2016/10/21/openssh-freeze-inactive-session.html">不活跃的openssh连接被“冻结”的问题</a></dd>
-      <dt>Sat 08 October 2016</dt>
-      <dd><a href="./2016/10/08/syst-networkd-and-hostapd.md.html">archlinux上用systemd-networkd与hostapd配置无线ap</a></dd>
-      <dt>Fri 07 October 2016</dt>
-      <dd><a href="./2016/10/07/auto-install-debian-with-libvirt-and-preseed.html">使用libvirt和preseed自动部署运行于KVM上的Debian虚拟机</a></dd>
-      <dt>Sun 05 April 2015</dt>
-      <dd><a href="./2015/04/05/chroot-to-archlinux-arm-on-galaxy-s4.html">在三星Galaxy S4上chroot方式安装Archlinux Arm</a></dd>
-    </dl>
+      <h1>关于</h1>
+<p>不得不说，这其实是一个非常悲惨的故事，作为自己25岁生日的礼物，稍微惨了一点。</p>
+<p>最近一时兴起，用Vue.js写了一个很简单的<a href="https://github.com/huiyiqun/iptv">前端项目</a>，也算是希望能在离校之前给自己的学校留下一点东西。</p>
+<h1>起因</h1>
+<p>之前一切都很顺利，加feature，修bug，都没什么太大的困难，直到开始着手解决认证问题。</p>
+<p>受限于各方面的限制，我写的前端所服务的后台服务是不能直接在校外访问的，然而不管是在校生还是已毕业校友都有在校外访问的需要，因此折中一下，这个服务需要认证才能访问。
+认证是怎么做的呢？是一个比较传统的方案：先重定向到一个集中认证服务，登录完之后返回后台服务所在的域名，通过后台服务与认证服务交互，确认用户的登录情况，记录用户的身份，设置session，之后用cookie来识别用户的登录情况。</p>
+<p>这部分其实与我的前端App没什么关系，因为不管是认证服务还是后台服务都是已经写好在运行的，我只要在访问后台服务的时候捕捉错误信息，正常跳转到认证服务，等待后台服务把用户重定向回来就行，因此与我来说看上去并没有什么关系。</p>
+<p>然而问题在于，运行环境的服务器不由我管理，我也不愿意在运行环境下调试，因此我在自己的VPS和域名下部署了一套<a href="https://iptv.huiyiqun.me/">staging环境</a>用于线上测试，自己开发则在本机用localhost开发，拜托运行的老师在nginx里加了CORS的HTTP headers，一切挺顺利，看上去也很合理，然而在折腾cookie的时候却出了问题。</p>
+<h1>兴起</h1>
+<p>虽然没有什么必须要用 …</p>
+      <br>
+      <a class="btn" href="../2017/03/12/cors-request-with-cookie.html#cors-request-with-cookie">    Continue reading
+</a>
   </div>
 </article>
+
+
+
+
 
     <footer>
 <p>&copy; Hui Yiqun 2017</p>
@@ -138,7 +139,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   "@context" : "http://schema.org",
   "@type" : "Blog",
   "name": " Notepad ",
-  "url" : ".",
+  "url" : "..",
   "image": "https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120",
   "description": ""
 }

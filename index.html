@@ -83,9 +83,37 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <article>
   <header>
-    <h2><a href="./2017/01/14/a-very-light-http-uploader.html#a-very-light-http-uploader">一个非常轻量级的HTTP上传工具</a></h2>
+    <h2><a href="./2017/03/12/cors-request-with-cookie.html#cors-request-with-cookie">带cookie的CORS</a></h2>
     <p>
-          Posted on Sat 14 January 2017 in <a href="./category/ops.html">Ops</a>
+          Posted on Sun 12 March 2017 in <a href="./category/frontend.html">Frontend</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <h1>关于</h1>
+<p>不得不说，这其实是一个非常悲惨的故事，作为自己25岁生日的礼物，稍微惨了一点。</p>
+<p>最近一时兴起，用Vue.js写了一个很简单的<a href="https://github.com/huiyiqun/iptv">前端项目</a>，也算是希望能在离校之前给自己的学校留下一点东西。</p>
+<h1>起因</h1>
+<p>之前一切都很顺利，加feature，修bug，都没什么太大的困难，直到开始着手解决认证问题。</p>
+<p>受限于各方面的限制，我写的前端所服务的后台服务是不能直接在校外访问的，然而不管是在校生还是已毕业校友都有在校外访问的需要，因此折中一下，这个服务需要认证才能访问。
+认证是怎么做的呢？是一个比较传统的方案：先重定向到一个集中认证服务，登录完之后返回后台服务所在的域名，通过后台服务与认证服务交互，确认用户的登录情况，记录用户的身份，设置session，之后用cookie来识别用户的登录情况。</p>
+<p>这部分其实与我的前端App没什么关系，因为不管是认证服务还是后台服务都是已经写好在运行的，我只要在访问后台服务的时候捕捉错误信息，正常跳转到认证服务，等待后台服务把用户重定向回来就行，因此与我来说看上去并没有什么关系。</p>
+<p>然而问题在于，运行环境的服务器不由我管理，我也不愿意在运行环境下调试，因此我在自己的VPS和域名下部署了一套<a href="https://iptv.huiyiqun.me/">staging环境</a>用于线上测试，自己开发则在本机用localhost开发，拜托运行的老师在nginx里加了CORS的HTTP headers，一切挺顺利，看上去也很合理，然而在折腾cookie的时候却出了问题。</p>
+<h1>兴起</h1>
+<p>虽然没有什么必须要用 …</p>
+      <br>
+      <a class="btn" href="./2017/03/12/cors-request-with-cookie.html#cors-request-with-cookie">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
+    <h2><a href="./2017/01/13/a-very-light-http-uploader.html#a-very-light-http-uploader">一个非常轻量级的HTTP上传工具</a></h2>
+    <p>
+          Posted on Fri 13 January 2017 in <a href="./category/ops.html">Ops</a>
 
 
 
@@ -108,7 +136,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 那么客户端会很奇怪地发现，为什么我发完最后一段数据之后服务器就没响应了？实际上服务器在做一个非常傻的重io操作。</li>
 <li>既然我想实现一个简单的上传器，如果要我去实现一个非常复杂的后端，解析用户请求，考虑异步操作，依赖三方库 …</li></ol>
       <br>
-      <a class="btn" href="./2017/01/14/a-very-light-http-uploader.html#a-very-light-http-uploader">    Continue reading
+      <a class="btn" href="./2017/01/13/a-very-light-http-uploader.html#a-very-light-http-uploader">    Continue reading
 </a>
   </div>
   <hr />
@@ -413,9 +441,9 @@ Bus 003 Device 002 …</pre></div>
 </article>
 <article>
   <header>
-    <h2><a href="./2016/10/08/auto-install-debian-with-libvirt-and-preseed.html#auto-install-debian-with-libvirt-and-preseed">使用libvirt和preseed自动部署运行于KVM上的Debian虚拟机</a></h2>
+    <h2><a href="./2016/10/07/auto-install-debian-with-libvirt-and-preseed.html#auto-install-debian-with-libvirt-and-preseed">使用libvirt和preseed自动部署运行于KVM上的Debian虚拟机</a></h2>
     <p>
-          Posted on Sat 08 October 2016 in <a href="./category/ops.html">Ops</a>
+          Posted on Fri 07 October 2016 in <a href="./category/ops.html">Ops</a>
 
 
 
@@ -442,7 +470,7 @@ Bus 003 Device 002 …</pre></div>
 私有的ldap服务等。</p>
 <p>虚拟机依然是一个Debian jessie …</p>
       <br>
-      <a class="btn" href="./2016/10/08/auto-install-debian-with-libvirt-and-preseed.html#auto-install-debian-with-libvirt-and-preseed">    Continue reading
+      <a class="btn" href="./2016/10/07/auto-install-debian-with-libvirt-and-preseed.html#auto-install-debian-with-libvirt-and-preseed">    Continue reading
 </a>
   </div>
   <hr />
