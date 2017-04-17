@@ -22,7 +22,7 @@
 &lt;p&gt;虽然没有什么必须要用&lt;a href="https://fetch.spec.whatwg.org/"&gt;Fetch API&lt;/a&gt;的理由，但是本着新东西要体验一下的原则，这个项目里还是用了&lt;code&gt;fetch&lt;/code&gt;来替代&lt;code&gt;xhr&lt;/code&gt;。
 上面说了，认证系统是靠cookie来识别用户身份的，那么我必须保证发给后端的请求里要带上cookie，然而跨域请求显然是不会带上cookie的。
 简单搜索了一下，找到了&lt;a href="https://fetch.spec.whatwg.org/#cors-protocol-and-credentials"&gt;这个&lt;/a&gt;，简单明了。
-于是加上&lt;code&gt;credentials&lt;/code&gt;这个参数，结果chrome上app跑起来，用户请求被重定向到了认证服务，什么鬼。翻了一下调试工具，发现访问后台的时候没有带cookie，直接用浏览器打开后台url，却能正常访问，oookie什么都不少。&lt;/p&gt;
+于是加上&lt;code&gt;credentials&lt;/code&gt;这个参数，结果chrome上app跑起来，用户请求被重定向到了认证服务，什么鬼。翻了一下调试工具，发现访问后台的时候没有带cookie，直接用浏览器打开后台url，却能正常访问，cookie什么都不少。&lt;/p&gt;
 &lt;p&gt;这时候我就开始郁闷了：咦，spec理解错了？&lt;/p&gt;
 &lt;p&gt;于是乎，我开始认真地看了&lt;a href="https://github.github.io/fetch/"&gt;github的fetch polyfill文档&lt;/a&gt;，好像没差什么呀。
 接着是&lt;a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch"&gt;MDN&lt;/a&gt;以及&lt;a href="https://developers.google.com/web/updates/2015/03/introduction-to-fetch"&gt;Google Developers&lt;/a&gt;，依然看不出来自己的调用方式有什么问题。&lt;/p&gt;
