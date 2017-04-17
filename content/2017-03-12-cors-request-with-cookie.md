@@ -25,7 +25,7 @@ Category: Frontend
 虽然没有什么必须要用[Fetch API](https://fetch.spec.whatwg.org/)的理由，但是本着新东西要体验一下的原则，这个项目里还是用了`fetch`来替代`xhr`。
 上面说了，认证系统是靠cookie来识别用户身份的，那么我必须保证发给后端的请求里要带上cookie，然而跨域请求显然是不会带上cookie的。
 简单搜索了一下，找到了[这个](https://fetch.spec.whatwg.org/#cors-protocol-and-credentials)，简单明了。
-于是加上`credentials`这个参数，结果chrome上app跑起来，用户请求被重定向到了认证服务，什么鬼。翻了一下调试工具，发现访问后台的时候没有带cookie，直接用浏览器打开后台url，却能正常访问，oookie什么都不少。
+于是加上`credentials`这个参数，结果chrome上app跑起来，用户请求被重定向到了认证服务，什么鬼。翻了一下调试工具，发现访问后台的时候没有带cookie，直接用浏览器打开后台url，却能正常访问，cookie什么都不少。
 
 这时候我就开始郁闷了：咦，spec理解错了？
 
