@@ -84,6 +84,30 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <article>
   <header>
+    <h2><a href="../2017/08/20/caa-servfail-with-powerdns.html#caa-servfail-with-powerdns">PowerDNS 上 CAA 记录返回 SERVFAIL 的问题</a></h2>
+    <p>
+          Posted on Sun 20 August 2017 in <a href="../category/ops.html">Ops</a>
+
+
+
+    </p>
+  </header>
+  <div>
+      <h1>起因</h1>
+<p>之前搭了一个 IPSec 的 VPN，为了避免需要在客户端导入根证书，使用了 Let's Enrypt 来签署免费证书。这样客户端不用导入自签名的根证书就能正常地认证，用起来很舒服。</p>
+<p>今天早上起来发现 VPN 登录不了了，看了一下日志，发现是因为证书过期了，上服务器更新证书，certbot 报 "SERVFAIL looking up CAA for example.com"，之前 certbot 也报过类似的错误，但是其实是其他错误导致的，不过这次经过反复尝试，以及用 dig 测试：</p>
+<p>dig -t TYPE257 example.com</p>
+<p>发现我的 PowerDNS 确实是返回了一个 SERVFAIL。</p>
+<h1>调查</h1>
+<p>首先我的 PowerDNS 其实很久没动了，为啥之前可以正常地签证书、更新证书呢 …</p>
+      <br>
+      <a class="btn" href="../2017/08/20/caa-servfail-with-powerdns.html#caa-servfail-with-powerdns">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
     <h2><a href="../2017/01/14/a-very-light-http-uploader.html#a-very-light-http-uploader">一个非常轻量级的HTTP上传工具</a></h2>
     <p>
           Posted on Sat 14 January 2017 in <a href="../category/ops.html">Ops</a>
