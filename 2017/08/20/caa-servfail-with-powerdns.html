@@ -38,7 +38,7 @@
 <meta property="og:url" content="../../../2017/08/20/caa-servfail-with-powerdns.html"/>
 <meta property="og:type" content="article"/>
 <meta property="article:published_time" content="2017-08-20 00:39:30+08:00"/>
-<meta property="article:modified_time" content="2017-08-20 00:39:30+08:00"/>
+<meta property="article:modified_time" content="2017-08-20 00:47:21+08:00"/>
 <meta property="article:author" content="../../../author/hui-yiqun.html">
 <meta property="article:section" content="Ops"/>
 <meta property="og:image" content="https://secure.gravatar.com/avatar/e96680ba97e70a013f818edde6753ca8?s=120">
@@ -112,7 +112,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <p>不过奇怪的是 CAA 请求依然得到的是 SERVFAIL。之后我又尝试了 master 分支的 pdns，结果依然。</p>
 <h1>解决方案2</h1>
 <p>既然如此，那就添加一个 CAA 记录试试吧。Poweradmin 有一个 <a href="https://github.com/poweradmin/poweradmin/issues/302">issue</a> 中提到了这个 <a href="https://github.com/poweradmin/poweradmin/pull/291">PR</a> 已经添加了 CAA 记录的支持，而这个 PR 已经被 merge 了。不过 poweradmin 的上一个 release 还是 2014 年发布的，至今已经有 3 年没有发布新版本了。无它，从 master 分支下载代码，在 poweradmin 里已经可以添加 CAA 记录了。</p>
-<p>根据 <a href="https://tools.ietf.org/html/rfc6844#section-5.1">RFC</a>，CAA 记录由两部分组成：一个 flags 和 一个 tag 对。flags 是一个比特，当前只有最高位被用于 Issuer Critical，代表这个 tag 对的重要性，即如果 CA 不理解这个 tag 对，应该停止签证书（1）或忽略这个 tag 对（0）。需要注意的是 Issuer Critical 是最高位，因此实际上的 flags 应该分别是 128 或 0，</p>
+<p>根据 <a href="https://tools.ietf.org/html/rfc6844#section-5.1">RFC</a>，CAA 记录由两部分组成：一个 flags 和 一个 tag 对。flags 是一个字节，当前只有最高位被用于 Issuer Critical，代表这个 tag 对的重要性，即如果 CA 不理解这个 tag 对，应该停止签证书（1）或忽略这个 tag 对（0）。需要注意的是 Issuer Critical 是最高位，因此实际上的 flags 应该分别是 128 或 0，</p>
 <p>当前支持的 tag 包括：issue issuewild iodef。</p>
 <p>issue 表示允许 CA 机构签署证书，issuewild 表示允许 CA 机构签署 wildcard 证书，iodef 表示签署证书时通过指定的方式通知域名持有者。</p>
 <p>Let's Encrypt 暂时还不支持 wildcard，所以 issuewild 暂时没什么意义；iodef 是可选的，并且<a href="https://community.letsencrypt.org/t/caa-setup-for-lets-encrypt/9893/3">据说</a> Let's Encrypt 还不支持 iodef。</p>
